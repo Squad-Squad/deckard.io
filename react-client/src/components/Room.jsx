@@ -40,7 +40,8 @@ class Room extends React.Component {
     // NEED THIS TO WORK ON DEPLOYMENT
     this.socket = io({ transports: ['websocket'] });
     // SERIOUSLY NEED ABOVE FOR DEPLOYMENT
-    //DO NOT NEED TO SPECIFY PORT ON CLIENT SIDE
+    // DO NOT NEED TO SPECIFY PORT ON CLIENT SIDE
+
     this.socket.on('chat', message => {
       if (message.roomID === this.roomID) {
         console.log('Received message', message);
@@ -50,6 +51,7 @@ class Room extends React.Component {
         this.getMessages();
       }
     });
+
     this.socket.on('vote', roomID => {
       if (roomID === this.roomID) {
         console.log('Received vote');
@@ -343,7 +345,7 @@ class Room extends React.Component {
 
   render() {
     // get size for confetti
-    const { width, height } = this.props.size
+    const { width, height } = this.props.size;
     return (
       <div>
         {this.state.winner.id ?

@@ -7,23 +7,13 @@
 
 // @import "../../../node_modules/bulma/sass/utilities/initial-variables";
 // @import "../../../node_modules/bulma/sass/utilities/functions";
-@import "../../../node_modules/bulmaswatch/journal/_variables.scss";
+@import "../../../node_modules/bulmaswatch/cyborg/_variables.scss";
 @import "../../../node_modules/bulma/bulma";
-@import "../../../node_modules/bulmaswatch/journal/_overrides.scss";
+@import "../../../node_modules/bulmaswatch/cyborg/_overrides.scss";
 
 
-// .create-room-container {
-//     margin-top: 25px;
-//     margin-left: 10px;
-//     padding: 20px;
-//     background-color: $grey; 
-// }
 article {
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-}
-
-article.combatants {
-  background-color: white;
 }
 
 nav {
@@ -44,7 +34,7 @@ figure.image {
 }
 
 #logo {
-  font-family: 'Kalam', cursive;
+  font-family: 'Libre Barcode 39 Extended Text', cursive;
   font-size: 40px;
   padding: 5px 0px 0px 10px;
 }
@@ -127,7 +117,7 @@ div.columns {
 }
 
 .section.login-error {
-  background-color: $red;
+  background-color: $primary;
   padding: 10px;
   margin-bottom: 10px;
   border-radius: 5px;
@@ -200,7 +190,7 @@ div.columns {
 
 .loginBtn--google {
   /*font-family: "Roboto", Roboto, arial, sans-serif;*/
-  background: $red;
+  background: $primary;
 }
 
 .loginBtn--google:before {
@@ -210,7 +200,7 @@ div.columns {
 
 .loginBtn--google:hover,
 .loginBtn--google:focus {
-  background: $red;
+  background: $primary;
   cursor: pointer
 }
 
@@ -333,7 +323,7 @@ $font-size: 25px;
   }
   .chat-self {
     text-align: "right";
-    background-color: "red";
+    background-color: $red;
   }
   .chat-others {
     text-align: "left";

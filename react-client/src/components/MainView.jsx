@@ -23,7 +23,6 @@ class MainView extends React.Component {
   render() {
     return (
       <div>
-        <Hero />
         <Route exact path="/" render={
           (props) => <CreateRoomContainer
             searchUsers={this.props.searchUsers}

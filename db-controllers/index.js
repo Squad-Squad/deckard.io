@@ -84,7 +84,6 @@ const saveMessage = (user_id, name, message, roomID, callback) => {
         room_id: primaryID.id,
       })
         .then((savedMessage) => {
-          console.log('CREATED MESSAGE', savedMessage);
           callback(null, savedMessage);
         })
         .catch((error) => {
@@ -107,7 +106,6 @@ const getMessages = (roomID, callback) => {
     raw: true,
   })
     .then((fetchedMessage) => {
-      console.log('FETCHED MESSAGES', fetchedMessage);
       callback(null, fetchedMessage);
     })
     .catch((error) => {

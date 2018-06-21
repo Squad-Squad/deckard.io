@@ -4,7 +4,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 const session = require('express-session');
-const request = require('request');
 const passport = require('passport');
 const flash = require('flash');
 const auth = require('../lib/auth');
@@ -12,6 +11,7 @@ const morgan = require('morgan');
 const socket = require('socket.io');
 const uniqueString = require('unique-string');
 const tock = require('tocktimer');
+const mitsuku = require('mitsuku-api')();
 
 const Mailjet = require('node-mailjet').connect(
   process.env.MAILJET_API_KEY,
@@ -271,7 +271,6 @@ app.get('/api/messages/:roomID', (req, res) => {
       console.log('Error retrieving messages', err);
       res.status(404).end();
     } else {
-      console.log('Messages retrieved!', fetchedMessages);
       res.send(fetchedMessages);
     }
   });
@@ -382,6 +381,35 @@ db.models.sequelize.sync().then(() => {
     newSocket.on('chat', (data) => {
       console.log('Received chat!', data);
       io.sockets.emit('chat', data);
+      // Delay Mitsuku message by two seconds
+      setTimeout(() => {
+        mitsuku.send(data.message.message)
+          .then((response) => {
+            // Save her message to the db
+            dbHelpers.saveMessage(
+              null,
+              'Mitsuku',
+              response,
+              data.roomID,
+              (err) => {
+                if (err) { console.log('Error saving message', err); }
+              },
+            );
+
+            // Emit her message via socket
+            io.sockets.emit(
+              'chat',
+              {
+                message: {
+                  user_id: null,
+                  name: 'Mitsuku',
+                  message: response,
+                },
+                roomID: data.roomID,
+              },
+            );
+          });
+      }, 2000);
     });
 
     newSocket.on('nominate', (data) => {
