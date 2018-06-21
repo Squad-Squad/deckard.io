@@ -43,7 +43,7 @@ class Navbar extends React.Component {
     return (
       <nav className="navbar is-transparent">
         <div className="navbar-brand">
-          <a className='title' href='/'><h1 id="logo">FoodFighter!</h1></a>
+          <a className='title' href='/'><h1 id="logo">decker.io</h1></a>
         </div>
 
         <div className="navbar-end">
