@@ -11,7 +11,7 @@ const morgan = require('morgan');
 const socket = require('socket.io');
 const uniqueString = require('unique-string');
 const tock = require('tocktimer');
-const mitsuku = require('mitsuku-api')();
+const mitsuku = require('../lib/mitsukuHelper')();
 
 const Mailjet = require('node-mailjet').connect(
   process.env.MAILJET_API_KEY,
@@ -385,7 +385,6 @@ db.models.sequelize.sync().then(() => {
       setTimeout(() => {
         mitsuku.send(data.message.message)
           .then((response) => {
-            console.log('THIS IS THE RESPONSE', response);
             // Save her message to the db
             dbHelpers.saveMessage(
               null,
