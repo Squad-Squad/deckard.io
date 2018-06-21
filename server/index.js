@@ -385,6 +385,7 @@ db.models.sequelize.sync().then(() => {
       setTimeout(() => {
         mitsuku.send(data.message.message)
           .then((response) => {
+            console.log('THIS IS THE RESPONSE', response);
             // Save her message to the db
             dbHelpers.saveMessage(
               null,
