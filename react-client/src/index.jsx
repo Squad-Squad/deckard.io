@@ -45,17 +45,6 @@ class App extends React.Component {
       });
   }
 
-  searchYelp() {
-    $.post('/api/search', { zip: this.state.query }, (data, status) => {
-      console.log(`Requested Yelp search for ${this.state.query}:`, status);
-      if (data.businesses) {
-        this.setState({
-          restaurants: data.businesses,
-        });
-      }
-    });
-  }
-
   updateQuery(e) {
     this.setState({
       query: e.target.value,
@@ -74,32 +63,31 @@ class App extends React.Component {
   }
 
   getUserRooms(email) {
-    axios.post('/api/userrooms', {username: email})
-    .then(res => {
-      this.setState({
-        userRooms: res.data
+    axios.post('/api/userrooms', { username: email })
+      .then(res => {
+        this.setState({
+          userRooms: res.data
+        })
       })
-    })
   }
 
   getUserWins(email) {
-    axios.post('/api/userwins', {username: email})
-    .then(res => {
-      this.setState({
-        userWins: res.data
+    axios.post('/api/userwins', { username: email })
+      .then(res => {
+        this.setState({
+          userWins: res.data
+        })
       })
-    })
   }
 
   //
   // ─── USER AUTH ──────────────────────────────────────────────────────────────────
   //
-  subscribe(email, password, zip) {
+  subscribe(email, password) {
     console.log(`Subscribe with ${email} and ${password}`);
     axios.post('/subscribe', {
       email,
       password,
-      zip
     })
       .then((res) => {
         const email = JSON.parse(res.config.data).email;

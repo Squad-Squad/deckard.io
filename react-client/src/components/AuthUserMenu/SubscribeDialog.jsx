@@ -10,8 +10,6 @@ class SubscribeDialog extends React.Component {
       email: '',
       emailValid: false,
       password: '',
-      zip: '',
-      zipValid: false,
 
       error: false
     };
@@ -20,7 +18,6 @@ class SubscribeDialog extends React.Component {
     this.handleSubscribe = this.handleSubscribe.bind(this);
     this.enterEmail = this.enterEmail.bind(this);
     this.enterPassword = this.enterPassword.bind(this);
-    this.enterZip = this.enterZip.bind(this);
     this.handleKeyPress = this.handleKeyPress.bind(this);
   }
 
@@ -40,8 +37,6 @@ class SubscribeDialog extends React.Component {
       email: '',
       emailValid: false,
       password: '',
-      zip: '',
-      zipValid: false
     });
   }
 
@@ -65,25 +60,10 @@ class SubscribeDialog extends React.Component {
     });
   }
 
-  enterZip(e) {
-    if ((/(^\d{5}$)|(^\d{5}-\d{4}$)/).test(String(e.target.value))) {
-      this.setState({
-        zip: e.target.value,
-        zipValid: true
-      });
-    } else {
-      this.setState({
-        zip: e.target.value,
-        zipValid: false
-      });
-    }
-  }
-
   handleSubscribe() {
     this.props.subscribe(
       this.state.email,
-      this.state.password,
-      this.state.zip);
+      this.state.password);
   }
 
   handleKeyPress(event) {
@@ -116,17 +96,6 @@ class SubscribeDialog extends React.Component {
     let isEmailValid2 = this.state.emailValid ? null : (
       <p className="help is-danger">
         Please enter a valid email address.
-      </p>
-    );
-
-    // Validate zip field
-    let isZipValid1 = this.state.zipValid ? (
-      { className: 'input is-success' }
-    ) : { className: 'input is-danger' };
-
-    let isZipValid2 = this.state.zipValid ? null : (
-      <p className="help is-danger">
-        Please enter a valid zip code.
       </p>
     );
 
@@ -192,21 +161,6 @@ class SubscribeDialog extends React.Component {
                     <i className="fas fa-lock"></i>
                   </span>
                 </p>
-              </div>
-              <div className="field">
-                <label className="label">Homebase</label>
-                <p className="control has-icons-left">
-                  <input
-                    {...isZipValid1}
-                    placeholder="78701"
-                    value={this.state.zip}
-                    onChange={this.enterZip}
-                    onKeyPress={this.handleKeyPress} />
-                  <span className="icon is-small is-left">
-                    <i className="fas fa-home"></i>
-                  </span>
-                </p>
-                {isZipValid2}
               </div>
             </section>
             <footer className="modal-card-foot">

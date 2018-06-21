@@ -33,9 +33,9 @@ class MainView extends React.Component {
             userRooms={this.props.userRooms}
             {...props} />} />,
         < Route path="/rooms/:roomID" render={
-          <Room username={this.state.loggedInUser} />
-          } />
-        
+          () => <Room username={this.state.loggedInUser} />
+        } />
+
 
         {/* <Route exact path="/" render={
             () => <MainView

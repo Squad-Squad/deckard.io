@@ -10,7 +10,7 @@ const sequelize = require('sequelize');
 //
 // ─── USER TABLE HELPERS ─────────────────────────────────────────────────────────
 //
-const saveMember = (email, password, zipcode, callback) => {
+const saveMember = (email, password, callback) => {
   let hashedPW;
   if (password) {
     const salt = bcrypt.genSaltSync(3);
@@ -19,7 +19,6 @@ const saveMember = (email, password, zipcode, callback) => {
   db.models.User.create({
     email,
     password: hashedPW,
-    zipcode,
   })
     .then((result) => {
       callback(result);
@@ -29,9 +28,10 @@ const saveMember = (email, password, zipcode, callback) => {
     });
 };
 
-const saveRoomAndMembers = (roomName, zip, members, id, callback) => {
-  
-  let promisedMembers = members.map(memberEmail => db.models.User.findOne({
+const saveRoomAndMembers = (roomName, members, id, callback) => {
+  console.log('MEMBERS', members);
+
+  const promisedMembers = members.map(memberEmail => db.models.User.findOne({
     where: {
       email: memberEmail,
     },
@@ -46,13 +46,12 @@ const saveRoomAndMembers = (roomName, zip, members, id, callback) => {
         where: {
           name: roomName,
           uniqueid: id,
-          zipcode: zip,
         },
       });
     })
     .then((room) => {
       newRoom = room;
-      let addUserPromises = [];
+      const addUserPromises = [];
       foundUsers.forEach((user) => {
         addUserPromises.push(room[0].addUser(user));
       });
@@ -121,11 +120,11 @@ const getMessages = (roomID, callback) => {
 //
 const getRoomMembers = (roomID, callback) => {
   db.models.User.findAll({
-    attributes: ['email', 'zipcode'],
+    attributes: ['email'],
     include: [{
       model: db.models.Room,
       where: { uniqueid: roomID },
-      attributes: ['name', 'zipcode'],
+      attributes: ['name'],
       through: { attributes: [] },
     }],
   })
@@ -139,31 +138,31 @@ const getRoomMembers = (roomID, callback) => {
 };
 
 const getRooms = (email, callback) => {
-    //Joseph using SQL to get user's rooms
-    let sqlQuery = `SELECT rooms.id AS room_id, rooms.uniqueid AS room_uniqueid, rooms.name AS room_name 
-    FROM room_users 
-    FULL JOIN rooms 
-    ON room_users.room_id = rooms.id  
-    WHERE room_users.user_id = 
+  // Joseph using SQL to get user's rooms
+  const sqlQuery = `SELECT rooms.id AS room_id, rooms.uniqueid AS room_uniqueid, rooms.name AS room_name
+    FROM room_users
+    FULL JOIN rooms
+    ON room_users.room_id = rooms.id
+    WHERE room_users.user_id =
     (SELECT ID FROM users WHERE email = '${email}')
     ORDER BY rooms."createdAt" desc
-    LIMIT 20;`
-    db.sequelize.query(sqlQuery).spread((results) => {
-      console.log('ROOOOOOOOOOOOMS', results);
-      callback(null, results)
-    })
+    LIMIT 20;`;
+  db.sequelize.query(sqlQuery).spread((results) => {
+    console.log('ROOOOOOOOOOOOMS', results);
+    callback(null, results);
+  });
 };
 
 const getWins = (email, callback) => {
   db.models.User
     .findOne({
-      where: {email: email},
-      attributes: ['wins']
+      where: { email },
+      attributes: ['wins'],
     })
-    .then((res) =>{
-      callback(null, `${res.dataValues.wins}`)
-    })
-}
+    .then((res) => {
+      callback(null, `${res.dataValues.wins}`);
+    });
+};
 
 //
 // ─── RESTAURANT TABLE HELPERS ─────────────────────────────────────────────────────────
@@ -203,7 +202,7 @@ const saveCurrentRestaurant = (roomID, restaurantID, callback) => {
 };
 
 const getCurrentRestaurant = (roomID, callback) => {
-  const sqlQuery = `SELECT currentrestaurant FROM rooms WHERE uniqueid = '${roomID}'`
+  const sqlQuery = `SELECT currentrestaurant FROM rooms WHERE uniqueid = '${roomID}'`;
   db.sequelize.query(sqlQuery).spread((results) => {
     console.log('GET VOTES', results);
     callback(null, results);
@@ -244,7 +243,7 @@ const updateVotes = (voter, restaurant_id, name, roomId, nominator, callback) =>
   db.sequelize.query(sqlQuery).spread((results) => {
     console.log('AAAAAAAAAAAAAAA', results[0]);
   });
-  
+
   // Update query in case voter already vetoed. (Can't insert upvote if veto already exists for user for room)
   const sqlUpdateQuery = `UPDATE votes SET upvoted = true WHERE restaurant_id = '${restaurant_id}' AND roomuniqueid = '${roomId}' AND useremail = '${voter}';`;
   db.sequelize.query(sqlUpdateQuery).spread((results) => {
@@ -279,18 +278,18 @@ const updateVetoes = (voter, restaurant_id, name, roomId, callback) => {
       callback(error);
     });
 
-    // Joseph using SQL to update votes table for veto
-    const strippedName = name.replace("'", '`');
-    const sqlQuery = `INSERT INTO votes (restaurant_id, roomuniqueid, useremail, name, upvoted, created, updated) VALUES ('${restaurant_id}', '${roomId}', '${voter}', '${strippedName}', false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);`
-    db.sequelize.query(sqlQuery).spread((results) => {
-      console.log('INSERT VETOE', results);
-    });
+  // Joseph using SQL to update votes table for veto
+  const strippedName = name.replace("'", '`');
+  const sqlQuery = `INSERT INTO votes (restaurant_id, roomuniqueid, useremail, name, upvoted, created, updated) VALUES ('${restaurant_id}', '${roomId}', '${voter}', '${strippedName}', false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);`;
+  db.sequelize.query(sqlQuery).spread((results) => {
+    console.log('INSERT VETOE', results);
+  });
 
-    // Update query in case voter already upvoted. (Can't insert rejection if upvote already exists for user for room)
-    const sqlUpdateQuery = `UPDATE votes SET upvoted = false WHERE restaurant_id = '${restaurant_id}' AND roomuniqueid = '${roomId}' AND useremail = '${voter}';`
-    db.sequelize.query(sqlUpdateQuery).spread((results) => {
-      console.log('UPDATE VETOE', results);
-    });
+  // Update query in case voter already upvoted. (Can't insert rejection if upvote already exists for user for room)
+  const sqlUpdateQuery = `UPDATE votes SET upvoted = false WHERE restaurant_id = '${restaurant_id}' AND roomuniqueid = '${roomId}' AND useremail = '${voter}';`;
+  db.sequelize.query(sqlUpdateQuery).spread((results) => {
+    console.log('UPDATE VETOE', results);
+  });
 };
 
 const getScoreboard = (roomID, callback) => {
@@ -311,25 +310,25 @@ const getScoreboard = (roomID, callback) => {
       callback(error);
     });
 
-  const sqlQuery = `SELECT CASE WHEN votes.restaurant_id IS NOT NULL 
+  const sqlQuery = `SELECT CASE WHEN votes.restaurant_id IS NOT NULL
     THEN votes.restaurant_id ELSE vetoes.restaurant_id END,
     CASE WHEN votes.name IS NOT NULL
     THEN votes.name ELSE vetoes.name END,
-    CASE WHEN votes.votes IS NOT NULL 
-    THEN CAST(votes.votes AS int) 
-    ELSE CAST(0 AS int) END AS votes, 
-    CASE WHEN vetoes.vetoes > 0 
-    THEN true ELSE false END AS vetoed 
+    CASE WHEN votes.votes IS NOT NULL
+    THEN CAST(votes.votes AS int)
+    ELSE CAST(0 AS int) END AS votes,
+    CASE WHEN vetoes.vetoes > 0
+    THEN true ELSE false END AS vetoed
       FROM (
-        (SELECT restaurant_id, name, count(upvoted) AS votes 
-        FROM votes WHERE roomuniqueid = '${roomID}' AND upvoted = true 
-        GROUP BY restaurant_id, roomuniqueid, name) votes 
-        FULL JOIN 
-            (SELECT restaurant_id, name, count(upvoted) AS vetoes 
-            FROM votes 
-            WHERE roomuniqueid = '${roomID}' 
-            AND upvoted = false 
-            GROUP BY restaurant_id, roomuniqueid, name) vetoes 
+        (SELECT restaurant_id, name, count(upvoted) AS votes
+        FROM votes WHERE roomuniqueid = '${roomID}' AND upvoted = true
+        GROUP BY restaurant_id, roomuniqueid, name) votes
+        FULL JOIN
+            (SELECT restaurant_id, name, count(upvoted) AS vetoes
+            FROM votes
+            WHERE roomuniqueid = '${roomID}'
+            AND upvoted = false
+            GROUP BY restaurant_id, roomuniqueid, name) vetoes
         ON votes.restaurant_id = vetoes.restaurant_id);`;
   db.sequelize.query(sqlQuery).spread((results) => {
     console.log('GET VOTES', results);
@@ -343,45 +342,44 @@ const addWin = (rest, room) => {
       where: {
         roomuniqueid: room,
         restaurant_id: rest,
-        nominator: {[sequelize.Op.ne]: 'undefined'}
+        nominator: { [sequelize.Op.ne]: 'undefined' },
       },
-      attributes: ['nominator']
+      attributes: ['nominator'],
     })
     .then((res) => {
-      let nom = res.dataValues.nominator;
+      const nom = res.dataValues.nominator;
       db.models.User
-        .increment(
-          'wins', {
-            where: {email: nom} 
+        .increment('wins', {
+          where: { email: nom },
         });
     })
     .catch((err) => {
       console.log('Error incrementing wins: ', err);
-    })
-}
+    });
+};
 
 const saveWinner = (roomId, callback) => {
   console.log('SAVING WINNER FOR: ', roomId);
   db.models.Vote
     .findAll({
-      where: {roomuniqueid: roomId, upvoted: true},
+      where: { roomuniqueid: roomId, upvoted: true },
       attributes: ['restaurant_id', 'roomuniqueid',
         [sequelize.fn('count', sequelize.col('upvoted')), 'votes']],
       group: ['restaurant_id', 'roomuniqueid'],
-      order: [['count', 'DESC']]
+      order: [['count', 'DESC']],
     })
     .then((res) => {
-      let restId = res[0].dataValues.restaurant_id;
-      let roomId = res[0].dataValues.roomuniqueid;
+      const restId = res[0].dataValues.restaurant_id;
+      const roomId = res[0].dataValues.roomuniqueid;
       addWin(restId, roomId);
       db.models.Room
         .update({
-          winningrestaurant: restId
+          winningrestaurant: restId,
         }, {
-          where: {uniqueid: roomId},
+          where: { uniqueid: roomId },
           returning: true,
-          plain: true
-        })
+          plain: true,
+        });
     })
     .catch((err) => {
       console.log('Error Saving Winner', err);
@@ -392,15 +390,15 @@ const getWinner = (roomId, callback) => {
   console.log('GETTING WINNER FOR: ', roomId);
   db.models.Room
     .findOne({
-      where: {uniqueid: roomId},
-      attributes: ['winningrestaurant']
+      where: { uniqueid: roomId },
+      attributes: ['winningrestaurant'],
     })
     .then((res) => {
       callback(res.dataValues.winningrestaurant);
     })
     .catch((err) => {
       console.log('Error Fetching Winner: ', err);
-    })
+    });
 };
 
 module.exports = {
@@ -418,5 +416,5 @@ module.exports = {
   getRooms,
   saveWinner,
   getWinner,
-  getWins
+  getWins,
 };

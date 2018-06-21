@@ -11,9 +11,7 @@ class CreateRoom extends React.Component {
       query: '',
       roomID: null,
       roomName: '',
-      zipCode: '',
 
-      zipValid: false,
       error: false,
 
       roomLink: ''
@@ -25,7 +23,6 @@ class CreateRoom extends React.Component {
   createRoom() {
     if (this.props.loggedIn === false ||
       this.state.roomName.length === 0 ||
-      !this.state.zipValid ||
       this.props.combatants.length === 0) {
       this.setState({
         error: true,
@@ -35,7 +32,6 @@ class CreateRoom extends React.Component {
         '/api/save',
         {
           roomName: this.state.roomName,
-          zip: this.state.zipCode,
           members: this.props.combatants
         },
         (roomInfo, status) => {
@@ -83,20 +79,6 @@ class CreateRoom extends React.Component {
     });
   }
 
-  updateZip(e) {
-    if ((/(^\d{5}$)|(^\d{5}-\d{4}$)/).test(String(e.target.value))) {
-      this.setState({
-        zipCode: e.target.value,
-        zipValid: true
-      });
-    } else {
-      this.setState({
-        zipCode: e.target.value,
-        zipValid: false
-      });
-    }
-  }
-
   handleKeyPress(event) {
     if (event.key == 'Enter') {
       this.createRoom();
@@ -107,17 +89,6 @@ class CreateRoom extends React.Component {
     var uniqueURL = this.state.roomID ?
       `https://food-fight-greenfield.herokuapp.com/rooms/${this.state.roomID}`
       : '';
-
-    // Validate ZIP Field
-    let isZipValid1 = () => {
-      if (this.state.zipCode.length === 0) {
-        return { className: 'input is-large is-half' };
-      } else if (this.state.zipValid) {
-        return { className: 'input is-success is-large is-half' };
-      } else {
-        return { className: 'input is-danger is-large is-half' };
-      }
-    };
 
     // Error creating room
     const createRoomError = () => {
@@ -136,7 +107,7 @@ class CreateRoom extends React.Component {
           <section className="section login-error" style={{ color: 'white' }}>
             <div className="container">
               <h2 className="subtitle">
-                You must have a name, the zip must be valid and the arena must have combatants.
+                You must have a name and the arena must have combatants.
               </h2>
             </div>
           </section>
@@ -163,23 +134,6 @@ class CreateRoom extends React.Component {
                     value={this.state.roomName}
                     onChange={this.updateRoomName.bind(this)}
                     onKeyPress={this.handleKeyPress} />
-                </p>
-              </div>
-            </div>
-            <div className="column">
-              <div className="field">
-                <label className="label">Region</label>
-                <p className="control is-expanded">
-                  <input
-                    type="text"
-                    pattern="[0-9]{5}"
-                    title="Five digit zip code"
-                    value={this.state.zipCode}
-                    onChange={this.updateZip.bind(this)}
-                    onKeyPress={this.handleKeyPress}
-                    {...isZipValid1()}
-                    placeholder="Zip Code"
-                  />
                 </p>
               </div>
             </div>

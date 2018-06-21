@@ -10,16 +10,6 @@ class RestaurantList extends React.Component {
       isFirstTime: true,
     };
   }
-  searchYelp() {
-    $.post('/api/search', { zip: this.props.zipcode }, (data, status) => {
-      console.log(`Requested Yelp search for ${this.props.zipcode}:`, status);
-      if (data.businesses) {
-        this.setState({
-          restaurants: data.businesses,
-        });
-      }
-    });
-  }
 
   componentDidMount() {
     this.searchYelp();
@@ -49,12 +39,12 @@ class RestaurantList extends React.Component {
       <div>
         <p className="title">Local Restaurants</p>
         {this.state.restaurants
-        .filter(restaurant => {
-          return !this.props.vetoedRestaurants.includes(restaurant.id);
-        })
-        .map(restaurant => {
-          return <RestaurantListItem restaurant={restaurant} nominate={this.props.nominate} key={restaurant.id}/>;
-        })}
+          .filter(restaurant => {
+            return !this.props.vetoedRestaurants.includes(restaurant.id);
+          })
+          .map(restaurant => {
+            return <RestaurantListItem restaurant={restaurant} nominate={this.props.nominate} key={restaurant.id} />;
+          })}
       </div>
     );
   }

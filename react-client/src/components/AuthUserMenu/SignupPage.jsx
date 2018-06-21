@@ -9,13 +9,10 @@ class SignupPage extends React.Component {
       email: null,
       emailValid: false,
       password: null,
-      zip: null,
-      zipValid: false,
     };
     this.handleSubscribe = this.handleSubscribe.bind(this);
     this.enterEmail = this.enterEmail.bind(this);
     this.enterPassword = this.enterPassword.bind(this);
-    this.enterZip = this.enterZip.bind(this);
     this.handleKeyPress = this.handleKeyPress.bind(this);
   }
 
@@ -39,27 +36,11 @@ class SignupPage extends React.Component {
     });
   }
 
-  enterZip(e) {
-    if ((/(^\d{5}$)|(^\d{5}-\d{4}$)/).test(String(e.target.value))) {
-      this.setState({
-        zip: e.target.value,
-        zipValid: true
-      });
-    } else {
-      this.setState({
-        zip: null,
-        zipValid: false
-      });
-    }
-  }
-
   handleSubscribe() {
     console.log(this.props.subscribe);
-    console.log('ZIP', this.state.zip);
     this.props.subscribe(
       this.state.email,
-      this.state.password,
-      this.state.zip);
+      this.state.password);
   }
 
   handleKeyPress(event) {
@@ -79,17 +60,6 @@ class SignupPage extends React.Component {
       <p className="help is-danger">
         Please enter a valid email address.
       </p>
-    );
-
-    // Validate zip field
-    let isZipValid1 = this.state.zipValid ? (
-      { className: 'input is-success' }
-    ) : { className: 'input is-danger' };
-
-    let isZipValid2 = this.state.zipValid ? null : (
-      <p className="help is-danger">
-        Please enter a valid zip code.
-          </p>
     );
 
     // Link only active if
@@ -153,21 +123,6 @@ class SignupPage extends React.Component {
                   <i className="fas fa-lock"></i>
                 </span>
               </p>
-            </div>
-            <div className="field">
-              <label className="label">Homebase</label>
-              <p className="control has-icons-left">
-                <input
-                  {...isZipValid1}
-                  placeholder="78701"
-                  value={this.state.zip}
-                  onChange={this.enterZip}
-                  onKeyPress={this.handleKeyPress} />
-                <span className="icon is-small is-left">
-                  <i className="fas fa-home"></i>
-                </span>
-              </p>
-              {isZipValid2}
             </div>
             <div className="is-divider" />
             <Link to="/" style={{ textDecoration: 'none' }}>

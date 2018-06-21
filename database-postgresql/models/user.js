@@ -11,10 +11,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    zipcode: {
-      type: DataTypes.INTEGER(6),
-      allowNull: false,
-    },
     wins: {
       type: DataTypes.INTEGER(6),
       defaultValue: 0,

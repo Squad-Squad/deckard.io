@@ -101,7 +101,6 @@ app.get('/logout', (req, res) => {
 // ─── USER SEARCH AND INVITE ─────────────────────────────────────────────────────
 //
 app.post('/searchUsers', (req, res) => {
-  console.log(req.body.query);
   db.models.User.findAll({
     limit: 10,
     where: {
@@ -166,18 +165,18 @@ app.post('/api/roomEmail', (req, res) => {
 //
 app.post('/api/save', (req, res) => {
   // console.log('NEW ROOM DATA', req.body);
-  const { roomName, zip, members } = req.body;
-  let roomUnique = uniqueString();
+  const { roomName, members } = req.body;
+  const roomUnique = uniqueString();
   timerObj[roomUnique] = new tock({
     countdown: true,
     complete: () => {
       console.log('TIMER OVER');
       dbHelpers.saveWinner(roomUnique);
-    }
+    },
   });
   timerObj[roomUnique].start(180000);
 
-  dbHelpers.saveRoomAndMembers(roomName, zip, members, roomUnique, (err, room, users) => {
+  dbHelpers.saveRoomAndMembers(roomName, members, roomUnique, (err, room, users) => {
     if (err) {
       console.log('Error saving room and members', err);
     } else {
@@ -193,7 +192,7 @@ app.get('/api/rooms/:roomID', (req, res) => {
     if (err) {
       console.log('Error getting room members', err);
     } else {
-      console.log(`Got for ${roomID} roommembers: ${JSON.stringify(roomMembers)}`)
+      console.log(`Got for ${roomID} roommembers: ${JSON.stringify(roomMembers)}`);
       res.send(roomMembers);
     }
   });
@@ -201,20 +200,19 @@ app.get('/api/rooms/:roomID', (req, res) => {
 
 app.get('/api/timer/:roomID', (req, res) => {
   const { roomID } = req.params;
-  res.send({timeLeft: timerObj[roomID].lap()});
+  res.send({ timeLeft: timerObj[roomID].lap() });
 });
 
 app.get('/api/nominatetimer/:roomID', (req, res) => {
   const { roomID } = req.params;
-  res.send({timeLeft: nominateTimerObj[roomID].lap()});
+  res.send({ timeLeft: nominateTimerObj[roomID].lap() });
 });
 
 app.post('/room-redirect', (req, res) => {
-  console.log(req.body);
   res.redirect(307, `/rooms/${req.body.id}`);
 });
 
-//Joseph
+// Joseph
 app.post('/api/userrooms', (req, res) => {
   const { username } = req.body;
   dbHelpers.getRooms(username, (err, rooms) => {
@@ -234,68 +232,27 @@ app.post('/api/userwins', (req, res) => {
     } else {
       res.send(wins);
     }
-  })
-})
+  });
+});
 
 app.get('/api/getWinner/:roomID', (req, res) => {
   const { roomID } = req.params;
   dbHelpers.getWinner(roomID, (response) => {
-    console.log('WINNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNER',response)
-    /res.send(response)
-  })
+    console.log('WINNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNER', response)
+    / res.send(response);
+  });
 });
 
 
 //
 // ─── EXTERNAL API LOGIC ─────────────────────────────────────────────────────────
 //
-app.post('/api/search', (req, res) => {
-  console.log('Received request for Yelp search of', req.body);
-  const { zip } = req.body;
-  const options = {
-    method: 'GET',
-    uri: 'https://api.yelp.com/v3/businesses/search',
-    headers: {
-      Authorization: `Bearer ${process.env.YELP_API_KEY}`,
-    },
-    qs: {
-      location: zip,
-    },
-  };
-  request(options, (err, data) => {
-    if (err) {
-      console.log('Error in interacting with the Yelp API', err);
-      res.status(404).end();
-    }
-    res.send(JSON.parse(data.body));
-  });
-});
-
-app.post('/api/search/restaurant', (req, res) => {
-  const { restId } = req.body;
-  console.log('Fetching restaurant details for ', restId);
-  const options = {
-    method: 'GET',
-    uri: `https://api.yelp.com/v3/businesses/${restId}`,
-    headers: {
-      Authorization: `Bearer ${process.env.YELP_API_KEY}`,
-    }
-  }
-  request(options, (err, data) => {
-    if (err) {
-      console.log('Error getting restaurant details', err);
-      res.status(404).end();
-    }
-    res.send(JSON.parse(data.body));
-  });
-})
-
 
 //
 // ─── HANDLE MESSAGES AND VOTES─────────────────────────────────────────────────────────
 //
 app.post('/api/messages', (req, res) => {
-  const {user_id, message, roomID } = req.body;
+  const { user_id, message, roomID } = req.body;
   console.log('NOMIIIIIIINNNNNNNNNNNATION TIMER', nominateTimerObj);
   dbHelpers.saveMessage(user_id, message.name, message.message, roomID, (err, savedMessage) => {
     if (err) {
@@ -322,18 +279,18 @@ app.get('/api/messages/:roomID', (req, res) => {
 
 app.post('/api/nominate', (req, res) => {
   const { name, roomID, restaurantID } = req.body;
-  //Timer for nominations
+  // Timer for nominations
   nominateTimerObj[roomID] = new tock({
     countdown: true,
     complete: () => {
       console.log('TIMER OVER');
       delete nominateTimerObj[roomID];
-    }
+    },
   });
   nominateTimerObj[roomID].start(15000);
 
   console.log('NOMIIIIIIINNNNNNNNNNNATION TIMER', nominateTimerObj[roomID]);
-  
+
   dbHelpers.saveRestaurant(name, roomID, (err, restaurant) => {
     if (err) {
       console.log('Error saving restaurant', err);
@@ -342,7 +299,7 @@ app.post('/api/nominate', (req, res) => {
     }
   });
 
-  //Joseph SQL
+  // Joseph SQL
   dbHelpers.saveCurrentRestaurant(roomID, restaurantID, (err, restaurant) => {
     if (err) {
       console.log('Error saving current restaurant', err);
@@ -354,7 +311,7 @@ app.post('/api/nominate', (req, res) => {
 
 app.post('/api/currentrestaurant', (req, res) => {
   const { roomID } = req.body;
-  //Joseph SQL
+  // Joseph SQL
   dbHelpers.getCurrentRestaurant(roomID, (err, restaurant) => {
     if (err) {
       console.log('Error retrieving current restaurant', err);
@@ -362,11 +319,12 @@ app.post('/api/currentrestaurant', (req, res) => {
       res.send(restaurant);
     }
   });
-
 });
 
 app.post('/api/votes', (req, res) => {
-  const { name, roomID, voter, restaurant_id, nominator } = req.body;
+  const {
+    name, roomID, voter, restaurant_id, nominator,
+  } = req.body;
   dbHelpers.updateVotes(voter, restaurant_id, name, roomID, nominator, (err, restaurant) => {
     if (err) {
       console.log('Error upvoting restaurant', err);
@@ -377,7 +335,9 @@ app.post('/api/votes', (req, res) => {
 });
 
 app.post('/api/vetoes', (req, res) => {
-  const { name, roomID, voter, restaurant_id } = req.body;
+  const {
+    name, roomID, voter, restaurant_id,
+  } = req.body;
   dbHelpers.updateVetoes(voter, restaurant_id, name, roomID, (err, restaurant) => {
     if (err) {
       console.log('Error vetoing restaurant', err);
@@ -443,7 +403,6 @@ db.models.sequelize.sync().then(() => {
       console.log('Received new member!', roomID);
       io.sockets.emit('join', roomID);
     });
-
   });
 });
 
