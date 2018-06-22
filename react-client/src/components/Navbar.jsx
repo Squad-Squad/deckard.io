@@ -3,8 +3,15 @@ import LoginDialog from './AuthUserMenu/LoginDialog.jsx';
 import SubscribeDialog from './AuthUserMenu/SubscribeDialog.jsx';
 import UserMenu from './AuthUserMenu/UserMenu.jsx';
 import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
 
-class Navbar extends React.Component {
+const mapStateToProps = state => {
+  return {
+    loggedIn: state.loggedIn,
+  }
+};
+
+class ConnectedNavbar extends React.Component {
   constructor(props) {
     super(props);
   }
@@ -67,5 +74,7 @@ class Navbar extends React.Component {
     );
   }
 }
+
+const Navbar = connect(mapStateToProps)(ConnectedNavbar);
 
 export default Navbar;

@@ -12,7 +12,33 @@ import Room from './components/Room.jsx';
 import 'animate.css/animate.css';
 import './styles/main.scss';
 
-class App extends React.Component {
+// ─── REDUX STUFF ────────────────────────────────────────────────────────────────
+import { createStore, combineReducers, applyMiddleware } from 'redux';
+import { Provider, connect } from 'react-redux';
+import logger from 'redux-logger';
+import { login, logout, searchUsers } from '../../redux/actions';
+
+import reducer from '../../redux/reducer';
+
+const store = createStore(reducer, applyMiddleware(logger));
+
+const mapStateToProps = state => {
+  return {
+    loggedInUsername: state.username,
+    searchedUsers: state.searchedUsers,
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    login: (username) => dispatch(login(username)),
+    logout: () => dispatch(logout()),
+    searchUsers: (users) => dispatch(searchUsers(users)),
+  };
+};
+//────────────────────────────────────────────────────────────────────────────────
+
+class ConnectedApp extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -34,13 +60,10 @@ class App extends React.Component {
       .then(res => {
         if (res.data.user) {
           console.log('Logged in as:', res.data.user.email);
+          this.props.login(res.data.user.email);
           this.setState({
-            loggedIn: true,
-            loggedInUsername: res.data.user.email,
             loginError: false,
           });
-          this.getUserRooms(res.data.user.email);
-          this.getUserWins(res.data.user.email);
         }
       });
   }
@@ -56,9 +79,7 @@ class App extends React.Component {
     axios.post('/searchUsers', { query })
       .then(res => {
         console.log('RESULTS', res);
-        this.setState({
-          searchedUsers: res.data
-        });
+        this.props.searchUsers(res.data);
       });
   }
 
@@ -83,19 +104,17 @@ class App extends React.Component {
   //
   // ─── USER AUTH ──────────────────────────────────────────────────────────────────
   //
-  subscribe(email, password) {
+  subscribe(email, password, zip) {
     console.log(`Subscribe with ${email} and ${password}`);
     axios.post('/subscribe', {
       email,
       password,
+      zip
     })
       .then((res) => {
         const email = JSON.parse(res.config.data).email;
         if (res) {
-          this.setState({
-            loggedIn: true,
-            loggedInUsername: email
-          })
+          this.props.login(email);
         }
       })
       .catch(() => {
@@ -114,12 +133,7 @@ class App extends React.Component {
       .then(res => {
         if (res.config.data) {
           console.log('Logged in as:', JSON.parse(res.config.data).email);
-          this.getUserRooms(JSON.parse(res.config.data).email);
-          this.getUserWins(JSON.parse(res.config.data).email);
-          this.setState({
-            loggedIn: true,
-            loggedInUsername: JSON.parse(res.config.data).email
-          });
+          this.props.login(JSON.parse(res.config.data).email);
         }
       })
       .catch(
@@ -136,9 +150,8 @@ class App extends React.Component {
     axios.get('/logout')
       .then(res => {
         console.log('Logging out');
+        this.props.logout();
         this.setState({
-          loggedIn: false,
-          loggedInUsername: '',
           loginError: false
         });
       })
@@ -158,8 +171,6 @@ class App extends React.Component {
               login={this.login.bind(this)}
               logout={this.logout.bind(this)}
               subscribe={this.subscribe.bind(this)}
-              loggedIn={this.state.loggedIn}
-              username={this.state.loggedInUsername}
               error={this.state.loginError}
               subscribeError={this.state.subscribeError}
               wins={this.state.userWins} />
@@ -183,4 +194,10 @@ class App extends React.Component {
   }
 }
 
-ReactDOM.render(<App />, document.getElementById('app'));
+const App = connect(mapStateToProps, mapDispatchToProps)(ConnectedApp);
+
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  document.getElementById('app'));

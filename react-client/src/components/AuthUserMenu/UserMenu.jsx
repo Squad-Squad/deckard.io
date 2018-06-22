@@ -1,6 +1,13 @@
 import React from 'react';
+import { connect } from 'react-redux';
 
-class UserMenu extends React.Component {
+const mapStateToProps = state => {
+  return {
+    username: state.username
+  };
+};
+
+class ConnectedUserMenu extends React.Component {
   constructor(props) {
     super(props);
   }
@@ -27,5 +34,7 @@ class UserMenu extends React.Component {
     );
   }
 }
+
+const UserMenu = connect(mapStateToProps)(ConnectedUserMenu);
 
 export default UserMenu;

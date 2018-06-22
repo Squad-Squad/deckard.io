@@ -1,13 +1,27 @@
 import React from 'react';
 import SearchResult from './SearchResult.jsx';
 import InviteUsers from './InviteUsers.jsx';
+import axios from 'axios';
+import { connect } from 'react-redux';
 
-class SearchUsersPanel extends React.Component {
+const mapStateToProps = state => {
+  return {
+    searchedUsers: state.searchedUsers,
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    searchUsers: (users) => dispatch(searchUsers(users)),
+  };
+};
+
+class ConnectedSearchUsersPanel extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       query: '',
-    }
+    };
 
     this.enterQuery = this.enterQuery.bind(this);
     this.handleKeyPress = this.handleKeyPress.bind(this);
@@ -25,9 +39,18 @@ class SearchUsersPanel extends React.Component {
     }
   }
 
+  searchUsers(query) {
+    console.log('SEARCHING FOR', this.state.query);
+    axios.post('/searchUsers', { query: this.state.query })
+      .then(res => {
+        console.log('RESULTS', res);
+        this.props.searchUsers(res.data);
+      });
+  }
+
   render() {
-    const usersFound = this.props.foundUsers.length ? (
-      this.props.foundUsers.map((user, i) => (
+    const usersFound = this.props.searchedUsers.length ? (
+      this.props.searchedUsers.map((user, i) => (
         <SearchResult
           key={i}
           user={user}
@@ -56,7 +79,7 @@ class SearchUsersPanel extends React.Component {
                 <div className="control">
                   <a
                     className="button is-info"
-                    onClick={this.props.searchUsers.bind(this, this.state.query)}>
+                    onClick={this.searchUsers.bind(this)}>
                     Search
                   </a>
                 </div>
@@ -77,5 +100,7 @@ class SearchUsersPanel extends React.Component {
     );
   }
 }
+
+const SearchUsersPanel = connect(mapStateToProps)(ConnectedSearchUsersPanel);
 
 export default SearchUsersPanel;
