@@ -4,7 +4,13 @@ import $ from 'jquery';
 import CombatantsContainer from './CombatantsContainer.jsx';
 import { withRouter } from 'react-router-dom';
 
-class CreateRoom extends React.Component {
+import { connect } from 'react-redux';
+
+const mapStateToProps = state => {
+  return { loggedIn: state.loggedIn };
+};
+
+class ConnectedCreateRoom extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -161,5 +167,7 @@ class CreateRoom extends React.Component {
     );
   }
 }
+
+const CreateRoom = connect(mapStateToProps)(ConnectedCreateRoom);
 
 export default withRouter(CreateRoom);

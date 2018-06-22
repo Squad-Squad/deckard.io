@@ -2,7 +2,6 @@ import React from 'react';
 import io from 'socket.io-client';
 import $ from 'jquery';
 import Tock from 'tocktimer';
-import RestaurantList from './RestaurantList.jsx';
 import CurrentSelection from './CurrentSelection.jsx';
 import sizeMe from 'react-sizeme';
 import Confetti from 'react-confetti';

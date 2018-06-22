@@ -381,7 +381,10 @@ db.models.sequelize.sync().then(() => {
     newSocket.on('chat', (data) => {
       console.log('Received chat!', data);
       io.sockets.emit('chat', data);
-      // Delay Mitsuku message by two seconds
+
+      // Mitsuku only responds half the time
+
+      // Delay Mitsuku a random number of seconds
       setTimeout(() => {
         mitsuku.send(data.message.message)
           .then((response) => {
@@ -409,7 +412,7 @@ db.models.sequelize.sync().then(() => {
               },
             );
           });
-      }, 2000);
+      }, Math.random() * 5000 + 2000);
     });
 
     newSocket.on('nominate', (data) => {
