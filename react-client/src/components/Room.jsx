@@ -11,7 +11,6 @@ class Room extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      name: '',
       message: '',
       messages: [],
       members: [],
@@ -33,7 +32,6 @@ class Room extends React.Component {
     this.sendMessage = this.sendMessage.bind(this);
     this.voteApprove = this.voteApprove.bind(this);
     this.voteVeto = this.voteVeto.bind(this);
-    this.retrieveCurrentRestaurant = this.retrieveCurrentRestaurant.bind(this);
 
     // Client-side socket events
     // NEED THIS TO WORK ON DEPLOYMENT
@@ -90,7 +88,6 @@ class Room extends React.Component {
 
   /// Send post request to server to fetch room info when user visits link
   componentDidMount() {
-    this.retrieveCurrentRestaurant();
     this.getMessages();
     this.getRoomInfo();
     this.getTimer();
@@ -98,26 +95,6 @@ class Room extends React.Component {
     this.getVotes();
     this.socket.emit('join', this.roomID);
     this.getWinner();
-  }
-
-  retrieveCurrentRestaurant() {
-    let roomIDObj = {
-      roomID: this.roomID
-    }
-    $.post('/api/currentrestaurant', roomIDObj).then((restaurant) => {
-      $.post('/api/search/restaurant', {
-        restId: restaurant[0].currentrestaurant
-      }).then((current) => {
-        console.log('Mounting Restaurant', current);
-        if ('error' in current === false) {
-          console.log('has error');
-          this.setState({
-            currentSelection: current,
-            isNominating: false,
-          });
-        }
-      });
-    });
   }
 
   getMessages() {
@@ -276,11 +253,6 @@ class Room extends React.Component {
   }
 
   // Update from text boxes in the live chat
-  updateName(e) {
-    this.setState({
-      name: e.target.value,
-    });
-  }
 
   voteApprove(name, id, uname) {
     let resName = name || this.state.currentSelection.name;

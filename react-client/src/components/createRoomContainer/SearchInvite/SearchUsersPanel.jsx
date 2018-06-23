@@ -3,6 +3,7 @@ import SearchResult from './SearchResult.jsx';
 import InviteUsers from './InviteUsers.jsx';
 import axios from 'axios';
 import { connect } from 'react-redux';
+import { searchUsers } from '../../../../../redux/actions';
 
 const mapStateToProps = state => {
   return {
@@ -40,8 +41,8 @@ class ConnectedSearchUsersPanel extends React.Component {
   }
 
   searchUsers(query) {
-    console.log('SEARCHING FOR', this.state.query);
-    axios.post('/searchUsers', { query: this.state.query })
+    console.log('SEARCHING FOR', query);
+    axios.post('/searchUsers', { query })
       .then(res => {
         console.log('RESULTS', res);
         this.props.searchUsers(res.data);
@@ -79,7 +80,7 @@ class ConnectedSearchUsersPanel extends React.Component {
                 <div className="control">
                   <a
                     className="button is-info"
-                    onClick={this.searchUsers.bind(this)}>
+                    onClick={this.searchUsers.bind(this, this.state.query)}>
                     Search
                   </a>
                 </div>
@@ -101,6 +102,6 @@ class ConnectedSearchUsersPanel extends React.Component {
   }
 }
 
-const SearchUsersPanel = connect(mapStateToProps)(ConnectedSearchUsersPanel);
+const SearchUsersPanel = connect(mapStateToProps, mapDispatchToProps)(ConnectedSearchUsersPanel);
 
 export default SearchUsersPanel;

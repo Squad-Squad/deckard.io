@@ -245,10 +245,6 @@ app.get('/api/getWinner/:roomID', (req, res) => {
 
 
 //
-// ─── EXTERNAL API LOGIC ─────────────────────────────────────────────────────────
-//
-
-//
 // ─── HANDLE MESSAGES AND VOTES─────────────────────────────────────────────────────────
 //
 app.post('/api/messages', (req, res) => {
@@ -304,18 +300,6 @@ app.post('/api/nominate', (req, res) => {
       console.log('Error saving current restaurant', err);
     } else {
       res.end('Current restaurant saved!', restaurant);
-    }
-  });
-});
-
-app.post('/api/currentrestaurant', (req, res) => {
-  const { roomID } = req.body;
-  // Joseph SQL
-  dbHelpers.getCurrentRestaurant(roomID, (err, restaurant) => {
-    if (err) {
-      console.log('Error retrieving current restaurant', err);
-    } else {
-      res.send(restaurant);
     }
   });
 });

@@ -1,9 +1,7 @@
 import React from 'react';
 import $ from 'jquery';
-// import uniqueString from 'unique-string';
 import CombatantsContainer from './CombatantsContainer.jsx';
 import { withRouter } from 'react-router-dom';
-
 import { connect } from 'react-redux';
 
 const mapStateToProps = state => {
@@ -66,12 +64,6 @@ class ConnectedCreateRoom extends React.Component {
         });
     });
   }
-
-  // createUniqueID() {
-  //   this.setState({
-  //     roomID: uniqueString(),
-  //   });
-  // }
 
   updateQuery(e) {
     this.setState({
@@ -145,10 +137,6 @@ class ConnectedCreateRoom extends React.Component {
             </div>
           </div>
         </div>
-        {/* <button onClick={this.createUniqueID.bind(this)} className="button is-normal is-info">
-            Create a Unique URL
-          </button>
-          {uniqueURL} */}
         <div className="is-divider" />
         <CombatantsContainer
           combatants={this.props.combatants} />
