@@ -101,14 +101,7 @@ app.get('/logout', (req, res) => {
 // ─── USER SEARCH AND INVITE ─────────────────────────────────────────────────────
 //
 app.post('/searchUsers', (req, res) => {
-  db.models.User.findAll({
-    limit: 10,
-    where: {
-      email: {
-        [Op.regexp]: req.body.query,
-      },
-    },
-  })
+  db.models.User.findAll()
     .then(matches => res.status(200).send(matches))
     .catch(err => res.status(200).send(err));
 });

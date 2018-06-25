@@ -12,7 +12,7 @@ import { connect } from 'react-redux';
 const mapStateToProps = state => {
   return {
     loggedIn: state.loggedIn,
-  }
+  };
 };
 
 class ConnectedNavbar extends React.Component {

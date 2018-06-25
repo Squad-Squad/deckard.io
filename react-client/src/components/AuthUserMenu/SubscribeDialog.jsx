@@ -114,13 +114,13 @@ class SubscribeDialog extends React.Component {
 
     return (
       <div>
-        <Button onClick={this.handleClickOpen}>Subscribe</Button>
+        <Button onClick={this.handleClickOpen}>Signup</Button>
         <Dialog
           open={this.state.open}
           onClose={this.handleClose}
           aria-labelledby="form-dialog-title"
         >
-          <DialogTitle id="form-dialog-title">Subscribe</DialogTitle>
+          <DialogTitle id="form-dialog-title">SignUp</DialogTitle>
           <DialogContent>
             <TextField
               {...isEmailValid}
