@@ -11,6 +11,15 @@
 @import "../../../node_modules/bulma/bulma";
 @import "../../../node_modules/bulmaswatch/cyborg/_overrides.scss";
 
+html {
+  height: 100%;
+}
+
+body {
+  background-image: url("../../dist/assets/deckardBG.jpg");
+  background-size: cover;
+  min-height: 100%;
+}
 
 article {
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
@@ -18,12 +27,20 @@ article {
 
 nav {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16), 0 1px 3px rgba(0, 0, 0, 0.23);
+  background-color: rgba(33,33,33,.3) !important;
 }
 
 div.notification.is-danger {
   padding: 5px;
   margin: 0px;
 }
+
+// BAD PRACTICE BUT HERE IT IS
+.withRouter-Connect-ConnectedCreateRoom---container-201 {
+  height: 40px !important;
+  font-size: 18px !important;
+}
+// ----------------
 
 figure.image {
   padding: none;
@@ -95,6 +112,20 @@ figure.image {
   width: 88%;
 }
 
+#new-room-header {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 30px;
+}
+
+#users-for-new-room-header {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 25px;
+}
+
+#chat-window{
+  background-color: $grey-light;
+}
+
 div.columns {
   margin: 15px;
 }
@@ -151,6 +182,10 @@ div.columns {
 
 .search-result p.user-search-email {
   margin-bottom: 0px;
+}
+
+.auth-buttons {
+  font-family: 'Titillium Web', sans-serif;
 }
 
 /* GOOGLE LOGIN BUTTON */
@@ -299,33 +334,33 @@ $font-size: 25px;
   }
 }
 
-// CHAT STYLING
-#chat {
-  width: 100%;
-  button.send-message {
-    margin-top: 10px;
-  }
-  .chat-messages {
-    margin: 25px auto;
-    border: 1px solid $grey-light;
-    box-shadow: 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-    height: 300px;
-    padding: 15px;
-    border-radius: 10px;
-    overflow: auto;
-    p {
-      font-size: 1.2rem;
-    }
-  }
-  .chat-input {
-    width: 600px;
-    margin-top: 15px;
-  }
-  .chat-self {
-    text-align: "right";
-    background-color: $red;
-  }
-  .chat-others {
-    text-align: "left";
-  }
-}
+// // CHAT STYLING
+// #chat {
+//   width: 100%;
+//   button.send-message {
+//     margin-top: 10px;
+//   }
+//   .chat-messages {
+//     margin: 25px auto;
+//     border: 1px solid $grey-light;
+//     box-shadow: 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+//     height: 300px;
+//     padding: 15px;
+//     border-radius: 10px;
+//     overflow: auto;
+//     p {
+//       font-size: 1.2rem;
+//     }
+//   }
+//   .chat-input {
+//     width: 600px;
+//     margin-top: 15px;
+//   }
+//   .chat-self {
+//     text-align: "right";
+//     background-color: $red;
+//   }
+//   .chat-others {
+//     text-align: "left";
+//   }
+// }

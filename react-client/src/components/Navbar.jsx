@@ -1,4 +1,8 @@
 import React from 'react';
+import AppBar from '@material-ui/core/AppBar';
+import TextField from '@material-ui/core/TextField';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
 import LoginDialog from './AuthUserMenu/LoginDialog.jsx';
 import SubscribeDialog from './AuthUserMenu/SubscribeDialog.jsx';
 import UserMenu from './AuthUserMenu/UserMenu.jsx';
@@ -8,7 +12,7 @@ import { connect } from 'react-redux';
 const mapStateToProps = state => {
   return {
     loggedIn: state.loggedIn,
-  }
+  };
 };
 
 class ConnectedNavbar extends React.Component {
@@ -28,50 +32,45 @@ class ConnectedNavbar extends React.Component {
       badge = '/assets/bronze.png'
     }
 
-    let authentication = this.props.loggedIn ? (
-      [<UserMenu
-        logout={this.props.logout}
-        username={this.props.username} />,
-      <div className="navbar-item">Wins: {this.props.wins}</div>,
-      <img src={badge}></img>]
-    ) : (
-        [<div className="control" key="1">
+    const authentication = this.props.loggedIn ?
+      (
+        <UserMenu
+          logout={this.props.logout}
+          username={this.props.username} />
+      )
+      : (
+        <Toolbar style={{
+          padding: '0px'
+        }}>
           <LoginDialog
             login={this.props.login}
             error={this.props.error} />
-        </div>,
-        <div className="control" key="2">
-          <SubscribeDialog
-            subscribe={this.props.subscribe}
-            subscribeError={this.props.subscribeError} />
-        </div>]
+          <SubscribeDialog subscribe={this.props.subscribe} />
+        </Toolbar>
       );
 
+    // <a className="bd-tw-button button" data-social-network="Twitter" data-social-action="tweet" data-social-target="http://localhost:4000" target="_blank" href="https://twitter.com/intent/tweet?text=Let's get ready to Food Fight!">
     return (
-      <nav className="navbar is-transparent">
-        <div className="navbar-brand">
-          <a className='title' href='/'><h1 id="logo">deckard.io</h1></a>
-        </div>
-
-        <div className="navbar-end">
-          <div className="navbar-item">
-            <div className="field is-grouped">
-              <p className="control">
-                <a className="bd-tw-button button" data-social-network="Twitter" data-social-action="tweet" data-social-target="http://localhost:4000" target="_blank" href="https://twitter.com/intent/tweet?text=Let's get ready to Food Fight!">
-                  <span className="icon">
-                    <i className="fab fa-twitter"></i>
-                  </span>
-                  <span>
-                    Tweet
-                  </span>
-                </a>
-              </p>
-              {authentication}
-            </div>
+      <AppBar position="static" color="default"
+        style={{ backgroundColor: "rgba(33,33,33,.3)" }}>
+        <Toolbar>
+          <div style={{ width: "100%" }}>
+            <Typography
+              variant="title"
+              color="inherit"
+              className={'title'}>
+              <div id="logo">
+                <a href="/"
+                  style={{ color: "white" }}>
+                  deckard.io
+              </a>
+              </div>
+            </Typography>
           </div>
-        </div>
-      </nav >
-    );
+
+          {authentication}
+        </Toolbar>
+      </AppBar>)
   }
 }
 

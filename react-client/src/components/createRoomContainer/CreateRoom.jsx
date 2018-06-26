@@ -1,14 +1,73 @@
 import React from 'react';
 import $ from 'jquery';
-// import uniqueString from 'unique-string';
+import axios from 'axios';
+import { withStyles } from '@material-ui/core/styles';
+import Paper from '@material-ui/core/Paper';
+import Typography from '@material-ui/core/Typography';
+import PropTypes from 'prop-types';
+import Autosuggest from 'react-autosuggest';
+import match from 'autosuggest-highlight/match';
+import parse from 'autosuggest-highlight/parse';
+import TextField from '@material-ui/core/TextField';
+import MenuItem from '@material-ui/core/MenuItem';
+import FormControl from '@material-ui/core/FormControl';
+import InputLabel from '@material-ui/core/InputLabel';
+import Input from '@material-ui/core/Input';
 import CombatantsContainer from './CombatantsContainer.jsx';
+import Button from '@material-ui/core/Button';
+import Divider from '@material-ui/core/Divider';
 import { withRouter } from 'react-router-dom';
-
 import { connect } from 'react-redux';
+import { addUserToNewRoom } from '../../../../redux/actions.js';
 
 const mapStateToProps = state => {
-  return { loggedIn: state.loggedIn };
+  return {
+    loggedIn: state.loggedIn,
+    usersForNewRoom: state.usersForNewRoom,
+  };
 };
+
+const mapDispatchToProps = dispatch => {
+  return {
+    addUserToNewRoom: (username) => dispatch(addUserToNewRoom(username)),
+  };
+};
+
+const styles = theme => ({
+  paper: {
+    padding: theme.spacing.unit * 2,
+    textAlign: 'center',
+    color: theme.palette.text.secondary,
+    marginTop: 30,
+    backgroundColor: 'rgba(33, 33, 33, 0.3)',
+  },
+  container: {
+    flexGrow: 1,
+    position: 'relative',
+    height: 250,
+  },
+  margin: {
+    margin: theme.spacing.unit,
+  },
+  suggestionsContainerOpen: {
+    position: 'absolute',
+    zIndex: 1,
+    marginTop: theme.spacing.unit,
+    left: 0,
+    right: 0,
+  },
+  suggestion: {
+    display: 'block',
+  },
+  suggestionsList: {
+    margin: 0,
+    padding: 0,
+    listStyleType: 'none',
+  },
+  newRoomButton: {
+    width: '100%',
+  },
+});
 
 class ConnectedCreateRoom extends React.Component {
   constructor(props) {
@@ -20,16 +79,135 @@ class ConnectedCreateRoom extends React.Component {
 
       error: false,
 
-      roomLink: ''
+      roomLink: '',
+
+      suggestions: [],
+      currSuggestions: [],
+      value: '',
     };
     this.handleKeyPress = this.handleKeyPress.bind(this);
     this.createRoom = this.createRoom.bind(this);
+    this.updateRoomName = this.updateRoomName.bind(this);
+    this.renderSuggestion = this.renderSuggestion.bind(this);
   }
+
+  componentDidMount() {
+    axios.post('/searchUsers')
+      .then(res => {
+        this.setState({
+          suggestions: res.data.map(user => user.email),
+        });
+      });
+  }
+
+  //
+  // ─── AUTOCOMPLETE LOGIC ─────────────────────────────────────────────────────────
+  //
+  renderInput(inputProps) {
+    const { classes, ref, ...other } = inputProps;
+
+    return (
+      <TextField
+        fullWidth
+        InputProps={{
+          inputRef: ref,
+          classes: {
+            input: classes.input,
+          },
+          ...other,
+        }}
+      />
+    );
+  }
+
+  renderSuggestion(suggestion, { query, isHighlighted }) {
+    const props = this.props;
+    const clearInput = () => this.setState({
+      query: '',
+    });
+    const matches = match(suggestion, query);
+    const parts = parse(suggestion, matches);
+
+    return (
+      <MenuItem selected={isHighlighted}
+        component="div"
+        onClick={() => {
+          props.addUserToNewRoom(suggestion);
+          clearInput();
+        }}>
+        <div>
+          {parts.map(function (part, index) {
+            return part.highlight ? (
+              <span
+                key={String(index)}
+                style={{ fontWeight: 300 }}>
+                {part.text}
+              </span>
+            ) : (
+                <strong key={String(index)} style={{ fontWeight: 500 }}>
+                  {part.text}
+                </strong>
+              );
+          })}
+        </div>
+      </MenuItem>
+    );
+  }
+
+  renderSuggestionsContainer(options) {
+    const { containerProps, children } = options;
+
+    return (
+      <Paper {...containerProps} square>
+        {children}
+      </Paper>
+    );
+  }
+
+  getSuggestionValue(suggestion) {
+    return suggestion;
+  }
+
+  getSuggestions(value) {
+    const inputValue = value.trim().toLowerCase();
+    const inputLength = inputValue.length;
+    let count = 0;
+
+    return inputLength === 0
+      ? []
+      : this.state.suggestions.filter(suggestion => {
+        const keep =
+          count < 5 && suggestion.toLowerCase().slice(0, inputLength) === inputValue;
+
+        if (keep) {
+          count += 1;
+        }
+
+        return keep;
+      });
+  }
+
+  handleSuggestionsFetchRequested = ({ value }) => {
+    this.setState({
+      currSuggestions: this.getSuggestions(value),
+    });
+  };
+
+  handleSuggestionsClearRequested = () => {
+    this.setState({
+      currSuggestions: [],
+    });
+  };
+
+  handleSuggestionClick = (username) => {
+  }
+  // ────────────────────────────────────────────────────────────────────────────────
+
 
   createRoom() {
     if (this.props.loggedIn === false ||
       this.state.roomName.length === 0 ||
-      this.props.combatants.length === 0) {
+      this.props.usersForNewRoom.length === 0) {
       this.setState({
         error: true,
       });
@@ -38,12 +216,12 @@ class ConnectedCreateRoom extends React.Component {
         '/api/save',
         {
           roomName: this.state.roomName,
-          members: this.props.combatants
+          members: this.props.usersForNewRoom,
         },
         (roomInfo, status) => {
           console.log('ROOMINFO', roomInfo);
           console.log(`Room ${this.state.roomName} saved to the database:`, status);
-          this.sendRoomEmail(roomInfo, this.props.combatants);
+          this.sendRoomEmail(roomInfo, this.props.usersForNewRoom);
           this.setState({
             roomLink: roomInfo.uniqueid
           }, () => {
@@ -67,19 +245,14 @@ class ConnectedCreateRoom extends React.Component {
     });
   }
 
-  // createUniqueID() {
-  //   this.setState({
-  //     roomID: uniqueString(),
-  //   });
-  // }
-
-  updateQuery(e) {
+  updateQuery(e, { newValue }) {
     this.setState({
-      query: e.target.value,
+      query: newValue,
     });
   }
 
   updateRoomName(e) {
+    console.log(this.state.roomName);
     this.setState({
       roomName: e.target.value,
     });
@@ -91,7 +264,10 @@ class ConnectedCreateRoom extends React.Component {
     }
   }
 
+
   render() {
+    const { classes } = this.props;
+
     var uniqueURL = this.state.roomID ?
       `https://food-fight-greenfield.herokuapp.com/rooms/${this.state.roomID}`
       : '';
@@ -122,52 +298,64 @@ class ConnectedCreateRoom extends React.Component {
     };
 
     return (
-      <div>
-        <div>
-          <p className="title">
-            Create Your Arena
-          </p>
-          {createRoomError()}
-          <div className="columns">
-            <div className="column is-three-quarters">
-              <div className="field">
-                <label className="label">Name</label>
-                <p className="control is-expanded">
-                  <input
-                    className="input is-large"
-                    type="text"
-                    placeholder="Arena name..."
-                    value={this.state.roomName}
-                    onChange={this.updateRoomName.bind(this)}
-                    onKeyPress={this.handleKeyPress} />
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* <button onClick={this.createUniqueID.bind(this)} className="button is-normal is-info">
-            Create a Unique URL
-          </button>
-          {uniqueURL} */}
-        <div className="is-divider" />
-        <CombatantsContainer
-          combatants={this.props.combatants} />
-        <div id="create-room-footer">
-          <div>
-            <div className="is-divider" />
-            <button
-              id="fight-button"
-              onClick={this.createRoom}
-              className="button is-primary is-large is-fullwidth">
-              Fight!
-              </button>
-          </div>
-        </div >
-      </div >
+      <Paper className={classes.paper}>
+        <Typography id="new-room-header">
+          New Room
+        </Typography>
+
+        <Divider />
+
+        <FormControl fullWidth className={classes.margin}>
+          <InputLabel htmlFor="adornment-amount">Room Name</InputLabel>
+          <Input
+            value={this.state.roomName}
+            onChange={this.updateRoomName}
+          />
+        </FormControl>
+
+        <Divider />
+
+        <Autosuggest
+          theme={{
+            container: classes.container,
+            suggestionsContainerOpen: classes.suggestionsContainerOpen,
+            suggestionsList: classes.suggestionsList,
+            suggestion: classes.suggestion,
+            margin: classes.margin,
+          }}
+          renderInputComponent={this.renderInput}
+          suggestions={this.state.currSuggestions}
+          onSuggestionsFetchRequested={this.handleSuggestionsFetchRequested}
+          onSuggestionsClearRequested={this.handleSuggestionsClearRequested}
+          renderSuggestionsContainer={this.renderSuggestionsContainer}
+          getSuggestionValue={this.getSuggestionValue}
+          renderSuggestion={this.renderSuggestion}
+          inputProps={{
+            classes,
+            placeholder: 'Search users',
+            value: this.state.query,
+            onChange: this.updateQuery.bind(this),
+          }}
+        />
+
+        <Divider />
+
+        <CombatantsContainer />
+
+        <Divider />
+
+        <Button variant="contained"
+          color="secondary"
+          className={classes.newRoomButton}
+          onClick={this.createRoom}>
+          Create New Room
+        </Button>
+      </Paper>
+
     );
   }
 }
 
-const CreateRoom = connect(mapStateToProps)(ConnectedCreateRoom);
+const CreateRoom = connect(mapStateToProps, mapDispatchToProps)(ConnectedCreateRoom);
 
-export default withRouter(CreateRoom);
+export default withStyles(styles)(withRouter(CreateRoom));

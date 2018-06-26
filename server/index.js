@@ -101,14 +101,7 @@ app.get('/logout', (req, res) => {
 // ─── USER SEARCH AND INVITE ─────────────────────────────────────────────────────
 //
 app.post('/searchUsers', (req, res) => {
-  db.models.User.findAll({
-    limit: 10,
-    where: {
-      email: {
-        [Op.regexp]: req.body.query,
-      },
-    },
-  })
+  db.models.User.findAll()
     .then(matches => res.status(200).send(matches))
     .catch(err => res.status(200).send(err));
 });
@@ -245,10 +238,6 @@ app.get('/api/getWinner/:roomID', (req, res) => {
 
 
 //
-// ─── EXTERNAL API LOGIC ─────────────────────────────────────────────────────────
-//
-
-//
 // ─── HANDLE MESSAGES AND VOTES─────────────────────────────────────────────────────────
 //
 app.post('/api/messages', (req, res) => {
@@ -304,18 +293,6 @@ app.post('/api/nominate', (req, res) => {
       console.log('Error saving current restaurant', err);
     } else {
       res.end('Current restaurant saved!', restaurant);
-    }
-  });
-});
-
-app.post('/api/currentrestaurant', (req, res) => {
-  const { roomID } = req.body;
-  // Joseph SQL
-  dbHelpers.getCurrentRestaurant(roomID, (err, restaurant) => {
-    if (err) {
-      console.log('Error retrieving current restaurant', err);
-    } else {
-      res.send(restaurant);
     }
   });
 });

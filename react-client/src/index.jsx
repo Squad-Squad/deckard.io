@@ -1,8 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import $ from 'jquery';
-import { BrowserRouter, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Route } from 'react-router-dom';
 import axios from 'axios';
+import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
+import CssBaseline from '@material-ui/core/CssBaseline';
 
 import Navbar from './components/Navbar.jsx';
 import MainView from './components/MainView.jsx'
@@ -12,12 +14,12 @@ import Room from './components/Room.jsx';
 import 'animate.css/animate.css';
 import './styles/main.scss';
 
+
 // ─── REDUX STUFF ────────────────────────────────────────────────────────────────
 import { createStore, combineReducers, applyMiddleware } from 'redux';
 import { Provider, connect } from 'react-redux';
 import logger from 'redux-logger';
 import { login, logout, searchUsers } from '../../redux/actions';
-
 import reducer from '../../redux/reducer';
 
 const store = createStore(reducer, applyMiddleware(logger));
@@ -36,7 +38,41 @@ const mapDispatchToProps = dispatch => {
     searchUsers: (users) => dispatch(searchUsers(users)),
   };
 };
-//────────────────────────────────────────────────────────────────────────────────
+
+
+//
+// ─── MATERIAL UI THEMING ────────────────────────────────────────────────────────
+//
+const theme = createMuiTheme({
+  palette: {
+    type: 'dark',
+    primary: {
+      main: '#212121',
+      light: '#ffffff',
+      dark: '#bcbcbc'
+    },
+    secondary: {
+      main: '#eeeeee',
+      light: '#8e8e8e',
+      dark: '#373737'
+    },
+    contrastThreshold: 3,
+    tonalOffset: 0.2,
+  },
+});
+
+const styles = theme => ({
+  root: {
+    flexGrow: 1,
+  },
+  paper: {
+    padding: theme.spacing.unit * 2,
+    textAlign: 'center',
+    color: theme.palette.text.secondary,
+  },
+});
+// ────────────────────────────────────────────────────────────────────────────────
+
 
 class ConnectedApp extends React.Component {
   constructor(props) {
@@ -49,7 +85,6 @@ class ConnectedApp extends React.Component {
       loggedInUsername: '',
       loginError: false,
 
-      searchedUsers: [],
       userRooms: [],
       userWins: ''
     };
@@ -160,9 +195,6 @@ class ConnectedApp extends React.Component {
 
 
   render() {
-    let room = this.state.loggedInUsername
-      ? <Route path="/rooms/:roomID" render={(props) => <Room username={this.state.loggedInUsername} {...props} />} />
-      : ''
     return (
       <BrowserRouter>
         <div>
@@ -175,19 +207,17 @@ class ConnectedApp extends React.Component {
               subscribeError={this.state.subscribeError}
               wins={this.state.userWins} />
           </div >
-          <Route exact path="/" render={
+          <Route path="/" render={
             (props) => <MainView
-              searchUsers={this.searchUsers.bind(this)}
-              searchedUsers={this.state.searchedUsers}
+              searchedUsers={this.props.searchedUsers}
               loggedIn={this.state.loggedIn}
               loggedInUser={this.state.loggedInUsername}
               userRooms={this.state.userRooms}
               {...props} />} />
-          <Route path="/signup" render={
+          <Route exact path="/signup" render={
             (props) => <SignupPage
               subscribe={this.subscribe.bind(this)}
               {...props} />} />
-          {room}
         </div>
       </BrowserRouter>
     );
@@ -198,6 +228,8 @@ const App = connect(mapStateToProps, mapDispatchToProps)(ConnectedApp);
 
 ReactDOM.render(
   <Provider store={store}>
-    <App />
+    <MuiThemeProvider theme={theme}>
+      <App />
+    </MuiThemeProvider>
   </Provider>,
   document.getElementById('app'));
