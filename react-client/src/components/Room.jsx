@@ -88,6 +88,7 @@ class Room extends React.Component {
 
   /// Send post request to server to fetch room info when user visits link
   componentDidMount() {
+    console.log('ROOM RENDERED');
     this.getMessages();
     this.getRoomInfo();
     this.getTimer();
@@ -342,7 +343,6 @@ class Room extends React.Component {
             <LiveChat
               roomName={this.state.roomName}
               messages={this.state.messages}
-              username={this.props.username}
               message={this.state.message}
               sendMessage={this.sendMessage}
             />

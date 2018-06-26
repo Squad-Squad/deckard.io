@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import $ from 'jquery';
-import { BrowserRouter, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Route } from 'react-router-dom';
 import axios from 'axios';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -195,9 +195,6 @@ class ConnectedApp extends React.Component {
 
 
   render() {
-    let room = this.state.loggedInUsername
-      ? <Route path="/rooms/:roomID" render={(props) => <Room username={this.state.loggedInUsername} {...props} />} />
-      : ''
     return (
       <BrowserRouter>
         <div>
@@ -210,18 +207,17 @@ class ConnectedApp extends React.Component {
               subscribeError={this.state.subscribeError}
               wins={this.state.userWins} />
           </div >
-          <Route exact path="/" render={
+          <Route path="/" render={
             (props) => <MainView
               searchedUsers={this.props.searchedUsers}
               loggedIn={this.state.loggedIn}
               loggedInUser={this.state.loggedInUsername}
               userRooms={this.state.userRooms}
               {...props} />} />
-          <Route path="/signup" render={
+          <Route exact path="/signup" render={
             (props) => <SignupPage
               subscribe={this.subscribe.bind(this)}
               {...props} />} />
-          {room}
         </div>
       </BrowserRouter>
     );

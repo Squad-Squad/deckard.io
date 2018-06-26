@@ -29,24 +29,9 @@ class MainView extends React.Component {
             loggedIn={this.props.loggedIn}
             loggedInUser={this.props.loggedInUser}
             userRooms={this.props.userRooms}
-            {...props} />} />
-        < Route path="/rooms/:roomID" render={
-          () => <Room username={this.state.loggedInUser} />
+            {...props} />
         } />
-
-
-        {/* <Route exact path="/" render={
-            () => <MainView
-              searchUsers={this.searchUsers.bind(this)}
-              searchedUsers={this.props.searchedUsers}
-              loggedInUser={this.state.loggedInUsername}
-            />} />
-          <Route path="/signup" render={
-            () => <SignupPage
-              subscribe={this.subscribe.bind(this)}
-            />} /> */}
-
-
+        < Route path="/rooms/:roomID" component={Room} />
       </div>
     )
   }
