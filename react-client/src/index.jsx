@@ -4,6 +4,7 @@ import $ from 'jquery';
 import { BrowserRouter, Route } from 'react-router-dom';
 import axios from 'axios';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
+import Paper from '@material-ui/core/Paper';
 import Particles from 'react-particles-js';
 
 import Navbar from './components/Navbar.jsx';
@@ -195,6 +196,7 @@ class ConnectedApp extends React.Component {
 
 
   render() {
+    let loggedIn = this.props.loggedInUsername.length > 0;
     return (
       <BrowserRouter>
         <div>
@@ -327,12 +329,14 @@ class ConnectedApp extends React.Component {
               wins={this.state.userWins} />
           </div >
           <Route path="/" render={
-            (props) => <MainView
-              searchedUsers={this.props.searchedUsers}
-              loggedIn={this.state.loggedIn}
-              loggedInUser={this.state.loggedInUsername}
-              userRooms={this.state.userRooms}
-              {...props} />} />
+            (props) => (loggedIn) ?
+              <MainView
+                searchedUsers={this.props.searchedUsers}
+                loggedIn={this.state.loggedIn}
+                loggedInUser={this.state.loggedInUsername}
+                userRooms={this.state.userRooms}
+                {...props} /> :
+              <Paper id="login-prompt">Login or signup to play.</Paper>} />
           <Route exact path="/signup" render={
             (props) => <SignupPage
               subscribe={this.subscribe.bind(this)}

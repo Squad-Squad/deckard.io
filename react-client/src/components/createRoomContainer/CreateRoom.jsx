@@ -252,14 +252,12 @@ class ConnectedCreateRoom extends React.Component {
   }
 
   updateRoomName(e) {
-    console.log(this.state.roomName);
     this.setState({
       roomName: e.target.value,
     });
   }
 
   handleAutoSuggestKeyPress(event) {
-    console.log('THIS', this);
     if (event.key == 'Enter') {
       this.props.addUserToNewRoom(this.state.currSuggestions[0]);
       this.setState({
