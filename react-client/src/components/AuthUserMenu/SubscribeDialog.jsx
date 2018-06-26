@@ -114,7 +114,7 @@ class SubscribeDialog extends React.Component {
 
     return (
       <div>
-        <Button onClick={this.handleClickOpen}>Signup</Button>
+        <Button onClick={this.handleClickOpen} className="auth-button">Signup</Button>
         <Dialog
           open={this.state.open}
           onClose={this.handleClose}

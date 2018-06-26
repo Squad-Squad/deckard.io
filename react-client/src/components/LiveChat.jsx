@@ -1,5 +1,25 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import Paper from '@material-ui/core/Paper';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import BottomNavigation from '@material-ui/core/BottomNavigation';
+import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
+import { withStyles } from '@material-ui/core/styles';
+
+const styles = {
+  root: {
+    flexGrow: 1,
+  },
+  flex: {
+    flex: 1,
+  },
+  menuButton: {
+    marginLeft: -12,
+    marginRight: 20,
+  },
+};
 
 class LiveChat extends React.Component {
   constructor(props) {
@@ -48,10 +68,21 @@ class LiveChat extends React.Component {
   }
 
   render() {
-
+    const { classes } = this.props;
     return (
-      <div id="chat">
-        <h4 className="is-size-4">{this.props.roomName} Chatroom</h4>
+      <Paper id="chat-window">
+        <div className={classes.root}>
+          <AppBar position="static" color="default">
+            <Toolbar>
+              <Typography variant="title" color="inherit" className={classes.flex}>
+                {this.props.roomName}
+              </Typography>
+              <Typography variant="title" color="inherit">
+                {this.props.timer}
+              </Typography>
+            </Toolbar>
+          </AppBar>
+        </div>
         <div className="chat-messages" ref={(el) => { this.messageList = el; }}>
           {this.props.messages.map(message => {
             if (this.props.username === message.name) {
@@ -67,7 +98,10 @@ class LiveChat extends React.Component {
             }
           })}
         </div>
-        <div>
+        <BottomNavigation
+          // value={value}
+          onChange={this.handleChange}
+          showLabels>
           <span>
             <input
               type="text"
@@ -81,14 +115,31 @@ class LiveChat extends React.Component {
           <button
             onClick={this.handleClick.bind(this)}
             className="button is-outlined is-primary is-small send-message"
-            style={{ marginTop: '15px' }}
-          >
+            style={{ marginTop: '15px' }}>
             Send
             </button>
-        </div>
-      </div>
+        </BottomNavigation>
+        {/* <div>
+          <span>
+            <input
+              type="text"
+              className="input is-primary is-small is-rounded"
+              value={this.state.msg}
+              onChange={this.updateMessage.bind(this)}
+              onKeyPress={this.handleKeyPress.bind(this)}
+              style={{ width: '450px', marginTop: '15px', marginRight: '15px' }}
+            />
+          </span>
+          <button
+            onClick={this.handleClick.bind(this)}
+            className="button is-outlined is-primary is-small send-message"
+            style={{ marginTop: '15px' }}>
+            Send
+            </button>
+        </div> */}
+      </Paper>
     );
   }
 }
 
-export default LiveChat;
+export default withStyles(styles)(LiveChat);

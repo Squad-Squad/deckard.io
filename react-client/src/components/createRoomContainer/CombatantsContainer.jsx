@@ -4,7 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Avatar from '@material-ui/core/Avatar';
 import Chip from '@material-ui/core/Chip';
 import FaceIcon from '@material-ui/icons/Face';
-import DoneIcon from '@material-ui/icons/Done';
+import Typography from '@material-ui/core/Typography';
 import { connect } from 'react-redux';
 import { removeUserFromNewRoom } from '../../../../redux/actions.js';
 
@@ -33,6 +33,9 @@ function ConnectedCombatantsContainer(props) {
   const { classes } = props;
   return (
     <div>
+      <Typography id="users-for-new-room-header">
+        Users &ensp;<span style={{ flex: "right" }}>{props.usersForNewRoom.length}/7</span>
+      </Typography>
       {
         props.usersForNewRoom.map((user, i) => {
           return (

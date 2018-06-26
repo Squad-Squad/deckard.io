@@ -39,6 +39,7 @@ const styles = theme => ({
     textAlign: 'center',
     color: theme.palette.text.secondary,
     marginTop: 30,
+    backgroundColor: 'rgba(33, 33, 33, 0.3)',
   },
   container: {
     flexGrow: 1,
@@ -298,7 +299,7 @@ class ConnectedCreateRoom extends React.Component {
 
     return (
       <Paper className={classes.paper}>
-        <Typography>
+        <Typography id="new-room-header">
           New Room
         </Typography>
 

@@ -87,7 +87,7 @@ class LoginDialog extends React.Component {
 
     return (
       <div>
-        <Button onClick={this.handleClickOpen}>Login</Button>
+        <Button onClick={this.handleClickOpen} className="auth-buttons">Login</Button>
         <Dialog
           open={this.state.open}
           onClose={this.handleClose}

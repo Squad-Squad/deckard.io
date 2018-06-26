@@ -324,7 +324,7 @@ class Room extends React.Component {
           <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
             <Confetti width={width} height={height} />
           </div> : ''}
-        <section className="hero is-primary">
+        {/* <section className="hero is-primary">
           <div className="hero-body">
             <div className="container">
               <h1 className="title">
@@ -337,16 +337,18 @@ class Room extends React.Component {
               </h2>
             </div>
           </div>
-        </section>
+        </section> */}
         <div className="columns">
-          <article className="tile is-child notification">
+          <div className="column is-2"></div>
+          <div className="column is-8">
             <LiveChat
               roomName={this.state.roomName}
               messages={this.state.messages}
               message={this.state.message}
               sendMessage={this.sendMessage}
+              timer={this.state.timer}
             />
-          </article>
+          </div>
         </div>
       </div>
     );
