@@ -6,8 +6,15 @@ import CurrentSelection from './CurrentSelection.jsx';
 import sizeMe from 'react-sizeme';
 import Confetti from 'react-confetti';
 import LiveChat from './LiveChat.jsx';
+import { connect } from 'react-redux';
 
-class Room extends React.Component {
+const mapStateToProps = state => {
+  return {
+    username: state.username,
+  };
+};
+
+class ConnectedRoom extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -324,20 +331,6 @@ class Room extends React.Component {
           <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
             <Confetti width={width} height={height} />
           </div> : ''}
-        {/* <section className="hero is-primary">
-          <div className="hero-body">
-            <div className="container">
-              <h1 className="title">
-                Welcome to Room {this.state.roomName}
-              </h1>
-              <h2 className="subtitle">
-                <div>
-                  Fighters: {this.state.members.map((user, index) => <span key={index}>{user.email} </span>)}
-                </div>
-              </h2>
-            </div>
-          </div>
-        </section> */}
         <div className="columns">
           <div className="column is-2"></div>
           <div className="column is-8">
@@ -359,4 +352,7 @@ class Room extends React.Component {
 const config = { monitorHeight: true }
 // Call SizeMe with the config to get back the HOC.
 const sizeMeHOC = sizeMe(config)
+
+const Room = connect(mapStateToProps)(ConnectedRoom);
+
 export default sizeMeHOC(Room)

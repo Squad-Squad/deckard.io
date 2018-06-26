@@ -328,19 +328,21 @@ class ConnectedApp extends React.Component {
               subscribeError={this.state.subscribeError}
               wins={this.state.userWins} />
           </div >
-          <Route path="/" render={
-            (props) => (loggedIn) ?
-              <MainView
-                searchedUsers={this.props.searchedUsers}
-                loggedIn={this.state.loggedIn}
-                loggedInUser={this.state.loggedInUsername}
-                userRooms={this.state.userRooms}
-                {...props} /> :
-              <Paper id="login-prompt">Login or signup to play.</Paper>} />
-          <Route exact path="/signup" render={
-            (props) => <SignupPage
-              subscribe={this.subscribe.bind(this)}
-              {...props} />} />
+          <div className="container">
+            <Route path="/" render={
+              (props) => (loggedIn) ?
+                <MainView
+                  searchedUsers={this.props.searchedUsers}
+                  loggedIn={this.state.loggedIn}
+                  loggedInUser={this.state.loggedInUsername}
+                  userRooms={this.state.userRooms}
+                  {...props} /> :
+                <Paper id="login-prompt">Login or signup to play.</Paper>} />
+            <Route exact path="/signup" render={
+              (props) => <SignupPage
+                subscribe={this.subscribe.bind(this)}
+                {...props} />} />
+          </div>
         </div>
       </BrowserRouter>
     );

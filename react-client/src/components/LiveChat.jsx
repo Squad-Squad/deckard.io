@@ -6,7 +6,19 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import BottomNavigation from '@material-ui/core/BottomNavigation';
 import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
+import Button from '@material-ui/core/Button';
+import PublishIcon from '@material-ui/icons/Publish';
+import FormControl from '@material-ui/core/FormControl';
+import Input from '@material-ui/core/Input';
 import { withStyles } from '@material-ui/core/styles';
+import { connect } from 'react-redux';
+
+const mapStateToProps = state => {
+  return {
+    username: state.username,
+    usersInRoom: state.usersForNewRoom,
+  };
+};
 
 const styles = {
   root: {
@@ -21,17 +33,43 @@ const styles = {
   },
 };
 
-class LiveChat extends React.Component {
+class ConnectedLiveChat extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       msg: '',
-    }
+    };
+    const aliases = ['HAL 9000',
+      'Android 18',
+      'AM',
+      'Marvin',
+      'Roy Batty',
+      'Pris',
+      'Rachael',
+      'C-3PO',
+      'Ash',
+      'T-800',
+      'T-1000',
+      'Data',
+      'Bishop',
+      'Johnny 5',
+      'Robocop',
+      'Rosie',
+      'Cortana',
+      'HK-47',
+      '2B',
+      'GlaDOS',
+      'SHODAN',
+      'Dolores'];
+    this.userAliases = this.props.usersInRoom.reduce((obj, user) => {
+      obj[user] = aliases[Math.floor(Math.random() * aliases.length)];
+      return obj;
+    }, {});
+    this.userAliases["Mitsuku"] = aliases[Math.floor(Math.random() * aliases.length)];
   }
 
   componentDidMount() {
     this.scrollToBottom();
-    console.log('MESSAGES', this.props.messages);
   }
 
   updateMessage(e) {
@@ -70,7 +108,11 @@ class LiveChat extends React.Component {
   render() {
     const { classes } = this.props;
     return (
-      <Paper id="chat-window">
+      <Paper
+        id="chat-window"
+        style={{ backgroundColor: 'rgba(255,255,255,.1)' }}>
+
+        {/* TOP BAR */}
         <div className={classes.root}>
           <AppBar position="static" color="default">
             <Toolbar>
@@ -83,63 +125,48 @@ class LiveChat extends React.Component {
             </Toolbar>
           </AppBar>
         </div>
+
+        {/* MESSAGE LIST */}
         <div className="chat-messages" ref={(el) => { this.messageList = el; }}>
           {this.props.messages.map(message => {
             if (this.props.username === message.name) {
               return (<div className="section"
-                style={{ textAlign: "right", borderTop: "1px solid black", padding: "5px" }}>
+                style={{ textAlign: "right", borderTop: "1px solid black", padding: "17px", fontSize: "18px" }}>
                 <p>{message.message}</p>
               </div>)
             } else {
               return (<div className="section"
-                style={{ textAlign: "left", borderTop: "1px solid black", padding: "5px" }}>
-                <p><strong>{message.name}:</strong>{message.message}</p>
+                style={{ textAlign: "left", borderTop: "1px solid black", padding: "17px", fontSize: "18px" }}>
+                <p><strong>{this.userAliases[message.name]}:&nbsp;</strong>{message.message}</p>
               </div>)
             }
           })}
         </div>
+
+        {/* BOTTOM BAR */}
         <BottomNavigation
-          // value={value}
           onChange={this.handleChange}
           showLabels>
-          <span>
-            <input
-              type="text"
-              className="input is-primary is-small is-rounded"
+          <FormControl style={{ width: '70%' }}>
+            <Input
+              style={{ marginTop: '10px' }}
+              fullWidth
+              margin="normal"
               value={this.state.msg}
               onChange={this.updateMessage.bind(this)}
               onKeyPress={this.handleKeyPress.bind(this)}
-              style={{ width: '450px', marginTop: '15px', marginRight: '15px' }}
             />
-          </span>
-          <button
-            onClick={this.handleClick.bind(this)}
-            className="button is-outlined is-primary is-small send-message"
-            style={{ marginTop: '15px' }}>
-            Send
-            </button>
+          </FormControl>
+          <Button variant="fab" color="primary" aria-label="add" className={classes.button}
+            onClick={this.handleClick.bind(this)}>
+            <PublishIcon />
+          </Button>
         </BottomNavigation>
-        {/* <div>
-          <span>
-            <input
-              type="text"
-              className="input is-primary is-small is-rounded"
-              value={this.state.msg}
-              onChange={this.updateMessage.bind(this)}
-              onKeyPress={this.handleKeyPress.bind(this)}
-              style={{ width: '450px', marginTop: '15px', marginRight: '15px' }}
-            />
-          </span>
-          <button
-            onClick={this.handleClick.bind(this)}
-            className="button is-outlined is-primary is-small send-message"
-            style={{ marginTop: '15px' }}>
-            Send
-            </button>
-        </div> */}
       </Paper>
     );
   }
 }
+
+const LiveChat = connect(mapStateToProps)(ConnectedLiveChat);
 
 export default withStyles(styles)(LiveChat);

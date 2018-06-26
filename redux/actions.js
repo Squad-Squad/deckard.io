@@ -29,6 +29,7 @@ const removeUserFromNewRoom = username => ({
   payload: { username },
 });
 
+
 module.exports = {
   login,
   logout,

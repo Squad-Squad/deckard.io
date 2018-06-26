@@ -2,6 +2,8 @@ const initialState = {
   loggedIn: false,
   username: '',
   searchedUsers: [],
+
+  // Also used to alias usernames once the room is created
   usersForNewRoom: [],
 };
 
