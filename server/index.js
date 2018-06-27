@@ -226,6 +226,14 @@ app.post('/api/userwins', (req, res) => {
   });
 });
 
+app.get('/api/getWinner/:roomID', (req, res) => {
+  const { roomID } = req.params;
+  dbHelpers.getWinner(roomID, (response) => {
+    console.log('WINNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNER', response);
+    res.send(response);
+  });
+});
+
 
 //
 // ─── HANDLE MESSAGES AND VOTES─────────────────────────────────────────────────────────
@@ -297,14 +305,57 @@ db.models.sequelize.sync().then(() => {
   });
 
   // Server-side socket events
+  users = [];
+  rooms = {};
+  connections = [];
+  userSockets = {};
+
+
   const io = socket(server);
-  io.on('connection', (newSocket) => {
-    console.log('made socket connection', newSocket.id);
+  io.on('connection', (socket) => {
+    console.log('made socket connection', socket.id);
 
-    newSocket.on('chat', (data) => {
+    socket.on('join', (data) => {
+      console.log('JOIN DATA:', data);
+      socket.room = data.room;
+      socket.username = data.user;
+      userSockets[socket.username] = socket;
+      users.push(socket.username);
+      if (!rooms[socket.room]) {
+        rooms[socket.room] = [socket.username];
+      } else {
+        rooms[socket.room].push(socket.username);
+      }
+
+      socket.join(socket.room);
+      io.sockets.in(socket.room).emit('roomJoin', socket.room);
+      io.sockets.in(socket.room).emit('chat', {
+        message: {
+          user_id: socket.username,
+          name: socket.username,
+          message: `${socket.username} has joined the room!`,
+        },
+        roomId: socket.room,
+      });
+
+      const user_id = socket.username;
+      const name = socket.username;
+      const message = `${socket.username} has joined the room!`;
+
+      dbHelpers.saveMessage(user_id, name, message, socket.room, (err, savedMessage) => {
+        if (err) {
+          console.log('Error saving message', err);
+          res.status(404).end();
+        } else {
+          res.end('Message saved', savedMessage);
+        }
+      });
+    });
+
+    socket.on('chat', (data) => {
       console.log('Received chat!', data);
-      io.sockets.emit('chat', data);
-
+      io.sockets.in(socket.room).emit('chat', data);
+      console.log('ROOMS IN SERVER:', rooms);
       // Mitsuku only responds half the time
 
       // Delay Mitsuku a random number of seconds
@@ -323,7 +374,7 @@ db.models.sequelize.sync().then(() => {
             );
 
             // Emit her message via socket
-            io.sockets.emit(
+            io.sockets.in(socket.room).emit(
               'chat',
               {
                 message: {
@@ -338,25 +389,20 @@ db.models.sequelize.sync().then(() => {
       }, Math.random() * 5000 + 2000);
     });
 
-    newSocket.on('nominate', (data) => {
-      console.log('Nomination received!', data);
-      io.sockets.emit('nominate', data);
-    });
+    // socket.on('nominate', (data) => {
+    //   console.log('Nomination received!', data);
+    //   io.sockets.emit('nominate', data);
+    // });
 
-    newSocket.on('vote', (data) => {
+    socket.on('vote', (data) => {
       console.log('Received vote!', data);
       io.sockets.emit('vote', data.roomID);
     });
 
-    newSocket.on('veto', (data) => {
-      console.log('Received veto!', data);
-      io.sockets.emit('veto', data.roomID);
-    });
-
-    newSocket.on('join', (roomID) => {
-      console.log('Received new member!', roomID);
-      io.sockets.emit('join', roomID);
-    });
+    // newSocket.on('veto', (data) => {
+    //   console.log('Received veto!', data);
+    //   io.sockets.emit('veto', data.roomID);
+    // });
   });
 });
 
