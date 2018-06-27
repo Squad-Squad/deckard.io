@@ -92,6 +92,7 @@ class ConnectedCreateRoom extends React.Component {
   }
 
   componentDidMount() {
+    console.log("PROPS IN CREATE ROOM:", this.props)
     axios.post('/searchUsers')
       .then(res => {
         this.setState({
@@ -212,6 +213,7 @@ class ConnectedCreateRoom extends React.Component {
         error: true,
       });
     } else {
+       this.props.io.emit('invite', {users: this.props.usersForNewRoom, room:this.state.roomName})
       $.post(
         '/api/save',
         {
@@ -227,7 +229,7 @@ class ConnectedCreateRoom extends React.Component {
           }, () => {
             this.props.history.push(`/rooms/${roomInfo.uniqueid}`)
           });
-        },
+        }
       )
     }
   }
