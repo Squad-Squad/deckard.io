@@ -376,7 +376,7 @@ db.models.sequelize.sync().then(() => {
 
       socket.join(socket.room)
       io.sockets.in(socket.room).emit('roomJoin', socket.room)
-      io.emit('chat', {
+      io.sockets.in(socket.room).emit('chat', {
         message: {
                   user_id: socket.username,
                   name: socket.username,
@@ -384,6 +384,19 @@ db.models.sequelize.sync().then(() => {
                 }, 
         roomId: socket.room
       })
+
+      let user_id = socket.username
+      let name = socket.username
+      let message = `${socket.username} has joined the room!`
+
+      dbHelpers.saveMessage(user_id, name, message, socket.room, (err, savedMessage) => {
+        if (err) {
+          console.log('Error saving message', err);
+          res.status(404).end();
+        } else {
+          res.end('Message saved', savedMessage);
+        }
+      });
 
     });
 
