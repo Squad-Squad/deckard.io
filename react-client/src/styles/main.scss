@@ -15,12 +15,6 @@ html {
   height: 100%;
 }
 
-body {
-  background-image: url("../../dist/assets/deckardBG.jpg");
-  background-size: cover;
-  min-height: 100%;
-}
-
 article {
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
 }
@@ -77,6 +71,16 @@ figure.image {
 
 #create-room-error {
   color: white;
+}
+
+#login-prompt {
+  margin: auto;
+  width: 30%;
+  padding: 10px;
+  text-align: center;
+  margin-top: 80px;
+  font-size: 25px;
+  background-color: rgba(66, 66, 66, 0);
 }
 
 #signup-or-container {
@@ -158,6 +162,10 @@ div.columns {
   color: white;
 }
 
+.MuiDialog-paper-95 {
+  background-color: rgba(33, 33, 33, 0.5) !important;
+}
+
 .timer {
   font-family: 'Iceberg', sans-serif;
 }
@@ -213,6 +221,11 @@ div.columns {
   left: 0;
   width: 34px;
   height: 100%;
+}
+
+.chat-messages {
+  height: 500px;
+  overflow: auto;
 }
 
 .loginBtn:focus {
@@ -333,34 +346,3 @@ $font-size: 25px;
     margin-top: 15px;
   }
 }
-
-// // CHAT STYLING
-// #chat {
-//   width: 100%;
-//   button.send-message {
-//     margin-top: 10px;
-//   }
-//   .chat-messages {
-//     margin: 25px auto;
-//     border: 1px solid $grey-light;
-//     box-shadow: 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-//     height: 300px;
-//     padding: 15px;
-//     border-radius: 10px;
-//     overflow: auto;
-//     p {
-//       font-size: 1.2rem;
-//     }
-//   }
-//   .chat-input {
-//     width: 600px;
-//     margin-top: 15px;
-//   }
-//   .chat-self {
-//     text-align: "right";
-//     background-color: $red;
-//   }
-//   .chat-others {
-//     text-align: "left";
-//   }
-// }

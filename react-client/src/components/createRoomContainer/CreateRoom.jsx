@@ -39,7 +39,7 @@ const styles = theme => ({
     textAlign: 'center',
     color: theme.palette.text.secondary,
     marginTop: 30,
-    backgroundColor: 'rgba(33, 33, 33, 0.3)',
+    backgroundColor: 'rgba(33, 33, 33, 0.5)',
   },
   container: {
     flexGrow: 1,
@@ -252,10 +252,19 @@ class ConnectedCreateRoom extends React.Component {
   }
 
   updateRoomName(e) {
-    console.log(this.state.roomName);
     this.setState({
       roomName: e.target.value,
     });
+  }
+
+  handleAutoSuggestKeyPress(event) {
+    if (event.key == 'Enter') {
+      this.props.addUserToNewRoom(this.state.currSuggestions[0]);
+      this.setState({
+        currSuggestions: [],
+        query: '',
+      })
+    }
   }
 
   handleKeyPress(event) {
@@ -326,7 +335,7 @@ class ConnectedCreateRoom extends React.Component {
           renderInputComponent={this.renderInput}
           suggestions={this.state.currSuggestions}
           onSuggestionsFetchRequested={this.handleSuggestionsFetchRequested}
-          onSuggestionsClearRequested={this.handleSuggestionsClearRequested}
+          onSuggestionsClearRequested={() => { }}
           renderSuggestionsContainer={this.renderSuggestionsContainer}
           getSuggestionValue={this.getSuggestionValue}
           renderSuggestion={this.renderSuggestion}
@@ -335,6 +344,7 @@ class ConnectedCreateRoom extends React.Component {
             placeholder: 'Search users',
             value: this.state.query,
             onChange: this.updateQuery.bind(this),
+            onKeyPress: this.handleAutoSuggestKeyPress.bind(this),
           }}
         />
 
