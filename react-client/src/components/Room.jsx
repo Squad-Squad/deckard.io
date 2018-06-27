@@ -11,6 +11,7 @@ import { connect } from 'react-redux';
 const mapStateToProps = state => {
   return {
     username: state.username,
+    loggedInUsername: state.username,
   };
 };
 
@@ -47,13 +48,14 @@ class ConnectedRoom extends React.Component {
     // DO NOT NEED TO SPECIFY PORT ON CLIENT SIDE
 
     this.socket.on('chat', message => {
-      if (message.roomID === this.roomID) {
-        console.log('Received message', message);
+      // if (message.roomID === this.roomID) {
+      //   console.log('Received message', message);
+      console.log("MESSAGE IN CHAT :", message)
         this.setState({
           messages: [...this.state.messages, message.message],
         });
         this.getMessages();
-      }
+      // }
     });
 
     this.socket.on('vote', roomID => {
@@ -70,39 +72,40 @@ class ConnectedRoom extends React.Component {
       }
     });
 
-    this.socket.on('nominate', nominee => {
-      if (nominee.roomID === this.roomID) {
-        console.log('Received nomination', nominee);
-        this.setState({
-          currentSelection: nominee.restaurant,
-          hasVoted: false,
-          isNominating: false,
-        });
-      }
-      this.getNominateTimer();
-      this.getVotes();
-    });
+    // this.socket.on('nominate', nominee => {
+    //   if (nominee.roomID === this.roomID) {
+    //     console.log('Received nomination', nominee);
+    //     this.setState({
+    //       currentSelection: nominee.restaurant,
+    //       hasVoted: false,
+    //       isNominating: false,
+    //     });
+    //   }
+    //   this.getNominateTimer();
+    //   this.getVotes();
+    // });
 
-    this.socket.on('join', roomID => {
-      if (roomID === this.roomID) {
-        console.log('Received new member');
-        if (this.state.currentSelection) {
-          this.socket.emit('nominate', { 'restaurant': this.state.currentSelection, 'roomID': this.roomID });
-        }
-      }
+    this.socket.on('roomJoin', data => {
+      // if (roomID === this.roomID) {
+      //   console.log('Received new member');
+        // if (this.state.currentSelection) {
+        //   this.socket.emit('nominate', { 'restaurant': this.state.currentSelection, 'roomID': this.roomID });
+        // }
+      // }
+
     })
   }
 
   /// Send post request to server to fetch room info when user visits link
   componentDidMount() {
-    console.log('ROOM RENDERED');
+    console.log('ROOM RENDERED', this.roomID );
     this.getMessages();
     this.getRoomInfo();
     this.getTimer();
-    this.getNominateTimer();
+    // this.getNominateTimer();
     this.getVotes();
-    this.socket.emit('join', this.roomID);
-    this.getWinner();
+    this.socket.emit('join', {room: this.roomID, user: this.props.loggedInUsername});
+    // this.getWinner();
   }
 
   getMessages() {
