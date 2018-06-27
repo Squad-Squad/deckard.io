@@ -3,20 +3,36 @@ import Hero from './Hero.jsx';
 import CreateRoomContainer from './createRoomContainer/CreateRoomContainer.jsx';
 import Room from './Room.jsx';
 import { Route } from 'react-router-dom';
+import { connect } from 'react-redux'
 
-class MainView extends React.Component {
+
+const mapStateToProps = state => {
+  return {
+    loggedInUsername: state.username,
+    searchedUsers: state.searchedUsers,
+  };
+};
+
+class ConnectedMainView extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       loggedInUser: '',
     }
+    this.props.io.on('invitation', (data)=>{
+      console.log("WORD FROM THE OTHERSIDE:", data)
+    })
   }
 
   componentDidMount() {
+    console.log('PROPS in MainView:', this.props)
     this.setState({
-      loggedInUser: this.props.loggedInUser
+      loggedInUser: this.props.loggedInUsername
     });
-    console.log('MAINVIEW', this.props.loggedInUser)
+    console.log('MAINVIEW', this.props.loggedInUsername)
+  this.props.io.emit('username connect', this.props.loggedInUsername)
+
+    
   }
 
   render() {
@@ -29,6 +45,7 @@ class MainView extends React.Component {
             loggedIn={this.props.loggedIn}
             loggedInUser={this.props.loggedInUser}
             userRooms={this.props.userRooms}
+            io={this.props.io}
             {...props} />
         } />
         <Route path="/rooms/:roomID" render={
@@ -45,5 +62,8 @@ class MainView extends React.Component {
     )
   }
 }
+
+const MainView = connect(mapStateToProps)(ConnectedMainView);
+
 
 export default MainView;
