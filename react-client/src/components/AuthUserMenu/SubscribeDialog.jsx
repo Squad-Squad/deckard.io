@@ -128,7 +128,6 @@ class SubscribeDialog extends React.Component {
               //   shrink: true,
               // }}
               fullWidth
-              margin="normal"
               autoFocus={true}
               onChange={this.enterEmail}
             />
@@ -138,7 +137,6 @@ class SubscribeDialog extends React.Component {
               //   shrink: true,
               // }}
               fullWidth
-              margin="normal"
               type="password"
               onChange={this.enterPassword}
             />
@@ -153,73 +151,6 @@ class SubscribeDialog extends React.Component {
           </DialogActions>
         </Dialog>
       </div >
-      // <div>
-      //   <a className="button is-primary" onClick={this.handleClickOpen}>
-      //     Sign Up
-      //   </a>
-      //   <div {...isActive} >
-      //     <div className="modal-background"></div>
-      //     <div className="modal-card">
-      //       <header className="modal-card-head">
-      //         <p className="modal-card-title">
-      //           Sign Up
-      //       </p>
-      //         <button
-      //           className="delete"
-      //           aria-label="close"
-      //           onClick={this.handleClose}
-      //         ></button>
-      //       </header>
-      //       <section className="modal-card-body">
-      //         {subscribeError}
-      //         <div className="field">
-      //           <label className="label">Email</label>
-      //           <div className="control has-icons-left">
-      //             <input
-      //               {...isEmailValid1}
-      //               type="email"
-      //               id="subscribeEmail"
-      //               placeholder="johndoe@gmail.com"
-      //               value={this.state.email}
-      //               onChange={this.enterEmail}
-      //               onKeyPress={this.handleKeyPress} />
-      //             <span className="icon is-small is-left">
-      //               <i className="fas fa-envelope"></i>
-      //             </span>
-      //           </div>
-      //           {isEmailValid2}
-      //         </div>
-      //         <div className="field">
-      //           <label className="label">Password</label>
-      //           <p className="control has-icons-left">
-      //             <input
-      //               className="input"
-      //               type="password"
-      //               placeholder="password123"
-      //               value={this.state.password}
-      //               onChange={this.enterPassword}
-      //               onKeyPress={this.handleKeyPress} />
-      //             <span className="icon is-small is-left">
-      //               <i className="fas fa-lock"></i>
-      //             </span>
-      //           </p>
-      //         </div>
-      //       </section>
-      //       <footer className="modal-card-foot">
-      //         <button
-      //           className="button"
-      //           onClick={this.handleClose}>
-      //           Cancel
-      //         </button>
-      //         <button
-      //           className="button is-success"
-      //           onClick={this.handleSubscribe}>
-      //           Go!
-      //       </button>
-      //       </footer>
-      //     </div>
-      //   </div>
-      // </div >
     );
   }
 }

@@ -64,7 +64,7 @@ class ConnectedLiveChat extends React.Component {
       'GlaDOS',
       'SHODAN',
       'Dolores'];
-    this.userAliases = this.props.usersInRoom.reduce((obj, user) => {
+    this.userAliases = this.props.members.reduce((obj, user) => {
       obj[user] = aliases[Math.floor(Math.random() * aliases.length)];
       return obj;
     }, {});
@@ -151,13 +151,11 @@ class ConnectedLiveChat extends React.Component {
 
         {/* BOTTOM BAR */}
         <BottomNavigation
-          onChange={this.handleChange}
-          showLabels>
+          onChange={this.handleChange}>
           <FormControl style={{ width: '70%' }}>
             <Input
               style={{ marginTop: '10px' }}
               fullWidth
-              margin="normal"
               value={this.state.msg}
               onChange={this.updateMessage.bind(this)}
               onKeyPress={this.handleKeyPress.bind(this)}

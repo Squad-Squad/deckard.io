@@ -19,7 +19,7 @@ const mapDispatchToProps = dispatch => {
   return {
     addCurrUsersFromDB: (users) => dispatch(addCurrUsersFromDB(users)),
   };
-}
+};
 
 class ConnectedRoom extends React.Component {
   constructor(props) {
@@ -27,6 +27,7 @@ class ConnectedRoom extends React.Component {
     this.state = {
       message: '',
       messages: [],
+      memberMap: [],
       members: [],
       currentSelection: undefined,
       currentSelectionName: undefined,
@@ -36,8 +37,6 @@ class ConnectedRoom extends React.Component {
       roomName: '',
       timer: '',
       winner: {},
-      // The hasVoted functionality has not yet been implemented
-      hasVoted: false,
     };
     this.roomID = this.props.match.params.roomID;
 
@@ -63,14 +62,12 @@ class ConnectedRoom extends React.Component {
     this.socket.on('vote', roomID => {
       if (roomID === this.roomID) {
         console.log('Received vote');
-        this.getVotes();
       }
     });
 
     this.socket.on('veto', roomID => {
       if (roomID === this.roomID) {
         console.log('Received veto');
-        this.getVotes();
       }
     });
 
@@ -82,7 +79,6 @@ class ConnectedRoom extends React.Component {
     this.getMessages();
     this.getRoomInfo();
     this.getTimer();
-    this.getVotes();
     this.socket.emit('join', this.roomID);
   }
 
@@ -97,10 +93,12 @@ class ConnectedRoom extends React.Component {
   getRoomInfo() {
     $.get(`/api/rooms/${this.roomID}`).then(roomMembers => {
       console.log(`Got roommembers: ${JSON.stringify(roomMembers)} from ${this.roomID}`);
-      this.props.addCurrUsersFromDB(roomMembers);
+      // this.props.addCurrUsersFromDB(roomMembers);
       this.setState({
+        memberMap: roomMembers,
+        members: roomMembers.map(member => member.alias),
         roomName: roomMembers[0].rooms[0].name,
-      });
+      }, () => console.log(this.state.members));
     });
   }
 
@@ -124,33 +122,6 @@ class ConnectedRoom extends React.Component {
 
       // console.log('STARTING TIMER');
       tock.start(timer.timeLeft + 1000);
-    });
-  }
-
-  getVotes() {
-    $.get(`/api/votes/${this.roomID}`).then(restaurants => {
-      let vetoedRests = this.state.vetoedRestaurants;
-      for (let restaurant of restaurants) {
-        if (restaurant.vetoed === true) {
-          vetoedRests.push(restaurant.restaurant_id);
-        }
-      }
-      console.log('hey vetoed!!', vetoedRests)
-
-      this.setState({
-        votes: restaurants,
-        vetoedRestaurants: vetoedRests,
-      });
-
-      if (restaurants.length && !this.state.currentSelection) {
-        restaurants.forEach(restaurant => {
-          if (!restaurant.vetoed) {
-            this.setState({
-              currentSelectionName: restaurant.name,
-            });
-          }
-        });
-      }
     });
   }
 
@@ -192,14 +163,15 @@ class ConnectedRoom extends React.Component {
 
     const chatOrVote = () => {
       if (this.state.timer === "00:00") {
-        return (<VotePanel />);
+        return (<VotePanel members={this.state.members} />);
       } else {
         return (<LiveChat
           roomName={this.state.roomName}
           messages={this.state.messages}
           message={this.state.message}
           sendMessage={this.sendMessage}
-          timer={this.state.timer} />);
+          timer={this.state.timer}
+          members={this.state.members} />);
       }
     }
 

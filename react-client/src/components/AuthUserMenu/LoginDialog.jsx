@@ -105,7 +105,6 @@ class LoginDialog extends React.Component {
                 //   shrink: true,
                 // }}
                 fullWidth
-                margin="normal"
                 autoFocus={true}
                 onChange={this.enterEmail}
               />
@@ -115,7 +114,6 @@ class LoginDialog extends React.Component {
                 //   shrink: true,
                 // }}
                 fullWidth
-                margin="normal"
                 type="password"
                 onChange={this.enterPassword}
               />

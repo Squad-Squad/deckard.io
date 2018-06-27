@@ -45,9 +45,14 @@ class VotePanel extends Component {
           </AppBar>
         </div>
 
-        {this.props.usersInRoom.map(user =>
+        {this.props.members.map(user =>
           [<div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <div>{user}</div>
+            <div><p style={{
+              paddingLeft: '15px',
+              paddingTop: '15px',
+              paddingBottom: '10px',
+              fontSize: '20px',
+            }}>{user}</p></div>
             <div>
               <Button variant="contained" color="primary" className={classes.button}>
                 A.I.
