@@ -5,7 +5,6 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import BottomNavigation from '@material-ui/core/BottomNavigation';
-import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
 import Button from '@material-ui/core/Button';
 import PublishIcon from '@material-ui/icons/Publish';
 import FormControl from '@material-ui/core/FormControl';
@@ -39,6 +38,10 @@ class ConnectedLiveChat extends React.Component {
     this.state = {
       msg: '',
     };
+
+    //
+    // ─── RANDOMIZE NAMES ─────────────────────────────────────────────
+    //
     const aliases = ['HAL 9000',
       'Android 18',
       'AM',
@@ -66,6 +69,7 @@ class ConnectedLiveChat extends React.Component {
       return obj;
     }, {});
     this.userAliases["Mitsuku"] = aliases[Math.floor(Math.random() * aliases.length)];
+    // ─────────────────────────────────────────────────────────────────
   }
 
   componentDidMount() {
@@ -78,8 +82,10 @@ class ConnectedLiveChat extends React.Component {
     });
   }
 
-  componentDidUpdate() {
-    this.scrollToBottom();
+  componentDidUpdate(prevProps) {
+    if (JSON.stringify(this.props.messages) !== JSON.stringify(prevProps.messages)) {
+      this.scrollToBottom();
+    }
   }
 
   scrollToBottom() {

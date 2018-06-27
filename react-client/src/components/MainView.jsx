@@ -1,5 +1,4 @@
 import React from 'react';
-import Hero from './Hero.jsx';
 import CreateRoomContainer from './createRoomContainer/CreateRoomContainer.jsx';
 import Room from './Room.jsx';
 import { Route } from 'react-router-dom';

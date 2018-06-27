@@ -4,14 +4,12 @@ import axios from 'axios';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import PropTypes from 'prop-types';
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import TextField from '@material-ui/core/TextField';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
 import Input from '@material-ui/core/Input';
 import CombatantsContainer from './CombatantsContainer.jsx';
 import Button from '@material-ui/core/Button';
@@ -46,9 +44,6 @@ const styles = theme => ({
     position: 'relative',
     height: 250,
   },
-  margin: {
-    margin: theme.spacing.unit,
-  },
   suggestionsContainerOpen: {
     position: 'absolute',
     zIndex: 1,
@@ -67,6 +62,9 @@ const styles = theme => ({
   newRoomButton: {
     width: '100%',
   },
+  input: {
+    fontSize: '16px',
+  }
 });
 
 class ConnectedCreateRoom extends React.Component {
@@ -308,60 +306,60 @@ class ConnectedCreateRoom extends React.Component {
 
     return (
       <Paper className={classes.paper}>
-        <Typography id="new-room-header">
+        <Typography id="new-room-header" style={{ paddingBottom: '8px' }}>
           New Room
         </Typography>
 
         <Divider />
+        <div style={{ margin: '8px' }}>
+          <FormControl style={{ width: '100%' }} >
+            <Input
+              style={{ fontSize: '16px' }}
+              value={this.state.roomName}
+              onChange={this.updateRoomName}
+              placeholder="Room Name"
+            />
+          </FormControl>
+        </div>
 
-        <FormControl fullWidth className={classes.margin}>
-          <InputLabel htmlFor="adornment-amount">Room Name</InputLabel>
-          <Input
-            value={this.state.roomName}
-            onChange={this.updateRoomName}
+        <div style={{ margin: '8px', height: '40px' }}>
+          <Autosuggest
+            theme={{
+              container: classes.container,
+              suggestionsContainerOpen: classes.suggestionsContainerOpen,
+              suggestionsList: classes.suggestionsList,
+              suggestion: classes.suggestion,
+              margin: classes.margin,
+            }}
+            renderInputComponent={this.renderInput}
+            suggestions={this.state.currSuggestions}
+            onSuggestionsFetchRequested={this.handleSuggestionsFetchRequested}
+            onSuggestionsClearRequested={() => { }}
+            renderSuggestionsContainer={this.renderSuggestionsContainer}
+            getSuggestionValue={this.getSuggestionValue}
+            renderSuggestion={this.renderSuggestion}
+            inputProps={{
+              classes,
+              placeholder: 'Search Online Users',
+              value: this.state.query,
+              onChange: this.updateQuery.bind(this),
+              onKeyPress: this.handleAutoSuggestKeyPress.bind(this),
+            }}
           />
-        </FormControl>
+        </div>
 
-        <Divider />
-
-        <Autosuggest
-          theme={{
-            container: classes.container,
-            suggestionsContainerOpen: classes.suggestionsContainerOpen,
-            suggestionsList: classes.suggestionsList,
-            suggestion: classes.suggestion,
-            margin: classes.margin,
-          }}
-          renderInputComponent={this.renderInput}
-          suggestions={this.state.currSuggestions}
-          onSuggestionsFetchRequested={this.handleSuggestionsFetchRequested}
-          onSuggestionsClearRequested={() => { }}
-          renderSuggestionsContainer={this.renderSuggestionsContainer}
-          getSuggestionValue={this.getSuggestionValue}
-          renderSuggestion={this.renderSuggestion}
-          inputProps={{
-            classes,
-            placeholder: 'Search users',
-            value: this.state.query,
-            onChange: this.updateQuery.bind(this),
-            onKeyPress: this.handleAutoSuggestKeyPress.bind(this),
-          }}
-        />
-
-        <Divider />
 
         <CombatantsContainer />
 
-        <Divider />
 
         <Button variant="contained"
           color="secondary"
           className={classes.newRoomButton}
-          onClick={this.createRoom}>
+          onClick={this.createRoom}
+          style={{ marginTop: '15px' }}>
           Create New Room
         </Button>
       </Paper>
-
     );
   }
 }

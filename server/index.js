@@ -10,7 +10,7 @@ const auth = require('../lib/auth');
 const morgan = require('morgan');
 const socket = require('socket.io');
 const uniqueString = require('unique-string');
-const tock = require('tocktimer');
+const Tock = require('tocktimer');
 const mitsuku = require('../lib/mitsukuHelper')();
 
 const Mailjet = require('node-mailjet').connect(
@@ -161,14 +161,15 @@ app.post('/api/save', (req, res) => {
   // console.log('NEW ROOM DATA', req.body);
   const { roomName, members } = req.body;
   const roomUnique = uniqueString();
-  timerObj[roomUnique] = new tock({
+  timerObj[roomUnique] = new Tock({
     countdown: true,
     complete: () => {
       console.log('TIMER OVER');
-      dbHelpers.saveWinner(roomUnique);
     },
   });
-  timerObj[roomUnique].start(180000);
+
+  // CHANGE THE ROOM TIMER LENGTH HERE
+  timerObj[roomUnique].start(2000);
 
   dbHelpers.saveRoomAndMembers(roomName, members, roomUnique, (err, room, users) => {
     if (err) {
@@ -180,6 +181,7 @@ app.post('/api/save', (req, res) => {
   });
 });
 
+// Get room members here
 app.get('/api/rooms/:roomID', (req, res) => {
   const { roomID } = req.params;
   dbHelpers.getRoomMembers(roomID, (err, roomMembers) => {
@@ -195,11 +197,6 @@ app.get('/api/rooms/:roomID', (req, res) => {
 app.get('/api/timer/:roomID', (req, res) => {
   const { roomID } = req.params;
   res.send({ timeLeft: timerObj[roomID].lap() });
-});
-
-app.get('/api/nominatetimer/:roomID', (req, res) => {
-  const { roomID } = req.params;
-  res.send({ timeLeft: nominateTimerObj[roomID].lap() });
 });
 
 app.post('/room-redirect', (req, res) => {
@@ -229,21 +226,12 @@ app.post('/api/userwins', (req, res) => {
   });
 });
 
-app.get('/api/getWinner/:roomID', (req, res) => {
-  const { roomID } = req.params;
-  dbHelpers.getWinner(roomID, (response) => {
-    console.log('WINNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNER', response)
-    / res.send(response);
-  });
-});
-
 
 //
 // ─── HANDLE MESSAGES AND VOTES─────────────────────────────────────────────────────────
 //
 app.post('/api/messages', (req, res) => {
   const { user_id, message, roomID } = req.body;
-  console.log('NOMIIIIIIINNNNNNNNNNNATION TIMER', nominateTimerObj);
   dbHelpers.saveMessage(user_id, message.name, message.message, roomID, (err, savedMessage) => {
     if (err) {
       console.log('Error saving message', err);
@@ -262,38 +250,6 @@ app.get('/api/messages/:roomID', (req, res) => {
       res.status(404).end();
     } else {
       res.send(fetchedMessages);
-    }
-  });
-});
-
-app.post('/api/nominate', (req, res) => {
-  const { name, roomID, restaurantID } = req.body;
-  // Timer for nominations
-  nominateTimerObj[roomID] = new tock({
-    countdown: true,
-    complete: () => {
-      console.log('TIMER OVER');
-      delete nominateTimerObj[roomID];
-    },
-  });
-  nominateTimerObj[roomID].start(15000);
-
-  console.log('NOMIIIIIIINNNNNNNNNNNATION TIMER', nominateTimerObj[roomID]);
-
-  dbHelpers.saveRestaurant(name, roomID, (err, restaurant) => {
-    if (err) {
-      console.log('Error saving restaurant', err);
-    } else {
-      res.end('Restaurant saved!', restaurant);
-    }
-  });
-
-  // Joseph SQL
-  dbHelpers.saveCurrentRestaurant(roomID, restaurantID, (err, restaurant) => {
-    if (err) {
-      console.log('Error saving current restaurant', err);
-    } else {
-      res.end('Current restaurant saved!', restaurant);
     }
   });
 });
@@ -320,17 +276,6 @@ app.post('/api/vetoes', (req, res) => {
       console.log('Error vetoing restaurant', err);
     } else {
       res.end('Restaurant vetoed!', restaurant);
-    }
-  });
-});
-
-app.get('/api/votes/:roomID', (req, res) => {
-  const { roomID } = req.params;
-  dbHelpers.getScoreboard(roomID, (err, scores) => {
-    if (err) {
-      console.log('Error fetching scoreboard', err);
-    } else {
-      res.send(scores);
     }
   });
 });
@@ -416,4 +361,4 @@ db.models.sequelize.sync().then(() => {
 });
 
 let timerObj = {};
-let nominateTimerObj = {};
+const nominateTimerObj = {};

@@ -7,7 +7,6 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import { Route, Link } from 'react-router-dom';
 
 class SubscribeDialog extends React.Component {
   constructor(props) {
@@ -124,7 +123,6 @@ class SubscribeDialog extends React.Component {
           <DialogContent>
             <TextField
               {...isEmailValid}
-              id="full-width"
               label="Email"
               // InputLabelProps={{
               //   shrink: true,
@@ -135,7 +133,6 @@ class SubscribeDialog extends React.Component {
               onChange={this.enterEmail}
             />
             <TextField
-              id="full-width"
               label="Password"
               // InputLabelProps={{
               //   shrink: true,

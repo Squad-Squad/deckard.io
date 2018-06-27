@@ -2,9 +2,8 @@ const initialState = {
   loggedIn: false,
   username: '',
   searchedUsers: [],
-
-  // Also used to alias usernames once the room is created
   usersForNewRoom: [],
+  currRoomUsers: [],
 };
 
 function reducer(state = initialState, action) {
@@ -40,6 +39,15 @@ function reducer(state = initialState, action) {
       console.log('UPDATED ARRAY', state.usersForNewRoom.splice(state.usersForNewRoom.indexOf(action.payload.username), 1));
       return Object.assign({}, state, {
         usersForNewRoom: state.usersForNewRoom.splice(state.usersForNewRoom.indexOf(action.payload.username), 1),
+      });
+
+
+    //
+    // ─── ROOM LOGIC ──────────────────────────────────────────────────
+    //
+    case 'ADD_CURR_ROOM_USERS_FROM_DB':
+      return Object.assign({}, state, {
+        currRoomUsers: action.payload,
       });
 
 
