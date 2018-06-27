@@ -11,6 +11,7 @@ import Navbar from './components/Navbar.jsx';
 import MainView from './components/MainView.jsx'
 import SignupPage from './components/AuthUserMenu/SignupPage.jsx';
 import Room from './components/Room.jsx';
+import io from 'socket.io-client';
 
 import 'animate.css/animate.css';
 import './styles/main.scss';
@@ -89,6 +90,7 @@ class ConnectedApp extends React.Component {
       userRooms: [],
       userWins: ''
     };
+    this.socket = io({ transports: ['websocket'] });
   }
 
   componentDidMount() {
@@ -336,6 +338,7 @@ class ConnectedApp extends React.Component {
                   loggedIn={this.state.loggedIn}
                   loggedInUser={this.state.loggedInUsername}
                   userRooms={this.state.userRooms}
+                  io={this.socket}
                   {...props} /> :
                 <Paper id="login-prompt">Login or signup to play.</Paper>} />
             <Route exact path="/signup" render={
