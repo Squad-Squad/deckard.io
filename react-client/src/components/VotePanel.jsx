@@ -63,7 +63,7 @@ class VotePanel extends Component {
 
   submitVotes() {
     const submitObj = {
-      user: loggedInUser,
+      user: this.props.loggedInUser,
       votes: this.state.membersVoteMap
     };
   }
