@@ -51,7 +51,7 @@ class InviteDialogue extends React.Component {
 
   render() {
     const { classes } = this.props;
-    console.log("AM I RENDERINGGGG")
+    // console.log("AM I RENDERINGGGG")
     return (
       <div>
         <Modal
