@@ -415,7 +415,7 @@ db.models.sequelize.sync().then(() => {
       //   if(el === socket.username){
       //     console.log('USERNAME HIT:', el)
           // io.emit('invitation', `You're invited to play in ${data.room}`)
-          io.emit('invitation', {users: data.users, room: data.room})
+          socket.broadcast.emit('invitation', {users: data.users, room: data.room})
         // }
       // }
 

@@ -39,15 +39,15 @@ class InviteDialogue extends React.Component {
     this.setState({ open: true });
   };
 
-  handleClose = () => {
-    this.setState({ open: false });
-  };
+  // handleClose = () => {
+  //   this.setState({ open: false });
+  // };
 
-  componentWillReceiveProps(){
-    this.setState({
-      open: this.props.addOpen
-    })
-  }
+  // componentDidUpdate(){
+  //   this.setState({
+  //     open: this.props.addOpen
+  //   }, ()=> console.log("new open state on modal", this.state.open))
+  // }
 
   render() {
     const { classes } = this.props;
@@ -57,8 +57,8 @@ class InviteDialogue extends React.Component {
         <Modal
           aria-labelledby="simple-modal-title"
           aria-describedby="simple-modal-description"
-          open={this.state.open}
-          onClose={this.handleClose}
+          open={this.props.addOpen}
+          onClose={this.props.handleClose}
         >
           <div style={getModalStyle()} className={classes.paper}>
             <Typography variant="title" id="modal-title">
@@ -67,7 +67,7 @@ class InviteDialogue extends React.Component {
             <Typography variant="subheading" id="simple-modal-description">
               Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
             </Typography>
-            <InviteDialogueWrapped />
+            
           </div>
         </Modal>
       </div>

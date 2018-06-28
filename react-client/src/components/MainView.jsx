@@ -42,19 +42,26 @@ class ConnectedMainView extends React.Component {
       loggedInUser: this.props.loggedInUsername
     });
     console.log('MAINVIEW', this.props.loggedInUsername)
-  this.props.io.emit('username connect', this.props.loggedInUsername)
-
-    
+    this.props.io.emit('username connect', this.props.loggedInUsername)
   }
+
+  handleOpen = () => {
+    this.setState({ open: true });
+  };
+
+  handleClose = () => {
+    this.setState({ invite: false });
+  };
 
   render() {
     return (
       <div>
-      <InviteDialogueModal addOpen={this.state.invite} />
         <Route exact path="/" render={
           (props) => 
           [
-          <InviteDialogueModal addOpen={this.state.invite} />,
+          <InviteDialogueModal 
+          handleClose= {this.handleClose.bind(this)} 
+          addOpen={this.state.invite} />,
           <CreateRoomContainer
             searchUsers={this.props.searchUsers}
             searchedUsers={this.props.searchedUsers}
@@ -66,14 +73,20 @@ class ConnectedMainView extends React.Component {
             ]
         } />
         <Route path="/rooms/:roomID" render={
-           (props) => <Room
+           (props) => 
+           [
+           <Room
             searchUsers={this.props.searchUsers}
             searchedUsers={this.props.searchedUsers}
             loggedIn={this.props.loggedIn}
             loggedInUser={this.props.loggedInUser}
             userRooms={this.props.userRooms}
             io={this.props.io}
-            {...props} />
+            {...props} />,
+            <InviteDialogueModal 
+            handleClose= {this.handleClose.bind(this)} 
+            addOpen={this.state.invite} />,
+            ]
         } />
       </div>
     )
