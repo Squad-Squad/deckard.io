@@ -119,6 +119,7 @@ class LoginDialog extends React.Component {
                 fullWidth
                 type="password"
                 onChange={this.enterPassword}
+                onKeyUp={this.handleKeyPress}
               />
             </DialogContent>
             <DialogActions>
