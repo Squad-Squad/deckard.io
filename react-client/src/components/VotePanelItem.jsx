@@ -27,12 +27,16 @@ class VotePanelItem extends Component {
   humanClick() {
     this.setState({
       humanOrAI: 'human',
+    }, () => {
+      this.props.setVote(this.props.user, this.state.humanOrAI);
     });
   }
 
   aiClick() {
     this.setState({
       humanOrAI: 'ai',
+    }, () => {
+      this.props.setVote(this.props.user, this.state.humanOrAI);
     });
   }
 

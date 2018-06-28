@@ -5,6 +5,7 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import VotePanelItem from './VotePanelItem.jsx';
 import BottomNavigation from '@material-ui/core/BottomNavigation';
+import Button from '@material-ui/core/Button';
 import { withStyles } from '@material-ui/core/styles';
 import { connect } from 'react-redux';
 
@@ -16,6 +17,9 @@ function mapStateToProps(state) {
 }
 
 const styles = theme => ({
+  button: {
+    margin: theme.spacing.unit,
+  },
   input: {
     display: 'none',
   },
@@ -57,11 +61,20 @@ class VotePanel extends Component {
     }
   }
 
+  submitVotes() {
+    const submitObj = {
+      user: loggedInUser,
+      votes: this.state.membersVoteMap
+    };
+  }
+
   render() {
     const { classes } = this.props;
     console.log('YOOOOOO', this.state.membersVoteMap);
     return (
-      <Paper>
+      <Paper style={{
+        backgroundColor: 'rgba(255,255,255,.1)'
+      }}>
         {/* TOP BAR */}
         <div className={classes.root}>
           <AppBar position="static" color="default">
@@ -74,14 +87,17 @@ class VotePanel extends Component {
         </div>
 
         {this.props.members.map((user, i) =>
-          <VotePanelItem key={i} user={user} />
+          <VotePanelItem key={i} user={user} setVote={this.setVote.bind(this)} />
         )}
 
         {/* BOTTOM BAR */}
-        <BottomNavigation>
-          <Button variant="fab" color="primary" aria-label="add" className={classes.button}
+        <BottomNavigation style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+        }}>
+          <Button variant="contained" color="secondary" aria-label="add" className={classes.button}
             onClick={this.submitVotes.bind(this)}>
-            <PublishIcon />
+            Submit
           </Button>
         </BottomNavigation>
       </Paper>

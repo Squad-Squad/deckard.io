@@ -126,7 +126,8 @@ class ConnectedRoom extends React.Component {
           obj[memArr.email] = memArr.alias;
           return obj;
         }, {}),
-        members: roomMembers.map(member => member.alias),
+        members: roomMembers.filter(member => member.email !== this.props.loggedInUsername)
+          .map(member => member.alias),
         roomName: roomMembers[0].rooms[0].name,
       }, () => console.log(this.state.members));
     });
