@@ -47,7 +47,7 @@ class CreateRoomContainer extends React.Component {
           <Grid item xs={3}>
           </Grid>
           <Grid item xs={6}>
-            <CreateRoom></CreateRoom>
+            <CreateRoom io={this.props.io}></CreateRoom>
           </Grid>
         </Grid>
       </Grid>
