@@ -48,10 +48,8 @@ app.use(passport.session());
 auth.passportHelper(passport);
 app.use(flash());
 
-// app.use((req, res, next) => {
-//   console.log(req.session);
-//   next();
-// });
+// Add Mitsuku to DB if she doesn't exist
+dbHelpers.addMitsuku();
 
 
 //
@@ -313,8 +311,6 @@ db.models.sequelize.sync().then(() => {
 
   const io = socket(server);
   io.on('connection', (socket) => {
-    console.log('made socket connection', socket);
-
     socket.on('username connect', (data) => {
       console.log('USERNAME CONNECT:', data);
       socket.username = data;

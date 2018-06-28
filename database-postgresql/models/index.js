@@ -74,6 +74,8 @@ Room.belongsToMany(User, {
 Room.belongsTo(User, {
   foreignKey: 'owner',
 });
+// ────────────────────────────────────────────────────────────────────────────────
+
 
 // create a models object and import all of our database tables
 const models = {

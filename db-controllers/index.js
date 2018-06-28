@@ -1,7 +1,5 @@
 const db = require('../database-postgresql/models');
 const bcrypt = require('bcrypt');
-const uniqueString = require('unique-string');
-const sequelize = require('sequelize');
 
 // db.sequelize.query('SELECT * FROM users').spread((results) => {
 //   console.log('AAAAAAAAAAAAAAA', results[0]);
@@ -29,7 +27,7 @@ const saveMember = (email, password, callback) => {
 };
 
 const saveRoomAndMembers = (roomName, members, id, callback) => {
-  console.log('MEMBERS', members);
+  members.push('mitsuku@mitsuku.com');
 
   const promisedMembers = members.map(memberEmail => db.models.User.findOne({
     where: {
@@ -89,6 +87,16 @@ const saveRoomAndMembers = (roomName, members, id, callback) => {
     })
     .catch((error) => {
       console.log(error);
+    });
+};
+
+// Add Mitsuku user to table if she doesn't already exist
+const addMitsuku = () => {
+  db.models.User.findAll({ where: { email: 'mitsuku@mitsuku.com' } })
+    .then((res) => {
+      if (!res.length) {
+        db.models.User.create({ email: 'mitsuku@mitsuku.com' });
+      }
     });
 };
 
@@ -203,6 +211,7 @@ module.exports = {
   saveMember,
   saveRoomAndMembers,
   getRoomMembers,
+  addMitsuku,
   saveMessage,
   getMessages,
   getRooms,
