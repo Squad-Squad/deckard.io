@@ -43,11 +43,11 @@ class ConnectedRoom extends React.Component {
 
     // Client-side socket events
     // NEED THIS TO WORK ON DEPLOYMENT
-    this.socket = io({ transports: ['websocket'] });
+    // this.props.io = io({ transports: ['websocket'] });
     // SERIOUSLY NEED ABOVE FOR DEPLOYMENT
     // DO NOT NEED TO SPECIFY PORT ON CLIENT SIDE
 
-    this.socket.on('chat', message => {
+    this.props.io.on('chat', message => {
       // if (message.roomID === this.roomID) {
       //   console.log('Received message', message);
       console.log("MESSAGE IN CHAT :", message)
@@ -58,21 +58,21 @@ class ConnectedRoom extends React.Component {
       // }
     });
 
-    this.socket.on('vote', roomID => {
+    this.props.io.on('vote', roomID => {
       if (roomID === this.roomID) {
         console.log('Received vote');
         this.getVotes();
       }
     });
 
-    this.socket.on('veto', roomID => {
+    this.props.io.on('veto', roomID => {
       if (roomID === this.roomID) {
         console.log('Received veto');
         this.getVotes();
       }
     });
 
-    // this.socket.on('nominate', nominee => {
+    // this.props.io.on('nominate', nominee => {
     //   if (nominee.roomID === this.roomID) {
     //     console.log('Received nomination', nominee);
     //     this.setState({
@@ -85,11 +85,11 @@ class ConnectedRoom extends React.Component {
     //   this.getVotes();
     // });
 
-    this.socket.on('roomJoin', data => {
+    this.props.io.on('roomJoin', data => {
       // if (roomID === this.roomID) {
       //   console.log('Received new member');
         // if (this.state.currentSelection) {
-        //   this.socket.emit('nominate', { 'restaurant': this.state.currentSelection, 'roomID': this.roomID });
+        //   this.props.io.emit('nominate', { 'restaurant': this.state.currentSelection, 'roomID': this.roomID });
         // }
       // }
 
@@ -104,7 +104,7 @@ class ConnectedRoom extends React.Component {
     this.getTimer();
     // this.getNominateTimer();
     this.getVotes();
-    this.socket.emit('join', {room: this.roomID, user: this.props.loggedInUsername});
+    this.props.io.emit('join', {room: this.roomID, user: this.props.loggedInUsername});
     // this.getWinner();
   }
 
@@ -239,7 +239,7 @@ class ConnectedRoom extends React.Component {
           roomID: this.roomID,
         };
         $.post('/api/nominate', voteObj).then(() => {
-          this.socket.emit('nominate', nomObj);
+          this.props.io.emit('nominate', nomObj);
         });
       }
       // A user who nominates a restaurant should automatically vote for it
@@ -259,7 +259,7 @@ class ConnectedRoom extends React.Component {
       roomID: this.roomID,
     };
     $.post('/api/messages', messageObj).then(() => {
-      this.socket.emit('chat', messageObj);
+      this.props.io.emit('chat', messageObj);
     });
   }
 
@@ -276,7 +276,7 @@ class ConnectedRoom extends React.Component {
       nominator: uname
     };
     $.post('/api/votes', voteObj).then(() => {
-      this.socket.emit('vote', voteObj);
+      this.props.io.emit('vote', voteObj);
     });
     this.setState({
       hasVoted: true,
@@ -302,7 +302,7 @@ class ConnectedRoom extends React.Component {
             currentSelection: undefined,
             hasVoted: true,
           });
-          this.socket.emit('veto', voteObj);
+          this.props.io.emit('veto', voteObj);
         });
       }
     } else {
@@ -319,7 +319,7 @@ class ConnectedRoom extends React.Component {
           this.setState({
             hasVoted: true,
           });
-          this.socket.emit('veto', voteObj);
+          this.props.io.emit('veto', voteObj);
         });
       }
     }

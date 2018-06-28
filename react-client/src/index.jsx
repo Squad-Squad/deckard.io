@@ -329,7 +329,7 @@ class ConnectedApp extends React.Component {
               error={this.state.loginError}
               subscribeError={this.state.subscribeError}
               wins={this.state.userWins} />
-          </div >
+          </div>
           <div className="container">
             <Route path="/" render={
               (props) => (loggedIn) ?

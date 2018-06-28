@@ -360,14 +360,22 @@ db.models.sequelize.sync().then(() => {
 
   const io = socket(server);
   io.on('connection', (socket) => {
-    console.log('made socket connection', socket.id);
+    console.log('made socket connection', socket);
+
+    socket.on('username connect', (data)=>{
+      console.log("USERNAME CONNECT:", data)
+      socket.username = data
+      userSockets[socket.username] = socket
+      users.push(socket.username);
+      console.log("USERSOCKETS:", userSockets)
+    })
 
     socket.on('join', (data) => {
         console.log("JOIN DATA:", data)
       socket.room = data.room
-      socket.username = data.user
-      userSockets[socket.username] = socket
-      users.push(socket.username);
+      // socket.username = data.user
+      // userSockets[socket.username] = socket
+      // users.push(socket.username);
       if(!rooms[socket.room]){
         rooms[socket.room] = [socket.username];
       }else{
@@ -392,13 +400,27 @@ db.models.sequelize.sync().then(() => {
       dbHelpers.saveMessage(user_id, name, message, socket.room, (err, savedMessage) => {
         if (err) {
           console.log('Error saving message', err);
-          res.status(404).end();
         } else {
-          res.end('Message saved', savedMessage);
+          console.log('saved Message:', savedMessage)
         }
       });
 
     });
+
+    socket.on('invite', (data)=>{
+      console.log("INVITE DATA:", data, "users:", data.users, "current username:", socket.username)
+
+      // for(var el of data.users){
+      //   console.log("IS THIS A FOR LOOP OR NOT", el)
+      //   if(el === socket.username){
+      //     console.log('USERNAME HIT:', el)
+          // io.emit('invitation', `You're invited to play in ${data.room}`)
+          socket.broadcast.emit('invitation', {users: data.users, roomHash: data.roomHash, roomName: data.roomName, host: socket.username})
+        // }
+      // }
+
+
+    })
 
     socket.on('chat', (data) => {
       console.log('Received chat!', data);
