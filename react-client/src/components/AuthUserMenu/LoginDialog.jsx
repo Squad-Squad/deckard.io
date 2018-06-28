@@ -73,11 +73,6 @@ class LoginDialog extends React.Component {
   // ─── RENDER ─────────────────────────────────────────────────────────────────────
   //
   render() {
-    // Toggle show modal
-    const isActive = this.state.open ? (
-      { className: 'modal is-active animated fadeIn' }
-    ) : { className: 'modal animated fadeIn' };
-
     // Login error
     const loginError = this.props.error ? (
       <DialogContentText id="login-error">
@@ -88,131 +83,52 @@ class LoginDialog extends React.Component {
     return (
       <div>
         <Button onClick={this.handleClickOpen} className="auth-buttons">Login</Button>
-        <Dialog
-          open={this.state.open}
-          onClose={this.handleClose}
-          aria-labelledby="form-dialog-title"
-        >
-          <DialogTitle id="form-dialog-title">
-            Login
-            <Button
-              variant="raised"
-              style={{ float: 'right' }}
-              href='/auth/google'>
-              Login with Google</Button>
-          </DialogTitle>
-          <DialogContent>
-            {loginError}
-            <TextField
-              id="full-width"
-              label="Email"
-              // InputLabelProps={{
-              //   shrink: true,
-              // }}
-              fullWidth
-              margin="normal"
-              autoFocus={true}
-              onChange={this.enterEmail}
-            />
-            <TextField
-              id="full-width"
-              label="Password"
-              // InputLabelProps={{
-              //   shrink: true,
-              // }}
-              fullWidth
-              margin="normal"
-              type="password"
-              onChange={this.enterPassword}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={this.handleClose}>
-              Cancel
-          </Button>
-            <Button onClick={this.handleLogin}>
+        <div>
+          <Dialog
+            open={this.state.open}
+            onClose={this.handleClose}
+            aria-labelledby="form-dialog-title"
+          >
+            <DialogTitle id="form-dialog-title">
               Login
+            <Button
+                variant="raised"
+                style={{ float: 'right' }}
+                href='/auth/google'>
+                Login with Google</Button>
+            </DialogTitle>
+            <DialogContent>
+              {loginError}
+              <TextField
+                label="Email"
+                // InputLabelProps={{
+                //   shrink: true,
+                // }}
+                fullWidth
+                autoFocus={true}
+                onChange={this.enterEmail}
+              />
+              <TextField
+                label="Password"
+                // InputLabelProps={{
+                //   shrink: true,
+                // }}
+                fullWidth
+                type="password"
+                onChange={this.enterPassword}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={this.handleClose}>
+                Cancel
           </Button>
-          </DialogActions>
-        </Dialog>
+              <Button onClick={this.handleLogin}>
+                Login
+          </Button>
+            </DialogActions>
+          </Dialog>
+        </div>
       </div>
-      // <div>
-      //   <a className="button is-primary" onClick={this.handleClickOpen}>
-      //     <span>Login</span>
-      //   </a>
-      //   <div {...isActive} >
-      //     <div className="modal-background"></div>
-      //     <div className="modal-card">
-      //       <header className="modal-card-head">
-      //         <p className="modal-card-title">
-      //           Login
-      //         </p>
-      //         <button
-      //           className="delete"
-      //           aria-label="close"
-      //           onClick={this.handleClose}
-      //         ></button>
-      //       </header>
-      //       <section className="modal-card-body">
-      //         <div className="google-button-container">
-      //           <a href="/auth/google">
-      //             <button
-      //               className="loginBtn loginBtn--google">
-      //               Login with Google
-      //           </button>
-      //           </a>
-      //         </div>
-      //         <hr />
-      //         {loginError}
-      //         <div className="field">
-      //           <label className="label">Email</label>
-      //           <p className="control has-icons-left">
-      //             <input
-      //               className="input"
-      //               id='loginEmail'
-      //               type="email"
-      //               placeholder="johndoe@gmail.com"
-      //               value={this.state.email}
-      //               onChange={this.enterEmail}
-      //               onKeyPress={this.handleKeyPress}
-      //             />
-      //             <span className="icon is-small is-left">
-      //               <i className="fas fa-envelope"></i>
-      //             </span>
-      //           </p>
-      //         </div>
-      //         <div className="field">
-      //           <label className="label">Password</label>
-      //           <p className="control has-icons-left">
-      //             <input
-      //               className="input"
-      //               type="password"
-      //               placeholder="password123"
-      //               value={this.state.password}
-      //               onChange={this.enterPassword}
-      //               onKeyPress={this.handleKeyPress}
-      //             />
-      //             <span className="icon is-small is-left">
-      //               <i className="fas fa-lock"></i>
-      //             </span>
-      //           </p>
-      //         </div>
-      //       </section>
-      //       <footer className="modal-card-foot">
-      //         <button
-      //           className="button"
-      //           onClick={this.handleClose}>
-      //           Cancel
-      //         </button>
-      //         <button
-      //           className="button is-success"
-      //           onClick={this.handleLogin}>
-      //           Go!
-      //         </button>
-      //       </footer>
-      //     </div>
-      //   </div>
-      // </div>
     );
   }
 }

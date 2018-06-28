@@ -25,15 +25,65 @@ sequelize.authenticate()
     console.log('Unable to connect to the database:', err);
   });
 
+
+//
+// ─── THESE CANT BE IN SEPARATE FILES ────────────────────────────────────────────
+//
+const User = sequelize.define('user', {
+  email: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    validate: {
+      isEmail: true,
+    },
+  },
+  password: {
+    type: Sequelize.STRING,
+    allowNull: true,
+  },
+  wins: {
+    type: Sequelize.INTEGER(6),
+    defaultValue: 0,
+    allowNull: true,
+  },
+});
+
+const Room = sequelize.define('room', {
+  name: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
+  uniqueid: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
+});
+
+const RoomUsers = sequelize.define('room-users', {
+  alias: Sequelize.STRING,
+});
+
+User.belongsToMany(Room, {
+  through: RoomUsers,
+});
+
+Room.belongsToMany(User, {
+  through: RoomUsers,
+});
+
+Room.belongsTo(User, {
+  foreignKey: 'owner',
+});
+
 // create a models object and import all of our database tables
 const models = {
-  User: sequelize.import('./user'),
-  Room: sequelize.import('./room'),
-  Restaurant: sequelize.import('./restaurant'),
+  User,
+  Room,
+  RoomUsers,
   Message: sequelize.import('./message'),
-  RestaurantUser: sequelize.import('./restaurantUser'),
   Vote: sequelize.import('./vote'),
 };
+
 
 // create relationships between all the tables that have associations
 Object.keys(models).forEach((modelName) => {
@@ -48,3 +98,4 @@ models.Sequelize = Sequelize;
 module.exports.models = models;
 module.exports.Op = Op;
 module.exports.sequelize = sequelize;
+

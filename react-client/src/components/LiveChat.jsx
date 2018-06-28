@@ -5,7 +5,6 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import BottomNavigation from '@material-ui/core/BottomNavigation';
-import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
 import Button from '@material-ui/core/Button';
 import PublishIcon from '@material-ui/icons/Publish';
 import FormControl from '@material-ui/core/FormControl';
@@ -39,33 +38,6 @@ class ConnectedLiveChat extends React.Component {
     this.state = {
       msg: '',
     };
-    const aliases = ['HAL 9000',
-      'Android 18',
-      'AM',
-      'Marvin',
-      'Roy Batty',
-      'Pris',
-      'Rachael',
-      'C-3PO',
-      'Ash',
-      'T-800',
-      'T-1000',
-      'Data',
-      'Bishop',
-      'Johnny 5',
-      'Robocop',
-      'Rosie',
-      'Cortana',
-      'HK-47',
-      '2B',
-      'GlaDOS',
-      'SHODAN',
-      'Dolores'];
-    this.userAliases = this.props.usersInRoom.reduce((obj, user) => {
-      obj[user] = aliases[Math.floor(Math.random() * aliases.length)];
-      return obj;
-    }, {});
-    this.userAliases["Mitsuku"] = aliases[Math.floor(Math.random() * aliases.length)];
   }
 
   componentDidMount() {
@@ -78,8 +50,10 @@ class ConnectedLiveChat extends React.Component {
     });
   }
 
-  componentDidUpdate() {
-    this.scrollToBottom();
+  componentDidUpdate(prevProps) {
+    if (JSON.stringify(this.props.messages) !== JSON.stringify(prevProps.messages)) {
+      this.scrollToBottom();
+    }
   }
 
   scrollToBottom() {
@@ -107,6 +81,7 @@ class ConnectedLiveChat extends React.Component {
 
   render() {
     const { classes } = this.props;
+    console.log('MEMBERMAP', this.props.memberMap);
     return (
       <Paper
         id="chat-window"
@@ -137,7 +112,7 @@ class ConnectedLiveChat extends React.Component {
             } else {
               return (<div className="section"
                 style={{ textAlign: "left", borderTop: "1px solid black", padding: "17px", fontSize: "18px" }}>
-                <p><strong>{this.userAliases[message.name]}:&nbsp;</strong>{message.message}</p>
+                <p><strong>{this.props.memberMap[message.name]}:&nbsp;</strong>{message.message}</p>
               </div>)
             }
           })}
@@ -145,13 +120,11 @@ class ConnectedLiveChat extends React.Component {
 
         {/* BOTTOM BAR */}
         <BottomNavigation
-          onChange={this.handleChange}
-          showLabels>
+          onChange={this.handleChange}>
           <FormControl style={{ width: '70%' }}>
             <Input
               style={{ marginTop: '10px' }}
               fullWidth
-              margin="normal"
               value={this.state.msg}
               onChange={this.updateMessage.bind(this)}
               onKeyPress={this.handleKeyPress.bind(this)}

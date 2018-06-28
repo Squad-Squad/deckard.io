@@ -30,10 +30,20 @@ const removeUserFromNewRoom = username => ({
 });
 
 
+//
+// ─── ROOM LOGIC ─────────────────────────────────────────────────────────────────
+//
+const addCurrRoomUsersFromDB = users => ({
+  type: 'ADD_CURR_ROOM_USERS_FROM_DB',
+  payload: { users },
+});
+
+
 module.exports = {
   login,
   logout,
   searchUsers,
   addUserToNewRoom,
   removeUserFromNewRoom,
+  addCurrRoomUsersFromDB,
 };

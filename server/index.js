@@ -10,7 +10,7 @@ const auth = require('../lib/auth');
 const morgan = require('morgan');
 const socket = require('socket.io');
 const uniqueString = require('unique-string');
-const tock = require('tocktimer');
+const Tock = require('tocktimer');
 const mitsuku = require('../lib/mitsukuHelper')();
 
 const Mailjet = require('node-mailjet').connect(
@@ -161,14 +161,15 @@ app.post('/api/save', (req, res) => {
   // console.log('NEW ROOM DATA', req.body);
   const { roomName, members } = req.body;
   const roomUnique = uniqueString();
-  timerObj[roomUnique] = new tock({
+  timerObj[roomUnique] = new Tock({
     countdown: true,
     complete: () => {
       console.log('TIMER OVER');
-      dbHelpers.saveWinner(roomUnique);
     },
   });
-  timerObj[roomUnique].start(180000);
+
+  // CHANGE THE ROOM TIMER LENGTH HERE
+  timerObj[roomUnique].start(20000);
 
   dbHelpers.saveRoomAndMembers(roomName, members, roomUnique, (err, room, users) => {
     if (err) {
@@ -180,6 +181,7 @@ app.post('/api/save', (req, res) => {
   });
 });
 
+// Get room members here
 app.get('/api/rooms/:roomID', (req, res) => {
   const { roomID } = req.params;
   dbHelpers.getRoomMembers(roomID, (err, roomMembers) => {
@@ -195,11 +197,6 @@ app.get('/api/rooms/:roomID', (req, res) => {
 app.get('/api/timer/:roomID', (req, res) => {
   const { roomID } = req.params;
   res.send({ timeLeft: timerObj[roomID].lap() });
-});
-
-app.get('/api/nominatetimer/:roomID', (req, res) => {
-  const { roomID } = req.params;
-  res.send({ timeLeft: nominateTimerObj[roomID].lap() });
 });
 
 app.post('/room-redirect', (req, res) => {
@@ -232,7 +229,7 @@ app.post('/api/userwins', (req, res) => {
 app.get('/api/getWinner/:roomID', (req, res) => {
   const { roomID } = req.params;
   dbHelpers.getWinner(roomID, (response) => {
-    console.log('WINNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNER', response)
+    console.log('WINNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNER', response);
     res.send(response);
   });
 });
@@ -243,7 +240,6 @@ app.get('/api/getWinner/:roomID', (req, res) => {
 //
 app.post('/api/messages', (req, res) => {
   const { user_id, message, roomID } = req.body;
-  console.log('NOMIIIIIIINNNNNNNNNNNATION TIMER', nominateTimerObj);
   dbHelpers.saveMessage(user_id, message.name, message.message, roomID, (err, savedMessage) => {
     if (err) {
       console.log('Error saving message', err);
@@ -262,38 +258,6 @@ app.get('/api/messages/:roomID', (req, res) => {
       res.status(404).end();
     } else {
       res.send(fetchedMessages);
-    }
-  });
-});
-
-app.post('/api/nominate', (req, res) => {
-  const { name, roomID, restaurantID } = req.body;
-  // Timer for nominations
-  nominateTimerObj[roomID] = new tock({
-    countdown: true,
-    complete: () => {
-      console.log('TIMER OVER');
-      delete nominateTimerObj[roomID];
-    },
-  });
-  nominateTimerObj[roomID].start(15000);
-
-  console.log('NOMIIIIIIINNNNNNNNNNNATION TIMER', nominateTimerObj[roomID]);
-
-  dbHelpers.saveRestaurant(name, roomID, (err, restaurant) => {
-    if (err) {
-      console.log('Error saving restaurant', err);
-    } else {
-      res.end('Restaurant saved!', restaurant);
-    }
-  });
-
-  // Joseph SQL
-  dbHelpers.saveCurrentRestaurant(roomID, restaurantID, (err, restaurant) => {
-    if (err) {
-      console.log('Error saving current restaurant', err);
-    } else {
-      res.end('Current restaurant saved!', restaurant);
     }
   });
 });
@@ -324,17 +288,6 @@ app.post('/api/vetoes', (req, res) => {
   });
 });
 
-app.get('/api/votes/:roomID', (req, res) => {
-  const { roomID } = req.params;
-  dbHelpers.getScoreboard(roomID, (err, scores) => {
-    if (err) {
-      console.log('Error fetching scoreboard', err);
-    } else {
-      res.send(scores);
-    }
-  });
-});
-
 
 // ────────────────────────────────────────────────────────────────────────────────
 
@@ -353,7 +306,7 @@ db.models.sequelize.sync().then(() => {
 
   // Server-side socket events
   users = [];
-  rooms = {}
+  rooms = {};
   connections = [];
   userSockets = {};
 
@@ -362,70 +315,69 @@ db.models.sequelize.sync().then(() => {
   io.on('connection', (socket) => {
     console.log('made socket connection', socket);
 
-    socket.on('username connect', (data)=>{
-      console.log("USERNAME CONNECT:", data)
-      socket.username = data
-      userSockets[socket.username] = socket
+    socket.on('username connect', (data) => {
+      console.log('USERNAME CONNECT:', data);
+      socket.username = data;
+      userSockets[socket.username] = socket;
       users.push(socket.username);
-      console.log("USERSOCKETS:", userSockets)
-    })
+      console.log('USERSOCKETS:', userSockets);
+    });
 
     socket.on('join', (data) => {
-        console.log("JOIN DATA:", data)
-      socket.room = data.room
+      console.log('JOIN DATA:', data);
+      socket.room = data.room;
       // socket.username = data.user
       // userSockets[socket.username] = socket
       // users.push(socket.username);
-      if(!rooms[socket.room]){
+      if (!rooms[socket.room]) {
         rooms[socket.room] = [socket.username];
-      }else{
-        rooms[socket.room].push(socket.username)
+      } else {
+        rooms[socket.room].push(socket.username);
       }
 
-      socket.join(socket.room)
-      io.sockets.in(socket.room).emit('roomJoin', socket.room)
+      socket.join(socket.room);
+      io.sockets.in(socket.room).emit('roomJoin', socket.room);
       io.sockets.in(socket.room).emit('chat', {
         message: {
-                  user_id: socket.username,
-                  name: socket.username,
-                  message: `${socket.username} has joined the room!`,
-                }, 
-        roomId: socket.room
-      })
+          user_id: socket.username,
+          name: socket.username,
+          message: `${socket.username} has joined the room!`,
+        },
+        roomId: socket.room,
+      });
 
-      let user_id = socket.username
-      let name = socket.username
-      let message = `${socket.username} has joined the room!`
+      const user_id = socket.username;
+      const name = socket.username;
+      const message = `${socket.username} has joined the room!`;
 
       dbHelpers.saveMessage(user_id, name, message, socket.room, (err, savedMessage) => {
         if (err) {
           console.log('Error saving message', err);
         } else {
-          console.log('saved Message:', savedMessage)
+          console.log('saved Message:', savedMessage);
         }
       });
-
     });
 
-    socket.on('invite', (data)=>{
-      console.log("INVITE DATA:", data, "users:", data.users, "current username:", socket.username)
+    socket.on('invite', (data) => {
+      console.log('INVITE DATA:', data, 'users:', data.users, 'current username:', socket.username);
 
       // for(var el of data.users){
       //   console.log("IS THIS A FOR LOOP OR NOT", el)
       //   if(el === socket.username){
       //     console.log('USERNAME HIT:', el)
-          // io.emit('invitation', `You're invited to play in ${data.room}`)
-          socket.broadcast.emit('invitation', {users: data.users, roomHash: data.roomHash, roomName: data.roomName, host: socket.username})
-        // }
+      // io.emit('invitation', `You're invited to play in ${data.room}`)
+      socket.broadcast.emit('invitation', {
+        users: data.users, roomHash: data.roomHash, roomName: data.roomName, host: socket.username,
+      });
       // }
-
-
-    })
+      // }
+    });
 
     socket.on('chat', (data) => {
       console.log('Received chat!', data);
       io.sockets.in(socket.room).emit('chat', data);
-      console.log("ROOMS IN SERVER:", rooms)
+      console.log('ROOMS IN SERVER:', rooms);
       // Mitsuku only responds half the time
 
       // Delay Mitsuku a random number of seconds
@@ -473,9 +425,8 @@ db.models.sequelize.sync().then(() => {
     //   console.log('Received veto!', data);
     //   io.sockets.emit('veto', data.roomID);
     // });
-
   });
 });
 
 let timerObj = {};
-let nominateTimerObj = {};
+const nominateTimerObj = {};

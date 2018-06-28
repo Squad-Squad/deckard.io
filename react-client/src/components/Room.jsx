@@ -2,10 +2,11 @@ import React from 'react';
 import io from 'socket.io-client';
 import $ from 'jquery';
 import Tock from 'tocktimer';
-import CurrentSelection from './CurrentSelection.jsx';
 import sizeMe from 'react-sizeme';
 import Confetti from 'react-confetti';
 import LiveChat from './LiveChat.jsx';
+import VotePanel from './VotePanel.jsx';
+import { addCurrUsersFromDB } from '../../../redux/actions';
 import { connect } from 'react-redux';
 
 const mapStateToProps = state => {
@@ -15,12 +16,19 @@ const mapStateToProps = state => {
   };
 };
 
+const mapDispatchToProps = dispatch => {
+  return {
+    addCurrUsersFromDB: (users) => dispatch(addCurrUsersFromDB(users)),
+  };
+};
+
 class ConnectedRoom extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       message: '',
       messages: [],
+      memberMap: [],
       members: [],
       currentSelection: undefined,
       currentSelectionName: undefined,
@@ -29,17 +37,12 @@ class ConnectedRoom extends React.Component {
       vetoedRestaurants: [],
       roomName: '',
       timer: '',
-      nominateTimer: undefined,
       winner: {},
-      // The hasVoted functionality has not yet been implemented
-      hasVoted: false,
     };
     this.roomID = this.props.match.params.roomID;
 
-    this.nominateRestaurant = this.nominateRestaurant.bind(this);
     this.sendMessage = this.sendMessage.bind(this);
     this.voteApprove = this.voteApprove.bind(this);
-    this.voteVeto = this.voteVeto.bind(this);
 
     // Client-side socket events
     // NEED THIS TO WORK ON DEPLOYMENT
@@ -51,24 +54,22 @@ class ConnectedRoom extends React.Component {
       // if (message.roomID === this.roomID) {
       //   console.log('Received message', message);
       console.log("MESSAGE IN CHAT :", message)
-        this.setState({
-          messages: [...this.state.messages, message.message],
-        });
-        this.getMessages();
+      this.setState({
+        messages: [...this.state.messages, message.message],
+      });
+      this.getMessages();
       // }
     });
 
     this.props.io.on('vote', roomID => {
       if (roomID === this.roomID) {
         console.log('Received vote');
-        this.getVotes();
       }
     });
 
     this.props.io.on('veto', roomID => {
       if (roomID === this.roomID) {
         console.log('Received veto');
-        this.getVotes();
       }
     });
 
@@ -88,9 +89,9 @@ class ConnectedRoom extends React.Component {
     this.props.io.on('roomJoin', data => {
       // if (roomID === this.roomID) {
       //   console.log('Received new member');
-        // if (this.state.currentSelection) {
-        //   this.props.io.emit('nominate', { 'restaurant': this.state.currentSelection, 'roomID': this.roomID });
-        // }
+      // if (this.state.currentSelection) {
+      //   this.props.io.emit('nominate', { 'restaurant': this.state.currentSelection, 'roomID': this.roomID });
+      // }
       // }
 
     })
@@ -98,13 +99,13 @@ class ConnectedRoom extends React.Component {
 
   /// Send post request to server to fetch room info when user visits link
   componentDidMount() {
-    console.log('ROOM RENDERED', this.roomID );
+    console.log('ROOM RENDERED', this.roomID);
     this.getMessages();
     this.getRoomInfo();
     this.getTimer();
     // this.getNominateTimer();
-    this.getVotes();
-    this.props.io.emit('join', {room: this.roomID, user: this.props.loggedInUsername});
+    // this.getVotes();
+    this.props.io.emit('join', { room: this.roomID, user: this.props.loggedInUsername });
     // this.getWinner();
   }
 
@@ -118,24 +119,16 @@ class ConnectedRoom extends React.Component {
 
   getRoomInfo() {
     $.get(`/api/rooms/${this.roomID}`).then(roomMembers => {
-      console.log(`Got roommembers: ${JSON.stringify(roomMembers)} from ${this.roomID}`)
+      console.log(`Got roommembers: ${JSON.stringify(roomMembers)} from ${this.roomID}`);
+      // this.props.addCurrUsersFromDB(roomMembers);
       this.setState({
-        members: roomMembers,
+        memberMap: roomMembers.reduce((obj, memArr) => {
+          obj[memArr.email] = memArr.alias;
+          return obj;
+        }, {}),
+        members: roomMembers.map(member => member.alias),
         roomName: roomMembers[0].rooms[0].name,
-      });
-    });
-  }
-
-  getWinner() {
-    $.get(`/api/getWinner/${this.roomID}`).then(winner => {
-      console.log('WINNER: ', winner);
-      $.post('/api/search/restaurant', {
-        restId: winner
-      }).then((winner) => {
-        this.setState({
-          winner: winner
-        })
-      })
+      }, () => console.log(this.state.members));
     });
   }
 
@@ -145,7 +138,7 @@ class ConnectedRoom extends React.Component {
         countdown: true,
         interval: 100,
         callback: () => {
-          let time = tock.lap()
+          let time = tock.lap();
           let seconds = (Math.floor((time / 1000) % 60));
           let minutes = (Math.floor((time / (60000)) % 60));
           seconds = (seconds < 10) ? "0" + seconds : seconds;
@@ -153,104 +146,16 @@ class ConnectedRoom extends React.Component {
 
           this.setState({
             timer: minutes + ':' + seconds
-          })
+          });
         },
-        complete: () => {
-          this.getWinner();
-        }
       });
+
       // console.log('STARTING TIMER');
       tock.start(timer.timeLeft + 1000);
     });
   }
 
-  getNominateTimer() {
-    $.get(`/api/nominatetimer/${this.roomID}`).then(timer => {
-      let tock = new Tock({
-        countdown: true,
-        interval: 100,
-        callback: () => {
-          let time = tock.lap()
-          let seconds = (Math.floor((time / 1000) % 60));
-          let minutes = (Math.floor((time / (60000)) % 60));
-          seconds = (seconds < 10) ? "0" + seconds : seconds;
-          minutes = (minutes < 10) ? "0" + minutes : minutes;
-
-          this.setState({
-            nominateTimer: minutes + ':' + seconds
-          })
-        },
-        complete: () => {
-          this.setState({
-            nominateTimer: undefined,
-          })
-        }
-      });
-      console.log('STARTING TIMER');
-      tock.start(timer.timeLeft);
-    });
-  }
-
-  getVotes() {
-    $.get(`/api/votes/${this.roomID}`).then(restaurants => {
-      let vetoedRests = this.state.vetoedRestaurants;
-      for (let restaurant of restaurants) {
-        console.log('THIS IS VETOED', restaurant)
-        if (restaurant.vetoed === true) {
-          vetoedRests.push(restaurant.restaurant_id);
-        }
-      }
-      console.log('hey vetoed!!', vetoedRests)
-
-      this.setState({
-        votes: restaurants,
-        vetoedRestaurants: vetoedRests,
-      });
-
-      if (restaurants.length && !this.state.currentSelection) {
-        restaurants.forEach(restaurant => {
-          if (!restaurant.vetoed) {
-            this.setState({
-              currentSelectionName: restaurant.name,
-            });
-          }
-        });
-      }
-    });
-  }
-
-  // Activated on click of RestaurantListItem component
-  nominateRestaurant(restaurant, reloading = false) {
-    console.log('hey joseph nominate', restaurant)
-    if (this.state.isNominating) {
-      this.setState({
-        currentSelection: restaurant,
-        isNominating: false,
-      });
-      if (!reloading) {
-        let voteObj = {
-          name: restaurant.name,
-          roomID: this.roomID,
-          restaurantID: restaurant.id,
-        };
-        console.log('vote', voteObj)
-        let nomObj = {
-          restaurant: restaurant,
-          roomID: this.roomID,
-        };
-        $.post('/api/nominate', voteObj).then(() => {
-          this.props.io.emit('nominate', nomObj);
-        });
-      }
-      // A user who nominates a restaurant should automatically vote for it
-      // Socket is not refreshing table for some reason but still sends vote
-      this.voteApprove(restaurant.name, restaurant.id, this.props.username);
-    }
-    setTimeout(() => console.log('NOMINATE SEL', this.state.currentSelection), 2000)
-  }
-
   sendMessage(msg) {
-    console.log('NOMINATE TIMER', this.state.nominateTimer);
     let messageObj = {
       message: {
         name: this.props.username || this.state.name,
@@ -283,51 +188,23 @@ class ConnectedRoom extends React.Component {
     });
   }
 
-  voteVeto() {
-    if (!this.state.nominateTimer) {
-      let resId = this.state.currentSelection.id;
-      this.setState({
-        isNominating: true,
-      });
-      if (this.state.currentSelection) {
-        let voteObj = {
-          voter: this.props.username,
-          restaurant_id: resId,
-          name: this.state.currentSelection.name,
-          roomID: this.roomID,
-        };
-        console.log('INSIDE', voteObj)
-        $.post('/api/vetoes', voteObj).then(() => {
-          this.setState({
-            currentSelection: undefined,
-            hasVoted: true,
-          });
-          this.props.io.emit('veto', voteObj);
-        });
-      }
-    } else {
-      let resId = this.state.currentSelection.id;
-      if (this.state.currentSelection) {
-        let voteObj = {
-          voter: this.props.username,
-          restaurant_id: resId,
-          name: this.state.currentSelection.name,
-          roomID: this.roomID,
-        };
-        console.log('INSIDE', voteObj)
-        $.post('/api/vetoes', voteObj).then(() => {
-          this.setState({
-            hasVoted: true,
-          });
-          this.props.io.emit('veto', voteObj);
-        });
+  render() {
+    const { width, height } = this.props.size;
+
+    const chatOrVote = () => {
+      if (this.state.timer === "00:00") {
+        return (<VotePanel members={this.state.members} />);
+      } else {
+        return (<LiveChat
+          roomName={this.state.roomName}
+          messages={this.state.messages}
+          message={this.state.message}
+          sendMessage={this.sendMessage}
+          timer={this.state.timer}
+          memberMap={this.state.memberMap} />);
       }
     }
-  }
 
-  render() {
-    // get size for confetti
-    const { width, height } = this.props.size;
     return (
       <div>
         {this.state.winner.id ?
@@ -337,13 +214,7 @@ class ConnectedRoom extends React.Component {
         <div className="columns">
           <div className="column is-2"></div>
           <div className="column is-8">
-            <LiveChat
-              roomName={this.state.roomName}
-              messages={this.state.messages}
-              message={this.state.message}
-              sendMessage={this.sendMessage}
-              timer={this.state.timer}
-            />
+            {chatOrVote()}
           </div>
         </div>
       </div>
@@ -356,6 +227,6 @@ const config = { monitorHeight: true }
 // Call SizeMe with the config to get back the HOC.
 const sizeMeHOC = sizeMe(config)
 
-const Room = connect(mapStateToProps)(ConnectedRoom);
+const Room = connect(mapStateToProps, mapDispatchToProps)(ConnectedRoom);
 
 export default sizeMeHOC(Room)

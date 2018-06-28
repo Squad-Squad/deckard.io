@@ -1,3 +1,5 @@
+const RoomUser = require('./room-users');
+
 module.exports = (sequelize, DataTypes) => {
   const Room = sequelize.define('room', {
     name: {
@@ -12,13 +14,12 @@ module.exports = (sequelize, DataTypes) => {
 
   Room.associate = (models) => {
     Room.belongsToMany(models.User, {
-      through: 'room_users',
+      through: models.RoomUser,
       foreignKey: 'room_id',
     });
     Room.belongsTo(models.User, {
       foreignKey: 'owner',
     });
-    Room.hasMany(models.Restaurant);
   };
 
   return Room;
