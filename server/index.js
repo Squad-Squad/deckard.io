@@ -410,13 +410,14 @@ db.models.sequelize.sync().then(() => {
     socket.on('invite', (data)=>{
       console.log("INVITE DATA:", data, "users:", data.users, "current username:", socket.username)
 
-      for(var el of data.users){
-        console.log("IS THIS A FOR LOOP OR NOT", el)
-        if(el === socket.username){
-          console.log('USERNAME HIT:', el)
-          io.emit('invitation', `You're invited to play in ${data.room}`)
-        }
-      }
+      // for(var el of data.users){
+      //   console.log("IS THIS A FOR LOOP OR NOT", el)
+      //   if(el === socket.username){
+      //     console.log('USERNAME HIT:', el)
+          // io.emit('invitation', `You're invited to play in ${data.room}`)
+          io.emit('invitation', {users: data.users, room: data.room})
+        // }
+      // }
 
 
     })
