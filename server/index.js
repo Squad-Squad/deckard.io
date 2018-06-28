@@ -12,6 +12,7 @@ const socket = require('socket.io');
 const uniqueString = require('unique-string');
 const Tock = require('tocktimer');
 const mitsuku = require('../lib/mitsukuHelper')();
+const gameLogic = require('../lib/gameLogic')
 
 const Mailjet = require('node-mailjet').connect(
   process.env.MAILJET_API_KEY,
@@ -260,17 +261,12 @@ app.get('/api/messages/:roomID', (req, res) => {
   });
 });
 
-app.post('/api/votes', (req, res) => {
-  const {
-    name, roomID, voter, restaurant_id, nominator,
-  } = req.body;
-  dbHelpers.updateVotes(voter, restaurant_id, name, roomID, nominator, (err, restaurant) => {
-    if (err) {
-      console.log('Error upvoting restaurant', err);
-    } else {
-      res.end('Restaurant upvoted!', restaurant);
-    }
-  });
+app.post('/api/saveVotes', (req, res) => {
+    console.log("SSAVED VOTES", req.body)
+    rooms[socket.room].votes[req.body.user] = req.body.votes
+
+
+
 });
 
 app.post('/api/vetoes', (req, res) => {
@@ -327,6 +323,7 @@ db.models.sequelize.sync().then(() => {
       // users.push(socket.username);
       if (!rooms[socket.room]) {
         rooms[socket.room] = [socket.username];
+        rooms[socket.room].votes = {}
       } else {
         rooms[socket.room].push(socket.username);
       }
@@ -413,8 +410,13 @@ db.models.sequelize.sync().then(() => {
     // });
 
     socket.on('vote', (data) => {
-      console.log('Received vote!', data);
-      io.sockets.emit('vote', data.roomID);
+      console.log(data)
+      rooms[socket.room].votes[data.user] = data.votes
+      console.log(rooms)
+      if(rooms[socket.room].length - 1 === rooms[socket.room].votes.length){
+        gameLogic.calcScores(rooms[socket.room])
+      }
+      io.sockets.in(socket.room).emit()
     });
 
     // newSocket.on('veto', (data) => {

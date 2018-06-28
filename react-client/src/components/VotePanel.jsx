@@ -6,6 +6,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import VotePanelItem from './VotePanelItem.jsx';
 import BottomNavigation from '@material-ui/core/BottomNavigation';
 import Button from '@material-ui/core/Button';
+import axios from 'axios'
 import { withStyles } from '@material-ui/core/styles';
 import { connect } from 'react-redux';
 
@@ -67,6 +68,10 @@ class VotePanel extends Component {
       user: this.props.loggedInUser,
       votes: this.state.membersVoteMap
     };
+    axios.post('/api/saveVotes', submitObj)
+
+    this.props.io.emit('vote', submitObj)
+
   }
 
   render() {
