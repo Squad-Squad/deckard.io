@@ -1,23 +1,21 @@
 import React, { Component } from 'react';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
-import Divider from '@material-ui/core/Divider';
+import VotePanelItem from './VotePanelItem.jsx';
+import BottomNavigation from '@material-ui/core/BottomNavigation';
 import { withStyles } from '@material-ui/core/styles';
 import { connect } from 'react-redux';
 
 function mapStateToProps(state) {
   return {
     usersInRoom: state.currRoomUsers,
+    loggedInUser: state.username,
   };
 }
 
 const styles = theme => ({
-  button: {
-    margin: theme.spacing.unit,
-  },
   input: {
     display: 'none',
   },
@@ -30,8 +28,38 @@ const styles = theme => ({
 });
 
 class VotePanel extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      membersVoteMap: {},
+    };
+  }
+
+  componentDidMount() {
+    this.setState({
+      membersVoteMap: Object.keys(this.props.memberMap).reduce((obj, member) => {
+        obj[member] = '';
+        return obj;
+      }, {}),
+    });
+  }
+
+  setVote(alias, humanOrAI) {
+    for (let email in this.props.memberMap) {
+      if (this.props.memberMap[email] === alias) {
+        const newState = Object.assign(this.state.membersVoteMap, {
+          [email]: humanOrAI,
+        });
+        this.setState({
+          membersVoteMap: newState
+        });
+      }
+    }
+  }
+
   render() {
     const { classes } = this.props;
+    console.log('YOOOOOO', this.state.membersVoteMap);
     return (
       <Paper>
         {/* TOP BAR */}
@@ -45,24 +73,17 @@ class VotePanel extends Component {
           </AppBar>
         </div>
 
-        {this.props.members.map(user =>
-          [<div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <div><p style={{
-              paddingLeft: '15px',
-              paddingTop: '15px',
-              paddingBottom: '10px',
-              fontSize: '20px',
-            }}>{user}</p></div>
-            <div>
-              <Button variant="contained" color="primary" className={classes.button}>
-                A.I.
-              </Button>
-              <Button variant="contained" color="secondary" className={classes.button}>
-                Hyumon
-              </Button>
-            </div>
-          </div>,
-          <Divider />])}
+        {this.props.members.map((user, i) =>
+          <VotePanelItem key={i} user={user} />
+        )}
+
+        {/* BOTTOM BAR */}
+        <BottomNavigation>
+          <Button variant="fab" color="primary" aria-label="add" className={classes.button}
+            onClick={this.submitVotes.bind(this)}>
+            <PublishIcon />
+          </Button>
+        </BottomNavigation>
       </Paper>
     );
   }
