@@ -19,17 +19,21 @@ class ConnectedMainView extends React.Component {
     super(props);
     this.state = {
       loggedInUser: '',
-      invite: false
+      invite: false,
+      inviteHost: null,
+      roomHash: null
     }
     this.props.io.on('invitation', (data)=>{
-      // console.log("INVITATION USERS:", data.users)
+      console.log("INVITATION USERS:", data.host)
       for(var el of data.users){
         // console.log("IS THIS A FOR LOOP OR NOT", el)
         if(el === this.props.loggedInUsername){
           // console.log('USERNAME HIT:', el)
           console.log("WORD FROM THE OTHERSIDE:", data)
           this.setState({
-            invite: true
+            invite: true,
+            inviteHost: data.host,
+            roomHash: data.roomHash
           }, ()=> console.log("MAINVIEWINVITESTATE:", this.state.invite))
         }
       }
@@ -61,7 +65,10 @@ class ConnectedMainView extends React.Component {
           [
           <InviteDialogueModal 
           handleClose= {this.handleClose.bind(this)} 
-          addOpen={this.state.invite} />,
+          addOpen={this.state.invite}
+          host={this.state.inviteHost}
+          roomHash={this.state.roomHash}
+          {...props} />,
           <CreateRoomContainer
             searchUsers={this.props.searchUsers}
             searchedUsers={this.props.searchedUsers}
@@ -85,7 +92,9 @@ class ConnectedMainView extends React.Component {
             {...props} />,
             <InviteDialogueModal 
             handleClose= {this.handleClose.bind(this)} 
-            addOpen={this.state.invite} />,
+            addOpen={this.state.invite} 
+            host={this.state.inviteHost}
+            {...props} />,
             ]
         } />
       </div>

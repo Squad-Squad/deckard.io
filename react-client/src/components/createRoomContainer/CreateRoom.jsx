@@ -213,7 +213,7 @@ class ConnectedCreateRoom extends React.Component {
         error: true,
       });
     } else {
-       this.props.io.emit('invite', {users: this.props.usersForNewRoom, room:this.state.roomName})
+       // this.props.io.emit('invite', {users: this.props.usersForNewRoom, room:this.state.roomName})
       $.post(
         '/api/save',
         {
@@ -228,6 +228,7 @@ class ConnectedCreateRoom extends React.Component {
             roomLink: roomInfo.uniqueid
           }, () => {
             this.props.history.push(`/rooms/${roomInfo.uniqueid}`)
+            this.props.io.emit('invite', {users: this.props.usersForNewRoom, roomHash:roomInfo.uniqueid, roomName:this.state.roomName})
           });
         }
       )

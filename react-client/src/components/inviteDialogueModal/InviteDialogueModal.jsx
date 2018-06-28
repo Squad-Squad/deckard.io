@@ -31,9 +31,15 @@ const styles = theme => ({
 });
 
 class InviteDialogue extends React.Component {
-  state = {
-    open: false,
-  };
+  constructor(props){
+      super(props)
+      this.state = {
+        open: false,
+      };
+      
+    this.roomID = this.props.match.params.roomID
+
+  }
 
   handleOpen = () => {
     this.setState({ open: true });
@@ -49,9 +55,11 @@ class InviteDialogue extends React.Component {
   //   }, ()=> console.log("new open state on modal", this.state.open))
   // }
 
+
+
   render() {
     const { classes } = this.props;
-    // console.log("AM I RENDERINGGGG")
+    console.log("AM I RENDERINGGGG", this.roomID)
     return (
       <div>
         <Modal
@@ -62,12 +70,12 @@ class InviteDialogue extends React.Component {
         >
           <div style={getModalStyle()} className={classes.paper}>
             <Typography variant="title" id="modal-title">
-              Text in a modal
+              SPOT THE BOT
             </Typography>
             <Typography variant="subheading" id="simple-modal-description">
-              Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
+              You've Been Invited to Play with {this.props.host}!
             </Typography>
-            
+            <Button><a href={`/rooms/${this.props.roomHash}`}>Join Room</a></Button>
           </div>
         </Modal>
       </div>
