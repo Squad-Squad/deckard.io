@@ -122,7 +122,10 @@ class ConnectedRoom extends React.Component {
       console.log(`Got roommembers: ${JSON.stringify(roomMembers)} from ${this.roomID}`);
       // this.props.addCurrUsersFromDB(roomMembers);
       this.setState({
-        memberMap: roomMembers,
+        memberMap: roomMembers.reduce((obj, memArr) => {
+          obj[memArr.email] = memArr.alias;
+          return obj;
+        }, {}),
         members: roomMembers.map(member => member.alias),
         roomName: roomMembers[0].rooms[0].name,
       }, () => console.log(this.state.members));
@@ -198,7 +201,7 @@ class ConnectedRoom extends React.Component {
           message={this.state.message}
           sendMessage={this.sendMessage}
           timer={this.state.timer}
-          members={this.state.members} />);
+          memberMap={this.state.memberMap} />);
       }
     }
 

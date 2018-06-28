@@ -38,38 +38,6 @@ class ConnectedLiveChat extends React.Component {
     this.state = {
       msg: '',
     };
-
-    //
-    // ─── RANDOMIZE NAMES ─────────────────────────────────────────────
-    //
-    const aliases = ['HAL 9000',
-      'Android 18',
-      'AM',
-      'Marvin',
-      'Roy Batty',
-      'Pris',
-      'Rachael',
-      'C-3PO',
-      'Ash',
-      'T-800',
-      'T-1000',
-      'Data',
-      'Bishop',
-      'Johnny 5',
-      'Robocop',
-      'Rosie',
-      'Cortana',
-      'HK-47',
-      '2B',
-      'GlaDOS',
-      'SHODAN',
-      'Dolores'];
-    this.userAliases = this.props.members.reduce((obj, user) => {
-      obj[user] = aliases[Math.floor(Math.random() * aliases.length)];
-      return obj;
-    }, {});
-    this.userAliases["Mitsuku"] = aliases[Math.floor(Math.random() * aliases.length)];
-    // ─────────────────────────────────────────────────────────────────
   }
 
   componentDidMount() {
@@ -113,6 +81,7 @@ class ConnectedLiveChat extends React.Component {
 
   render() {
     const { classes } = this.props;
+    console.log('MEMBERMAP', this.props.memberMap);
     return (
       <Paper
         id="chat-window"
@@ -143,7 +112,7 @@ class ConnectedLiveChat extends React.Component {
             } else {
               return (<div className="section"
                 style={{ textAlign: "left", borderTop: "1px solid black", padding: "17px", fontSize: "18px" }}>
-                <p><strong>{this.userAliases[message.name]}:&nbsp;</strong>{message.message}</p>
+                <p><strong>{this.props.memberMap[message.name]}:&nbsp;</strong>{message.message}</p>
               </div>)
             }
           })}
