@@ -383,7 +383,7 @@ db.models.sequelize.sync().then(() => {
             // Save her message to the db
             dbHelpers.saveMessage(
               null,
-              'Mitsuku',
+              'mitsuku@mitsuku.com',
               response,
               data.roomID,
               (err) => {
@@ -397,7 +397,7 @@ db.models.sequelize.sync().then(() => {
               {
                 message: {
                   user_id: null,
-                  name: 'Mitsuku',
+                  name: 'mitsuku@mitsuku.com',
                   message: response,
                 },
                 roomID: data.roomID,
