@@ -2,6 +2,7 @@ import React from 'react';
 import Hero from './Hero.jsx';
 import CreateRoomContainer from './createRoomContainer/CreateRoomContainer.jsx';
 import Room from './Room.jsx';
+import InviteDialogueModal from './inviteDialogueModal/InviteDialogueModal.jsx'
 import { Route } from 'react-router-dom';
 import { connect } from 'react-redux'
 
@@ -18,14 +19,18 @@ class ConnectedMainView extends React.Component {
     super(props);
     this.state = {
       loggedInUser: '',
+      invite: false
     }
     this.props.io.on('invitation', (data)=>{
-      console.log("INVITATION USERS:", data.users)
+      // console.log("INVITATION USERS:", data.users)
       for(var el of data.users){
         // console.log("IS THIS A FOR LOOP OR NOT", el)
         if(el === this.props.loggedInUsername){
-          console.log('USERNAME HIT:', el)
+          // console.log('USERNAME HIT:', el)
           console.log("WORD FROM THE OTHERSIDE:", data)
+          this.setState({
+            invite: true
+          }, ()=> console.log("MAINVIEWINVITESTATE:", this.state.invite))
         }
       }
     })
@@ -45,8 +50,12 @@ class ConnectedMainView extends React.Component {
   render() {
     return (
       <div>
+      <InviteDialogueModal addOpen={this.state.invite} />
         <Route exact path="/" render={
-          (props) => <CreateRoomContainer
+          (props) => 
+          [
+          <InviteDialogueModal addOpen={this.state.invite} />,
+          <CreateRoomContainer
             searchUsers={this.props.searchUsers}
             searchedUsers={this.props.searchedUsers}
             loggedIn={this.props.loggedIn}
@@ -54,6 +63,7 @@ class ConnectedMainView extends React.Component {
             userRooms={this.props.userRooms}
             io={this.props.io}
             {...props} />
+            ]
         } />
         <Route path="/rooms/:roomID" render={
            (props) => <Room
