@@ -193,7 +193,7 @@ class ConnectedRoom extends React.Component {
 
     const chatOrVote = () => {
       if (this.state.timer === "00:00") {
-        return (<VotePanel members={this.state.members} />);
+        return (<VotePanel members={this.state.members} io={this.props.io} />);
       } else {
         return (<LiveChat
           roomName={this.state.roomName}

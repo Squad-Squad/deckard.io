@@ -30,6 +30,20 @@ const styles = theme => ({
 });
 
 class VotePanel extends Component {
+  constructor(props){
+    super(props)
+    this.state = {
+
+    }
+    this.submitVote.bind(this)
+  }
+
+  submitVote(e){
+    console.log(e.target.value)
+    this.props.io.emit()
+  }
+
+
   render() {
     const { classes } = this.props;
     return (
