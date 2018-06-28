@@ -70,7 +70,6 @@ class ConnectedRoom extends React.Component {
     this.socket.on('veto', roomID => {
       if (roomID === this.roomID) {
         console.log('Received veto');
-        this.getVotes();
       }
     });
 
@@ -105,7 +104,6 @@ class ConnectedRoom extends React.Component {
     this.getRoomInfo();
     this.getTimer();
     // this.getNominateTimer();
-    this.getVotes();
     this.socket.emit('join', { room: this.roomID, user: this.props.loggedInUsername });
     // this.getWinner();
   }
@@ -136,7 +134,7 @@ class ConnectedRoom extends React.Component {
         countdown: true,
         interval: 100,
         callback: () => {
-          let time = tock.lap()
+          let time = tock.lap();
           let seconds = (Math.floor((time / 1000) % 60));
           let minutes = (Math.floor((time / (60000)) % 60));
           seconds = (seconds < 10) ? "0" + seconds : seconds;
