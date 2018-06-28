@@ -6,6 +6,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import Icon from '@material-ui/core/Icon';
 
 class LoginDialog extends React.Component {
   constructor(props) {
@@ -93,9 +94,11 @@ class LoginDialog extends React.Component {
               Login
             <Button
                 variant="raised"
-                style={{ float: 'right' }}
+                style={{ float: 'right', backgroundColor: '#4285f4', color: 'white' }}
                 href='/auth/google'>
-                Login with Google</Button>
+                <i class="fab fa-google"></i>
+                <p style={{ paddingLeft: '15px' }}>Login With Google</p>
+              </Button>
             </DialogTitle>
             <DialogContent>
               {loginError}
@@ -116,6 +119,7 @@ class LoginDialog extends React.Component {
                 fullWidth
                 type="password"
                 onChange={this.enterPassword}
+                onKeyUp={this.handleKeyPress}
               />
             </DialogContent>
             <DialogActions>
@@ -128,7 +132,7 @@ class LoginDialog extends React.Component {
             </DialogActions>
           </Dialog>
         </div>
-      </div>
+      </div >
     );
   }
 }
