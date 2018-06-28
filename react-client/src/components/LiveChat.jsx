@@ -82,6 +82,7 @@ class ConnectedLiveChat extends React.Component {
   render() {
     const { classes } = this.props;
     console.log('MEMBERMAP', this.props.memberMap);
+    console.log('MESSAGES', this.props.messages);
     return (
       <Paper
         id="chat-window"
