@@ -30,9 +30,11 @@ function reducer(state = initialState, action) {
       return Object.assign({}, state, action.payload);
 
     case 'ADD_USER_TO_NEW_ROOM':
-      return Object.assign({}, state, {
-        usersForNewRoom: state.usersForNewRoom.concat([action.payload.username]),
-      });
+      if (!state.usersForNewRoom.includes(action.payload.username)) {
+        return Object.assign({}, state, {
+          usersForNewRoom: state.usersForNewRoom.concat([action.payload.username]),
+        });
+      } return state;
 
     case 'REMOVE_USER_FROM_NEW_ROOM':
       // THIS CONSOLE LOG IS NECESSARY, DON'T REMOVE

@@ -78,7 +78,7 @@ const saveRoomAndMembers = (roomName, members, id, callback) => {
         // Associate rooms and add aliases
         const random = Math.floor(Math.random() * aliases.length);
         addUserPromises.push(room[0].addUser(user, { through: { alias: aliases[random] } }));
-        aliases.splice(random, 0);
+        aliases.splice(random, 1);
       });
       return Promise.all(addUserPromises);
     })
