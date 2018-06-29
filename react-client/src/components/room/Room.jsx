@@ -6,7 +6,7 @@ import sizeMe from 'react-sizeme';
 import Confetti from 'react-confetti';
 import LiveChat from './LiveChat.jsx';
 import VotePanel from './VotePanel.jsx';
-import { addCurrUsersFromDB } from '../../../redux/actions';
+import { addCurrUsersFromDB } from '../../../../redux/actions';
 import { connect } from 'react-redux';
 
 const mapStateToProps = state => {
@@ -195,7 +195,8 @@ class ConnectedRoom extends React.Component {
     const chatOrVote = () => {
       if (this.state.timer === "00:00") {
         return (<VotePanel members={this.state.members}
-          memberMap={this.state.memberMap} />);
+          memberMap={this.state.memberMap}
+          roomId={this.roomID} />);
       } else {
         return (<LiveChat
           roomName={this.state.roomName}
