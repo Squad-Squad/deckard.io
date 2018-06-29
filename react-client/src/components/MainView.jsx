@@ -1,6 +1,6 @@
 import React from 'react';
 import CreateRoomContainer from './createRoomContainer/CreateRoomContainer.jsx';
-import Room from './Room.jsx';
+import Room from './room/Room.jsx';
 import InviteDialogueModal from './inviteDialogueModal/InviteDialogueModal.jsx'
 import { Route } from 'react-router-dom';
 import { connect } from 'react-redux'

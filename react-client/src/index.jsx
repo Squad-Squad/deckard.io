@@ -10,7 +10,6 @@ import Particles from 'react-particles-js';
 import Navbar from './components/Navbar.jsx';
 import MainView from './components/MainView.jsx'
 import SignupPage from './components/AuthUserMenu/SignupPage.jsx';
-import Room from './components/Room.jsx';
 import io from 'socket.io-client';
 
 import 'animate.css/animate.css';

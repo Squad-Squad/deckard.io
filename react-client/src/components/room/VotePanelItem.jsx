@@ -60,22 +60,24 @@ class VotePanelItem extends Component {
           <Button variant="contained" color="primary" className={classes.button}
             onClick={this.aiClick.bind(this)}>
             A.I.
-              </Button>
-          <Button variant="contained" color="secondary" disabled className={classes.button}
-            onClick={this.humanClick.bind(this)}>
-            Hyumon
-              </Button>
+          </Button>
+          <span onClick={this.humanClick.bind(this)}>
+            <Button variant="contained" color="secondary" disabled className={classes.button}>
+              Hyumon
+            </Button>
+          </span>
         </div>)
       } else {
         return (<div>
-          <Button variant="contained" color="primary" disabled className={classes.button}
-            onClick={this.aiClick.bind(this)}>
-            A.I.
-              </Button>
+          <span onClick={this.aiClick.bind(this)}>
+            <Button variant="contained" color="primary" disabled className={classes.button}>
+              A.I.
+            </Button>
+          </span>
           <Button variant="contained" color="secondary" className={classes.button}
             onClick={this.humanClick.bind(this)}>
             Hyumon
-              </Button>
+          </Button>
         </div>)
       }
     }
