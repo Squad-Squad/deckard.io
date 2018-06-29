@@ -38,7 +38,6 @@ function ConnectedCombatantsContainer(props) {
       </Typography>
       {
         props.usersForNewRoom.map((user, i) => {
-          console.log('INSIDE PROPS', props);
           return (
             <div
               className={classes.root}

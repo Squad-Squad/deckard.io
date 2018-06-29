@@ -132,11 +132,13 @@ class ConnectedCreateRoom extends React.Component {
       <MenuItem selected={isHighlighted}
         component="div"
         onClick={() => {
-          props.addUserToNewRoom(suggestion);
-          this.setState({
-            query: '',
-            currSuggestions: [],
-          });
+          if (this.props.usersForNewRoom.length <= 7) {
+            props.addUserToNewRoom(suggestion);
+            this.setState({
+              query: '',
+              currSuggestions: [],
+            });
+          }
         }}>
         <div>
           {parts.map(function (part, index) {
@@ -264,7 +266,8 @@ class ConnectedCreateRoom extends React.Component {
 
   handleAutoSuggestKeyPress(event) {
     if (event.key == 'Enter') {
-      if (this.state.query.length) {
+      if (this.state.query.length &&
+        this.props.usersForNewRoom.length <= 7) {
         this.props.addUserToNewRoom(this.state.currSuggestions[0]);
         this.setState({
           currSuggestions: [],
