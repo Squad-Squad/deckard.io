@@ -38,6 +38,7 @@ function ConnectedCombatantsContainer(props) {
       </Typography>
       {
         props.usersForNewRoom.map((user, i) => {
+          console.log('INSIDE PROPS', props);
           return (
             <div
               className={classes.root}
@@ -49,7 +50,7 @@ function ConnectedCombatantsContainer(props) {
                   </Avatar>
                 }
                 label={user}
-                onDelete={() => props.removeUserFromNewRoom(user)}
+                onDelete={props.removeUserFromNewRoom.bind(this, user)}
                 className={classes.chip}
               />
             </div>
