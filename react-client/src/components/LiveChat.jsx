@@ -1,87 +1,146 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import Paper from '@material-ui/core/Paper';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import BottomNavigation from '@material-ui/core/BottomNavigation';
+import Button from '@material-ui/core/Button';
+import PublishIcon from '@material-ui/icons/Publish';
+import FormControl from '@material-ui/core/FormControl';
+import Input from '@material-ui/core/Input';
+import { withStyles } from '@material-ui/core/styles';
+import { connect } from 'react-redux';
 
-class LiveChat extends React.Component {
-    constructor(props) {
-      super(props);
-      this.state = {
-        msg: '',
-      }
-    }
+const mapStateToProps = state => {
+  return {
+    username: state.username,
+    usersInRoom: state.usersForNewRoom,
+  };
+};
 
-    componentDidMount() {
-        this.scrollToBottom();
-    }
+const styles = {
+  root: {
+    flexGrow: 1,
+  },
+  flex: {
+    flex: 1,
+  },
+  menuButton: {
+    marginLeft: -12,
+    marginRight: 20,
+  },
+};
 
-    updateMessage(e) {
-        this.setState({
-          msg: e.target.value,
-        });
-      }
+class ConnectedLiveChat extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      msg: '',
+    };
+  }
 
-    componentDidUpdate() {
-        this.scrollToBottom();
-    }
-    
-    scrollToBottom () {
-      const scrollHeight = this.messageList.scrollHeight;
-      const height = this.messageList.clientHeight;
-      const maxScrollTop = scrollHeight - height;
-      ReactDOM.findDOMNode(this.messageList).scrollTop = maxScrollTop > 0 ? maxScrollTop : 0;
-    }
+  componentDidMount() {
+    this.scrollToBottom();
+  }
 
-    handleKeyPress(event) {
-        if (event.key == 'Enter') {
-          if(this.state.msg) this.props.sendMessage(this.state.msg);
-          this.setState({
-            msg: ''
-          })
-        }
-    }
+  updateMessage(e) {
+    this.setState({
+      msg: e.target.value,
+    });
+  }
 
-    handleClick() {
-      if (this.state.msg) this.props.sendMessage(this.state.msg);
-        this.setState({
-            msg: ''
-        })
-    }
-  
-    render() {
-  
-      return (
-        <div id="chat">
-          <h4 className="is-size-4">{this.props.roomName} Chatroom</h4>
-          <div className="chat-messages" ref={(el) => { this.messageList = el;}}>
-                {this.props.messages.map(message => {
-                    if(this.props.username === message.name) {
-                      return (<div className="section" style={{ textAlign: "right", backgroundColor: "#ffe6e6", borderTop: "1px solid black", padding: "5px" }}><p>{message.message}</p></div>)
-                    } else {
-                      return (<div className="section" style={{ textAlign: "left", backgroundColor: "#f0f5f5", borderTop: "1px solid black", padding: "5px" }}><p><strong>{message.name}:</strong>{message.message}</p></div>)
-                    }
-                })}
-            </div> 
-          <div>
-            <span>
-                  <input
-                    type="text"
-                    className="input is-primary is-small is-rounded"
-                    value={this.state.msg}
-                    onChange={this.updateMessage.bind(this)}
-                    onKeyPress={this.handleKeyPress.bind(this)}
-                    style={{width:'450px', marginTop:'15px', marginRight:'15px'}}
-                  />
-            </span>
-            <button
-              onClick={this.handleClick.bind(this)}
-              className="button is-outlined is-primary is-small send-message"
-              style={{marginTop:'15px'}}
-            >
-              Send
-            </button>
-          </div>
-        </div>
-      );
+  componentDidUpdate(prevProps) {
+    if (JSON.stringify(this.props.messages) !== JSON.stringify(prevProps.messages)) {
+      this.scrollToBottom();
     }
   }
-  
-  export default LiveChat;
+
+  scrollToBottom() {
+    const scrollHeight = this.messageList.scrollHeight;
+    const height = this.messageList.clientHeight;
+    const maxScrollTop = scrollHeight - height;
+    ReactDOM.findDOMNode(this.messageList).scrollTop = maxScrollTop > 0 ? maxScrollTop : 0;
+  }
+
+  handleKeyPress(event) {
+    if (event.key == 'Enter') {
+      if (this.state.msg) this.props.sendMessage(this.state.msg);
+      this.setState({
+        msg: ''
+      })
+    }
+  }
+
+  handleClick() {
+    if (this.state.msg) this.props.sendMessage(this.state.msg);
+    this.setState({
+      msg: ''
+    })
+  }
+
+  render() {
+    const { classes } = this.props;
+    console.log('MEMBERMAP', this.props.memberMap);
+    console.log('MESSAGES', this.props.messages);
+    return (
+      <Paper
+        id="chat-window"
+        style={{ backgroundColor: 'rgba(255,255,255,.1)' }}>
+
+        {/* TOP BAR */}
+        <div className={classes.root}>
+          <AppBar position="static" color="default">
+            <Toolbar>
+              <Typography variant="title" color="inherit" className={classes.flex}>
+                {this.props.roomName}
+              </Typography>
+              <Typography variant="title" color="inherit">
+                {this.props.timer}
+              </Typography>
+            </Toolbar>
+          </AppBar>
+        </div>
+
+        {/* MESSAGE LIST */}
+        <div className="chat-messages" ref={(el) => { this.messageList = el; }}>
+          {this.props.messages.map(message => {
+            if (this.props.username === message.name) {
+              return (<div className="section"
+                style={{ textAlign: "right", borderTop: "1px solid black", padding: "17px", fontSize: "18px" }}>
+                <p>{message.message}</p>
+              </div>)
+            } else {
+              return (<div className="section"
+                style={{ textAlign: "left", borderTop: "1px solid black", padding: "17px", fontSize: "18px" }}>
+                <p><strong>{this.props.memberMap[message.name]}:&nbsp;</strong>{message.message}</p>
+              </div>)
+            }
+          })}
+        </div>
+
+        {/* BOTTOM BAR */}
+        <BottomNavigation
+          onChange={this.handleChange}>
+          <FormControl style={{ width: '70%' }}>
+            <Input
+              style={{ marginTop: '10px' }}
+              fullWidth
+              value={this.state.msg}
+              onChange={this.updateMessage.bind(this)}
+              onKeyPress={this.handleKeyPress.bind(this)}
+            />
+          </FormControl>
+          <Button variant="fab" color="primary" aria-label="add" className={classes.button}
+            onClick={this.handleClick.bind(this)}>
+            <PublishIcon />
+          </Button>
+        </BottomNavigation>
+      </Paper>
+    );
+  }
+}
+
+const LiveChat = connect(mapStateToProps)(ConnectedLiveChat);
+
+export default withStyles(styles)(LiveChat);

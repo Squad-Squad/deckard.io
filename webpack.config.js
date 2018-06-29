@@ -20,12 +20,25 @@ module.exports = {
       include: SRC_DIR,
       loader: 'babel-loader',
       query: {
-        presets: ['react', 'es2015'],
+        presets: ['react', 'es2015', 'stage-2'],
       },
     },
     {
       test: /\.(s*)css$/,
       use: ['style-loader', 'css-loader', 'sass-loader'],
+    },
+    {
+      test: /\.(gif|png|jpe?g|svg)$/i,
+      use: [
+        'file-loader',
+        {
+          loader: 'image-webpack-loader',
+          options: {
+            bypassOnDebug: true, // webpack@1.x
+            disable: true, // webpack@2.x and newer
+          },
+        },
+      ],
     },
     ],
   },

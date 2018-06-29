@@ -1,43 +1,69 @@
 import React from 'react';
-import Combatant from './Combatant.jsx'
+import PropTypes from 'prop-types';
+import { withStyles } from '@material-ui/core/styles';
+import Avatar from '@material-ui/core/Avatar';
+import Chip from '@material-ui/core/Chip';
+import FaceIcon from '@material-ui/icons/Face';
+import Typography from '@material-ui/core/Typography';
+import { connect } from 'react-redux';
+import { removeUserFromNewRoom } from '../../../../redux/actions.js';
 
-class CombatantsContainer extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-    }
-  }
+const mapStateToProps = state => {
+  return { usersForNewRoom: state.usersForNewRoom };
+};
 
-  render() {
-    return (
-      <div>
-        <p className="title">
-          Combatants
-        </p>
-        <div className="tile is-ancestor" >
-          <div className="tile is-parent is-vertical is-4">
-            {/* {this.props.combatants} */}
-            {this.props.combatants.filter((email, i) => i % 3 === 0)
-              .map((email, i) => {
-                return <Combatant key={i} email={email} />
-              })}
-          </div>
-          <div className="tile is-parent is-vertical is-4">
-            {this.props.combatants.filter((email, i) => i % 3 === 1)
-              .map((email, i) => {
-                return <Combatant key={i} email={email} />
-              })}
-          </div>
-          <div className="tile is-parent is-vertical is-4">
-            {this.props.combatants.filter((email, i) => i % 3 === 2)
-              .map((email, i) => {
-                return <Combatant key={i} email={email} />
-              })}
-          </div>
-        </div>
-      </div>
-    )
-  }
+const mapDispatchToProps = dispatch => {
+  return {
+    removeUserFromNewRoom: (username) => dispatch(removeUserFromNewRoom(username)),
+  };
+};
+
+const styles = theme => ({
+  root: {
+    display: 'flex',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+  },
+  chip: {
+    margin: theme.spacing.unit,
+  },
+});
+
+function ConnectedCombatantsContainer(props) {
+  const { classes } = props;
+  return (
+    <div>
+      <Typography id="users-for-new-room-header">
+        Users &ensp;<span style={{ flex: "right" }}>{props.usersForNewRoom.length}/7</span>
+      </Typography>
+      {
+        props.usersForNewRoom.map((user, i) => {
+          return (
+            <div
+              className={classes.root}
+              key={i}>
+              <Chip
+                avatar={
+                  <Avatar>
+                    <FaceIcon />
+                  </Avatar>
+                }
+                label={user}
+                onDelete={() => props.removeUserFromNewRoom(user)}
+                className={classes.chip}
+              />
+            </div>
+          )
+        })
+      }
+    </div>
+  );
 }
 
-export default CombatantsContainer;
+ConnectedCombatantsContainer.propTypes = {
+  classes: PropTypes.object.isRequired,
+};
+
+const CombatantsContainer = withStyles(styles)(ConnectedCombatantsContainer);
+
+export default connect(mapStateToProps, mapDispatchToProps)(CombatantsContainer);

@@ -1,6 +1,12 @@
 import React from 'react';
 import validator from 'validator';
-import { Route, Link } from 'react-router-dom';
+import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
 
 class SubscribeDialog extends React.Component {
   constructor(props) {
@@ -72,11 +78,11 @@ class SubscribeDialog extends React.Component {
     }
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.open === false && this.state.open === true) {
-      document.getElementById('subscribeEmail').focus();
-    }
-  }
+  // componentDidUpdate(prevProps, prevState) {
+  //   if (prevState.open === false && this.state.open === true) {
+  //     document.getElementById('subscribeEmail').focus();
+  //   }
+  // }
 
 
   //
@@ -89,94 +95,62 @@ class SubscribeDialog extends React.Component {
     ) : { className: 'modal animated fadeIn' };
 
     // Validate email field
-    let isEmailValid1 = this.state.emailValid ? (
-      { className: 'input is-success' }
-    ) : { className: 'input is-danger' };
+    let isEmailValid = this.state.emailValid ? null : {
+      error: true,
+      helperText: 'Please enter a valid email address'
+    };
 
-    let isEmailValid2 = this.state.emailValid ? null : (
-      <p className="help is-danger">
-        Please enter a valid email address.
-      </p>
-    );
-
-    // Login error
-    const subscribeError = this.props.subscribeError ? (
-      <section className="section login-error">
-        <div className="container">
-          <h2 className="subtitle">
-            That username is already taken.
-              </h2>
-        </div>
-      </section>
-    ) : null;
+    // Signup error
+    // const subscribeError = this.props.subscribeError ? (
+    //   <section className="section login-error">
+    //     <div className="container">
+    //       <h2 className="subtitle">
+    //         That username is already taken.
+    //           </h2>
+    //     </div>
+    //   </section>
+    // ) : null;
 
     return (
       <div>
-        <a className="button is-primary" onClick={this.handleClickOpen}>
-          Sign Up
-        </a>
-        <div {...isActive} >
-          <div className="modal-background"></div>
-          <div className="modal-card">
-            <header className="modal-card-head">
-              <p className="modal-card-title">
-                Sign Up
-            </p>
-              <button
-                className="delete"
-                aria-label="close"
-                onClick={this.handleClose}
-              ></button>
-            </header>
-            <section className="modal-card-body">
-              {subscribeError}
-              <div className="field">
-                <label className="label">Email</label>
-                <div className="control has-icons-left">
-                  <input
-                    {...isEmailValid1}
-                    type="email"
-                    id="subscribeEmail"
-                    placeholder="johndoe@gmail.com"
-                    value={this.state.email}
-                    onChange={this.enterEmail}
-                    onKeyPress={this.handleKeyPress} />
-                  <span className="icon is-small is-left">
-                    <i className="fas fa-envelope"></i>
-                  </span>
-                </div>
-                {isEmailValid2}
-              </div>
-              <div className="field">
-                <label className="label">Password</label>
-                <p className="control has-icons-left">
-                  <input
-                    className="input"
-                    type="password"
-                    placeholder="password123"
-                    value={this.state.password}
-                    onChange={this.enterPassword}
-                    onKeyPress={this.handleKeyPress} />
-                  <span className="icon is-small is-left">
-                    <i className="fas fa-lock"></i>
-                  </span>
-                </p>
-              </div>
-            </section>
-            <footer className="modal-card-foot">
-              <button
-                className="button"
-                onClick={this.handleClose}>
-                Cancel
-              </button>
-              <button
-                className="button is-success"
-                onClick={this.handleSubscribe}>
-                Go!
-            </button>
-            </footer>
-          </div>
-        </div>
+        <Button onClick={this.handleClickOpen} className="auth-button">Signup</Button>
+        <Dialog
+          open={this.state.open}
+          onClose={this.handleClose}
+          aria-labelledby="form-dialog-title"
+        >
+          <DialogTitle id="form-dialog-title">SignUp</DialogTitle>
+          <DialogContent>
+            <TextField
+              {...isEmailValid}
+              label="Email"
+              // InputLabelProps={{
+              //   shrink: true,
+              // }}
+              fullWidth
+              autoFocus={true}
+              onChange={this.enterEmail}
+            />
+            <TextField
+              label="Password"
+              // InputLabelProps={{
+              //   shrink: true,
+              // }}
+              fullWidth
+              type="password"
+              onChange={this.enterPassword}
+              onKeyUp={this.handleKeyPress}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={this.handleClose} >
+              Cancel
+            </Button>
+            <Button onClick={this.handleSubscribe} >
+              Signup
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div >
     );
   }

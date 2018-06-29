@@ -7,33 +7,28 @@
 
 // @import "../../../node_modules/bulma/sass/utilities/initial-variables";
 // @import "../../../node_modules/bulma/sass/utilities/functions";
-@import "../../../node_modules/bulmaswatch/journal/_variables.scss";
+@import "../../../node_modules/bulmaswatch/cyborg/_variables.scss";
 @import "../../../node_modules/bulma/bulma";
-@import "../../../node_modules/bulmaswatch/journal/_overrides.scss";
+@import "../../../node_modules/bulmaswatch/cyborg/_overrides.scss";
 
+html {
+  height: 100%;
+}
 
-// .create-room-container {
-//     margin-top: 25px;
-//     margin-left: 10px;
-//     padding: 20px;
-//     background-color: $grey; 
-// }
 article {
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
 }
 
-article.combatants {
-  background-color: white;
-}
-
 nav {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16), 0 1px 3px rgba(0, 0, 0, 0.23);
+  background-color: rgba(33,33,33,.3) !important;
 }
 
 div.notification.is-danger {
   padding: 5px;
   margin: 0px;
 }
+
 
 figure.image {
   padding: none;
@@ -44,7 +39,7 @@ figure.image {
 }
 
 #logo {
-  font-family: 'Kalam', cursive;
+  font-family: 'Libre Barcode 39 Extended Text', cursive;
   font-size: 40px;
   padding: 5px 0px 0px 10px;
 }
@@ -70,6 +65,17 @@ figure.image {
 
 #create-room-error {
   color: white;
+}
+
+#login-prompt {
+  margin: auto;
+  width: 30%;
+  padding: 10px;
+  text-align: center;
+  margin-top: 80px;
+  font-size: 25px;
+  font-family: 'Titillium Web', sans-serif;
+  background-color: rgba(66, 66, 66, 0);
 }
 
 #signup-or-container {
@@ -105,6 +111,20 @@ figure.image {
   width: 88%;
 }
 
+#new-room-header {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 30px;
+}
+
+#users-for-new-room-header {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 25px;
+}
+
+#chat-window{
+  background-color: $grey-light;
+}
+
 div.columns {
   margin: 15px;
 }
@@ -127,7 +147,7 @@ div.columns {
 }
 
 .section.login-error {
-  background-color: $red;
+  background-color: $primary;
   padding: 10px;
   margin-bottom: 10px;
   border-radius: 5px;
@@ -135,6 +155,10 @@ div.columns {
 
 .subtitle {
   color: white;
+}
+
+.MuiDialog-paper-95 {
+  background-color: rgba(33, 33, 33, 0.5) !important;
 }
 
 .timer {
@@ -163,58 +187,14 @@ div.columns {
   margin-bottom: 0px;
 }
 
-/* GOOGLE LOGIN BUTTON */
-
-.loginBtn {
-  box-sizing: border-box;
-  position: relative;
-  /* width: 13em;  - apply for fixed size */
-  margin: 0.2em;
-  padding: 0 15px 0 46px;
-  border: none;
-  text-align: left;
-  line-height: 34px;
-  white-space: nowrap;
-  border-radius: 0.2em;
-  font-size: 16px;
-  color: #FFF;
+.auth-buttons {
+  font-family: 'Titillium Web', sans-serif;
 }
 
-.loginBtn:before {
-  content: "";
-  box-sizing: border-box;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 34px;
-  height: 100%;
+.chat-messages {
+  height: 500px;
+  overflow: auto;
 }
-
-.loginBtn:focus {
-  outline: none;
-}
-
-.loginBtn:active {
-  box-shadow: inset 0 0 0 32px rgba(0, 0, 0, 0.1);
-}
-
-.loginBtn--google {
-  /*font-family: "Roboto", Roboto, arial, sans-serif;*/
-  background: $red;
-}
-
-.loginBtn--google:before {
-  border-right: #BB3F30 1px solid;
-  background: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/14082/icon_google.png') 6px 6px no-repeat;
-}
-
-.loginBtn--google:hover,
-.loginBtn--google:focus {
-  background: $red;
-  cursor: pointer
-}
-
-/*END GOOGLE LOGIN BUTTON*/
 
 /* GOOGLE LOGIN ICON */
 
@@ -306,36 +286,5 @@ $font-size: 25px;
   button {
     margin-right: 10px;
     margin-top: 15px;
-  }
-}
-
-// CHAT STYLING
-#chat {
-  width: 100%;
-  button.send-message {
-    margin-top: 10px;
-  }
-  .chat-messages {
-    margin: 25px auto;
-    border: 1px solid $grey-light;
-    box-shadow: 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-    height: 300px;
-    padding: 15px;
-    border-radius: 10px;
-    overflow: auto;
-    p {
-      font-size: 1.2rem;
-    }
-  }
-  .chat-input {
-    width: 600px;
-    margin-top: 15px;
-  }
-  .chat-self {
-    text-align: "right";
-    background-color: "red";
-  }
-  .chat-others {
-    text-align: "left";
   }
 }

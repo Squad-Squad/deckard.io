@@ -1,31 +1,53 @@
 import React from 'react';
+import Button from '@material-ui/core/Button';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+import { connect } from 'react-redux';
 
-class UserMenu extends React.Component {
-  constructor(props) {
-    super(props);
-  }
+const mapStateToProps = state => {
+  return {
+    username: state.username
+  };
+};
+
+class ConnectedUserMenu extends React.Component {
+  state = {
+    anchorEl: null,
+  };
+
+  handleClick = event => {
+    this.setState({ anchorEl: event.currentTarget });
+  };
+
+  handleClose = () => {
+    this.setState({ anchorEl: null });
+  };
 
   render() {
+    const { anchorEl } = this.state;
+
     return (
-      <div className="navbar-item has-dropdown is-hoverable">
-        <a className="navbar-link" href="/documentation/overview/start/">
+      <div>
+        <Button
+          aria-owns={anchorEl ? 'simple-menu' : null}
+          aria-haspopup="true"
+          onClick={this.handleClick}
+        >
           {this.props.username}
-        </a>
-        <div className="navbar-dropdown is-boxed">
-          <a className="navbar-item" href="/">
-            Friends
-          </a>
-          <a className="navbar-item" href="/">
-            Favorites
-          </a>
-          <hr className="navbar-divider" />
-          <a className="navbar-item is-active" onClick={this.props.logout}>
-            Logout
-          </a>
-        </div>
+        </Button>
+        <Menu
+          id="simple-menu"
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={this.handleClose}
+        >
+          <MenuItem onClick={this.props.logout}>Logout</MenuItem>
+        </Menu>
       </div>
     );
   }
 }
+
+const UserMenu = connect(mapStateToProps)(ConnectedUserMenu);
 
 export default UserMenu;
