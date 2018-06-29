@@ -43,6 +43,7 @@ function ConnectedCombatantsContainer(props) {
               className={classes.root}
               key={i}>
               <Chip
+                style={{ zIndex: '0' }}
                 avatar={
                   <Avatar>
                     <FaceIcon />
