@@ -13,6 +13,7 @@ const uniqueString = require('unique-string');
 const Tock = require('tocktimer');
 const mitsuku = require('../lib/mitsukuHelper')();
 const gameLogic = require('../lib/gameLogic')
+const redis = require('redis')
 
 const Mailjet = require('node-mailjet').connect(
   process.env.MAILJET_API_KEY,
@@ -23,6 +24,14 @@ const db = require('../database-postgresql/models/index');
 const dbHelpers = require('../db-controllers');
 
 const { Op } = db;
+
+
+const client = redis.createClient();
+const multi = client.multi()
+
+client.on('connect', function() {
+  console.log('Connected to Redis');
+});
 
 const app = express();
 
@@ -157,7 +166,7 @@ app.post('/api/roomEmail', (req, res) => {
 // ─── CREATE ROOMS AND GET ROOM INFO ─────────────────────────────────────────────
 //
 app.post('/api/save', (req, res) => {
-  // console.log('NEW ROOM DATA', req.body);
+  console.log('NEW ROOM DATA', req.body);
   const { roomName, members } = req.body;
   const roomUnique = uniqueString();
   timerObj[roomUnique] = new Tock({
@@ -167,6 +176,12 @@ app.post('/api/save', (req, res) => {
     },
   });
 
+    for(var el of members){
+      multi.rpush(roomUnique, el)
+    }
+
+    multi.exec(function(errors, results) {})
+
   // CHANGE THE ROOM TIMER LENGTH HERE
   timerObj[roomUnique].start(30000);
 
@@ -175,6 +190,7 @@ app.post('/api/save', (req, res) => {
       console.log('Error saving room and members', err);
     } else {
       console.log(`Saved room: ${roomName}`);
+      console.log('SAVED ROOM:', room, "AND USERS:", users)
       res.send(room[0].dataValues);
     }
   });
@@ -183,6 +199,16 @@ app.post('/api/save', (req, res) => {
 // Get room members here
 app.get('/api/rooms/:roomID', (req, res) => {
   const { roomID } = req.params;
+
+  client.lrange(roomID, 0, -1, (err, replies)=>{
+    if(err){
+      console.log(err)
+    }else{
+      console.log("REDIS ROOM MEMBERS RETRIEVE", replies)
+      res.send(replies)
+    }
+  })
+
   dbHelpers.getRoomMembers(roomID, (err, roomMembers) => {
     if (err) {
       console.log('Error getting room members', err);
@@ -404,23 +430,14 @@ db.models.sequelize.sync().then(() => {
   
 
     socket.on('vote', (data) => {
-      console.log("INCOMING DATA", data)
-      // rooms[socket.room].votes[data.user] = data.votes
       rooms[socket.room][0][data.user] = data.votes
-      console.log("THIS IS ROOOMS", rooms)
-      // console.log('BEFORE CONDITIONAL:', rooms[socket.room].length, "votes obj length:", Object.keys(rooms[socket.room].votes).length)
-      console.log('BEFORE CONDITIONAL:', rooms[socket.room].length, "votes obj length:", Object.keys(rooms[socket.room][0]).length)
       if(rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length){
-        console.log('HIT CONDITIONAL:', rooms[socket.room].length, "votes obj length:", Object.keys(rooms[socket.room][0]).length)
         gameLogic.calcScores(rooms[socket.room])
       }
       // io.sockets.in(socket.room).emit()
     });
 
-    // newSocket.on('veto', (data) => {
-    //   console.log('Received veto!', data);
-    //   io.sockets.emit('veto', data.roomID);
-    // });
+ 
   });
 });
 
