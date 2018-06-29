@@ -401,10 +401,7 @@ db.models.sequelize.sync().then(() => {
       }, Math.random() * 5000 + 2000);
     });
 
-    // socket.on('nominate', (data) => {
-    //   console.log('Nomination received!', data);
-    //   io.sockets.emit('nominate', data);
-    // });
+  
 
     socket.on('vote', (data) => {
       console.log("INCOMING DATA", data)
