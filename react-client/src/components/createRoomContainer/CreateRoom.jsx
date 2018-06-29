@@ -21,6 +21,7 @@ import { addUserToNewRoom } from '../../../../redux/actions.js';
 const mapStateToProps = state => {
   return {
     loggedIn: state.loggedIn,
+    loggedInUsername: state.username,
     usersForNewRoom: state.usersForNewRoom,
   };
 };
@@ -131,8 +132,13 @@ class ConnectedCreateRoom extends React.Component {
       <MenuItem selected={isHighlighted}
         component="div"
         onClick={() => {
-          props.addUserToNewRoom(suggestion);
-          clearInput();
+          if (this.props.usersForNewRoom.length <= 7) {
+            props.addUserToNewRoom(suggestion);
+            this.setState({
+              query: '',
+              currSuggestions: [],
+            });
+          }
         }}>
         <div>
           {parts.map(function (part, index) {
@@ -211,7 +217,7 @@ class ConnectedCreateRoom extends React.Component {
         error: true,
       });
     } else {
-       // this.props.io.emit('invite', {users: this.props.usersForNewRoom, room:this.state.roomName})
+      // this.props.io.emit('invite', {users: this.props.usersForNewRoom, room:this.state.roomName})
       $.post(
         '/api/save',
         {
@@ -226,7 +232,7 @@ class ConnectedCreateRoom extends React.Component {
             roomLink: roomInfo.uniqueid
           }, () => {
             this.props.history.push(`/rooms/${roomInfo.uniqueid}`)
-            this.props.io.emit('invite', {users: this.props.usersForNewRoom, roomHash:roomInfo.uniqueid, roomName:this.state.roomName})
+            this.props.io.emit('invite', { users: this.props.usersForNewRoom, roomHash: roomInfo.uniqueid, roomName: this.state.roomName })
           });
         }
       )
@@ -260,11 +266,14 @@ class ConnectedCreateRoom extends React.Component {
 
   handleAutoSuggestKeyPress(event) {
     if (event.key == 'Enter') {
-      this.props.addUserToNewRoom(this.state.currSuggestions[0]);
-      this.setState({
-        currSuggestions: [],
-        query: '',
-      })
+      if (this.state.query.length &&
+        this.props.usersForNewRoom.length <= 7) {
+        this.props.addUserToNewRoom(this.state.currSuggestions[0]);
+        this.setState({
+          currSuggestions: [],
+          query: '',
+        })
+      }
     }
   }
 
@@ -277,6 +286,8 @@ class ConnectedCreateRoom extends React.Component {
 
   render() {
     const { classes } = this.props;
+    console.log('USERNAMEMEMEMEMEME', this.props.loggedInUsername);
+    this.props.addUserToNewRoom(this.props.loggedInUsername);
 
     var uniqueURL = this.state.roomID ?
       `https://food-fight-greenfield.herokuapp.com/rooms/${this.state.roomID}`

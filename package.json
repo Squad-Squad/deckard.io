@@ -35,7 +35,8 @@
     "style-loader": "^0.13.1",
     "url-loader": "^0.5.7",
     "webpack": "^2.2.1",
-    "webpack-cli": "^3.0.2"
+    "webpack-cli": "^3.0.8",
+    "webpack-command": "^0.3.0"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free-solid": "^5.0.13",
