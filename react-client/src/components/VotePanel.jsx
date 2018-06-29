@@ -68,7 +68,7 @@ class VotePanel extends Component {
       user: this.props.loggedInUser,
       votes: this.state.membersVoteMap
     };
-    axios.post('/api/saveVotes', submitObj)
+    // axios.post('/api/saveVotes', submitObj)
 
     this.props.io.emit('vote', submitObj)
 

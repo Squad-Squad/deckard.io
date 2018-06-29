@@ -263,10 +263,7 @@ app.get('/api/messages/:roomID', (req, res) => {
 
 app.post('/api/saveVotes', (req, res) => {
     console.log("SSAVED VOTES", req.body)
-    rooms[socket.room].votes[req.body.user] = req.body.votes
-
-
-
+    // rooms[socket.room].votes[req.body.user] = req.body.votes
 });
 
 app.post('/api/vetoes', (req, res) => {
@@ -322,8 +319,8 @@ db.models.sequelize.sync().then(() => {
       // userSockets[socket.username] = socket
       // users.push(socket.username);
       if (!rooms[socket.room]) {
-        rooms[socket.room] = [socket.username];
-        rooms[socket.room].votes = {}
+        rooms[socket.room] = [{}, socket.username];
+        // rooms[socket.room].votes = {}
       } else {
         rooms[socket.room].push(socket.username);
       }
@@ -410,13 +407,17 @@ db.models.sequelize.sync().then(() => {
     // });
 
     socket.on('vote', (data) => {
-      console.log(data)
-      rooms[socket.room].votes[data.user] = data.votes
-      console.log(rooms)
-      if(rooms[socket.room].length - 1 === rooms[socket.room].votes.length){
+      console.log("INCOMING DATA", data)
+      // rooms[socket.room].votes[data.user] = data.votes
+      rooms[socket.room][0][data.user] = data.votes
+      console.log("THIS IS ROOOMS", rooms)
+      // console.log('BEFORE CONDITIONAL:', rooms[socket.room].length, "votes obj length:", Object.keys(rooms[socket.room].votes).length)
+      console.log('BEFORE CONDITIONAL:', rooms[socket.room].length, "votes obj length:", Object.keys(rooms[socket.room][0]).length)
+      if(rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length){
+        console.log('HIT CONDITIONAL:', rooms[socket.room].length, "votes obj length:", Object.keys(rooms[socket.room][0]).length)
         gameLogic.calcScores(rooms[socket.room])
       }
-      io.sockets.in(socket.room).emit()
+      // io.sockets.in(socket.room).emit()
     });
 
     // newSocket.on('veto', (data) => {
