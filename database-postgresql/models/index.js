@@ -57,6 +57,10 @@ const Room = sequelize.define('room', {
     type: Sequelize.STRING,
     allowNull: false,
   },
+  scores: {
+    type: Sequelize.STRING,
+    allowNull: true,
+  },
 });
 
 const RoomUsers = sequelize.define('room-users', {

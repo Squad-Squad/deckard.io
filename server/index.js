@@ -388,13 +388,22 @@ db.models.sequelize.sync().then(() => {
 
 
     socket.on('vote', (data) => {
-      // rooms[socket.room].votes[data.user] = data.votes
       rooms[socket.room][0][data.user] = data.votes;
-      // console.log('BEFORE CONDITIONAL:', rooms[socket.room].length, "votes obj length:", Object.keys(rooms[socket.room].votes).length)
       if (rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length) {
-        gameLogic.calcScores(rooms[socket.room]);
+        const scores = gameLogic.calcScores(rooms[socket.room]);
+        // const scoresArr = [];
+        // Object.keys(scores).forEach(key => scoresArr.push([key, scores[key]]));
+        db.models.Room.findOne({ where: { uniqueid: socket.room } })
+          .then((room) => {
+            // Check if record exists in db
+            if (room) {
+              room.updateAttributes({
+                scores: JSON.stringify(scores),
+              });
+            }
+          });
+        io.sockets.in(socket.room).emit('scores', scores);
       }
-      // io.sockets.in(socket.room).emit()
     });
 
     // newSocket.on('veto', (data) => {
