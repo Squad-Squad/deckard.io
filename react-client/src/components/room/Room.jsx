@@ -6,6 +6,7 @@ import sizeMe from 'react-sizeme';
 import Confetti from 'react-confetti';
 import LiveChat from './LiveChat.jsx';
 import VotePanel from './VotePanel.jsx';
+import Scores from './Scores.jsx';
 import { addCurrUsersFromDB } from '../../../../redux/actions';
 import { connect } from 'react-redux';
 
@@ -30,35 +31,21 @@ class ConnectedRoom extends React.Component {
       messages: [],
       memberMap: [],
       members: [],
-      currentSelection: undefined,
-      currentSelectionName: undefined,
-      isNominating: true,
-      votes: [],
-      vetoedRestaurants: [],
       roomName: '',
       timer: '',
-      winner: {},
+      scores: null,
     };
     this.roomID = this.props.match.params.roomID;
 
     this.sendMessage = this.sendMessage.bind(this);
     this.voteApprove = this.voteApprove.bind(this);
 
-    // Client-side socket events
-    // NEED THIS TO WORK ON DEPLOYMENT
-    // this.props.io = io({ transports: ['websocket'] });
-    // SERIOUSLY NEED ABOVE FOR DEPLOYMENT
-    // DO NOT NEED TO SPECIFY PORT ON CLIENT SIDE
-
     this.props.io.on('chat', message => {
-      // if (message.roomID === this.roomID) {
-      //   console.log('Received message', message);
       console.log("MESSAGE IN CHAT :", message)
       this.setState({
         messages: [...this.state.messages, message.message],
       });
       this.getMessages();
-      // }
     });
 
     this.props.io.on('vote', roomID => {
@@ -73,28 +60,12 @@ class ConnectedRoom extends React.Component {
       }
     });
 
-    // this.props.io.on('nominate', nominee => {
-    //   if (nominee.roomID === this.roomID) {
-    //     console.log('Received nomination', nominee);
-    //     this.setState({
-    //       currentSelection: nominee.restaurant,
-    //       hasVoted: false,
-    //       isNominating: false,
-    //     });
-    //   }
-    //   this.getNominateTimer();
-    //   this.getVotes();
-    // });
-
-    this.props.io.on('roomJoin', data => {
-      // if (roomID === this.roomID) {
-      //   console.log('Received new member');
-      // if (this.state.currentSelection) {
-      //   this.props.io.emit('nominate', { 'restaurant': this.state.currentSelection, 'roomID': this.roomID });
-      // }
-      // }
-
-    })
+    this.props.io.on('scores', scores => {
+      console.log('RECEIVING SCORES');
+      this.setState({
+        scores
+      });
+    });
   }
 
   /// Send post request to server to fetch room info when user visits link
@@ -103,10 +74,7 @@ class ConnectedRoom extends React.Component {
     this.getMessages();
     this.getRoomInfo();
     this.getTimer();
-    // this.getNominateTimer();
-    // this.getVotes();
     this.props.io.emit('join', { room: this.roomID, user: this.props.loggedInUsername });
-    // this.getWinner();
   }
 
   getMessages() {
@@ -193,11 +161,10 @@ class ConnectedRoom extends React.Component {
     const { width, height } = this.props.size;
 
     const chatOrVote = () => {
-      if (this.state.timer === "00:00") {
-
+      if (this.state.timer === "00:00" && !this.state.scores) {
         return (<VotePanel members={this.state.members}
           memberMap={this.state.memberMap} io={this.props.io} />);
-      } else {
+      } else if (!this.state.scores) {
         return (<LiveChat
           roomName={this.state.roomName}
           messages={this.state.messages}
@@ -205,15 +172,16 @@ class ConnectedRoom extends React.Component {
           sendMessage={this.sendMessage}
           timer={this.state.timer}
           memberMap={this.state.memberMap} />);
+      } else {
+        return (
+          <Scores
+            scores={this.state.scores} />
+        )
       }
     }
 
     return (
       <div>
-        {this.state.winner.id ?
-          <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
-            <Confetti width={width} height={height} />
-          </div> : ''}
         <div className="columns">
           <div className="column is-2"></div>
           <div className="column is-8">

@@ -15,6 +15,7 @@ const mitsuku = require('../lib/mitsukuHelper')();
 const gameLogic = require('../lib/gameLogic')
 const redis = require('redis')
 
+
 const Mailjet = require('node-mailjet').connect(
   process.env.MAILJET_API_KEY,
   process.env.MAILJET_API_SECRET,
@@ -166,14 +167,13 @@ app.post('/api/roomEmail', (req, res) => {
 // ─── CREATE ROOMS AND GET ROOM INFO ─────────────────────────────────────────────
 //
 app.post('/api/save', (req, res) => {
+
   console.log('NEW ROOM DATA', req.body);
+
   const { roomName, members } = req.body;
   const roomUnique = uniqueString();
   timerObj[roomUnique] = new Tock({
     countdown: true,
-    complete: () => {
-      console.log('TIMER OVER');
-    },
   });
 
     for(var el of members){
@@ -183,7 +183,7 @@ app.post('/api/save', (req, res) => {
     multi.exec(function(errors, results) {})
 
   // CHANGE THE ROOM TIMER LENGTH HERE
-  timerObj[roomUnique].start(30000);
+  timerObj[roomUnique].start(2000);
 
   dbHelpers.saveRoomAndMembers(roomName, members, roomUnique, (err, room, users) => {
     if (err) {
@@ -213,7 +213,6 @@ app.get('/api/rooms/:roomID', (req, res) => {
     if (err) {
       console.log('Error getting room members', err);
     } else {
-      console.log(`Got for ${roomID} roommembers: ${JSON.stringify(roomMembers)}`);
       res.send(roomMembers);
     }
   });
@@ -254,7 +253,6 @@ app.post('/api/userwins', (req, res) => {
 app.get('/api/getWinner/:roomID', (req, res) => {
   const { roomID } = req.params;
   dbHelpers.getWinner(roomID, (response) => {
-    console.log('WINNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNER', response);
     res.send(response);
   });
 });
@@ -288,8 +286,8 @@ app.get('/api/messages/:roomID', (req, res) => {
 });
 
 app.post('/api/saveVotes', (req, res) => {
-    console.log("SSAVED VOTES", req.body)
-    // rooms[socket.room].votes[req.body.user] = req.body.votes
+  console.log('SSAVED VOTES', req.body);
+  // rooms[socket.room].votes[req.body.user] = req.body.votes
 });
 
 app.post('/api/vetoes', (req, res) => {
@@ -331,15 +329,12 @@ db.models.sequelize.sync().then(() => {
   const io = socket(server);
   io.on('connection', (socket) => {
     socket.on('username connect', (data) => {
-      console.log('USERNAME CONNECT:', data);
       socket.username = data;
       userSockets[socket.username] = socket;
       users.push(socket.username);
-      console.log('USERSOCKETS:', userSockets);
     });
 
     socket.on('join', (data) => {
-      console.log('JOIN DATA:', data);
       socket.room = data.room;
       // socket.username = data.user
       // userSockets[socket.username] = socket
@@ -369,15 +364,11 @@ db.models.sequelize.sync().then(() => {
       dbHelpers.saveMessage(user_id, name, message, socket.room, (err, savedMessage) => {
         if (err) {
           console.log('Error saving message', err);
-        } else {
-          console.log('saved Message:', savedMessage);
         }
       });
     });
 
     socket.on('invite', (data) => {
-      console.log('INVITE DATA:', data, 'users:', data.users, 'current username:', socket.username);
-
       // for(var el of data.users){
       //   console.log("IS THIS A FOR LOOP OR NOT", el)
       //   if(el === socket.username){
@@ -391,9 +382,7 @@ db.models.sequelize.sync().then(() => {
     });
 
     socket.on('chat', (data) => {
-      console.log('Received chat!', data);
       io.sockets.in(socket.room).emit('chat', data);
-      console.log('ROOMS IN SERVER:', rooms);
       // Mitsuku only responds half the time
 
       // Delay Mitsuku a random number of seconds
@@ -427,14 +416,29 @@ db.models.sequelize.sync().then(() => {
       }, Math.random() * 5000 + 2000);
     });
 
-  
 
     socket.on('vote', (data) => {
       rooms[socket.room][0][data.user] = data.votes
       if(rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length){
         gameLogic.calcScores(rooms[socket.room])
+
+      rooms[socket.room][0][data.user] = data.votes;
+      if (rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length) {
+        const scores = gameLogic.calcScores(rooms[socket.room]);
+        // const scoresArr = [];
+        // Object.keys(scores).forEach(key => scoresArr.push([key, scores[key]]));
+        db.models.Room.findOne({ where: { uniqueid: socket.room } })
+          .then((room) => {
+            // Check if record exists in db
+            if (room) {
+              room.updateAttributes({
+                scores: JSON.stringify(scores),
+              });
+            }
+          });
+        io.sockets.in(socket.room).emit('scores', scores);
+
       }
-      // io.sockets.in(socket.room).emit()
     });
 
  
