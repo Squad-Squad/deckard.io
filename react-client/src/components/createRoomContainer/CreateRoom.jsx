@@ -264,11 +264,13 @@ class ConnectedCreateRoom extends React.Component {
 
   handleAutoSuggestKeyPress(event) {
     if (event.key == 'Enter') {
-      this.props.addUserToNewRoom(this.state.currSuggestions[0]);
-      this.setState({
-        currSuggestions: [],
-        query: '',
-      })
+      if (this.state.query.length) {
+        this.props.addUserToNewRoom(this.state.currSuggestions[0]);
+        this.setState({
+          currSuggestions: [],
+          query: '',
+        })
+      }
     }
   }
 
