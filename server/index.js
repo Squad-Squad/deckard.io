@@ -161,9 +161,6 @@ app.post('/api/save', (req, res) => {
   const roomUnique = uniqueString();
   timerObj[roomUnique] = new Tock({
     countdown: true,
-    complete: () => {
-      console.log('TIMER OVER');
-    },
   });
 
   // CHANGE THE ROOM TIMER LENGTH HERE
@@ -186,7 +183,6 @@ app.get('/api/rooms/:roomID', (req, res) => {
     if (err) {
       console.log('Error getting room members', err);
     } else {
-      console.log(`Got for ${roomID} roommembers: ${JSON.stringify(roomMembers)}`);
       res.send(roomMembers);
     }
   });
@@ -338,8 +334,6 @@ db.models.sequelize.sync().then(() => {
       dbHelpers.saveMessage(user_id, name, message, socket.room, (err, savedMessage) => {
         if (err) {
           console.log('Error saving message', err);
-        } else {
-          console.log('saved Message:', savedMessage);
         }
       });
     });
