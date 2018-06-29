@@ -113,8 +113,8 @@ app.post('/api/signupEmail', (req, res) => {
   console.log('Received request to send email to', req.body.email);
   const { email } = req.body;
   const emailData = {
-    FromEmail: 'foodfightHR@gmail.com',
-    FromName: 'Food Fight',
+    FromEmail: 'd3ck4rd.io@gmail.com',
+    FromName: 'deckard.io',
     Subject: 'You\'ve been invited to Food Fight!',
     'Text-part': `You've been invited to a Food Fight. Visit ${process.env.DOMAIN || 'http://localhost:3000/'}signup to signup.`,
     Recipients: [{ Email: email }],
@@ -134,10 +134,10 @@ app.post('/api/roomEmail', (req, res) => {
   console.log('Received request to send email to', req.body);
   const { email, roomInfo } = req.body;
   const emailData = {
-    FromEmail: 'foodfightHR@gmail.com',
-    FromName: 'Food Fight',
-    Subject: 'You\'ve been invited to join a Food Fight room!',
-    'Text-part': `You've been invited to a Food Fight room. Visit ${process.env.DOMAIN || 'http://localhost:3000/'}rooms/${roomInfo.uniqueid} to join.`,
+    FromEmail: 'd3ck4rd.io@gmail.com',
+    FromName: 'deckard.io',
+    Subject: 'You\'ve been invited to join a deckard.io room!',
+    'Text-part': `You've been invited to a deckard.io room. Visit ${process.env.DOMAIN || 'http://localhost:3000/'}rooms/${roomInfo.uniqueid} to join.`,
     Recipients: [{ Email: email }],
   };
   Mailjet.post('send')
