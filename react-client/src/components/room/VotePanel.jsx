@@ -6,6 +6,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import VotePanelItem from './VotePanelItem.jsx';
 import BottomNavigation from '@material-ui/core/BottomNavigation';
 import Button from '@material-ui/core/Button';
+import AwaitingResults from './AwaitingResults.jsx';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import { connect } from 'react-redux';
@@ -38,6 +39,7 @@ class VotePanel extends Component {
     super(props);
     this.state = {
       membersVoteMap: {},
+      submitted: false,
     };
   }
 
@@ -68,8 +70,11 @@ class VotePanel extends Component {
       user: this.props.loggedInUser,
       votes: this.state.membersVoteMap
     };
-    this.props.history.push(`/rooms/${this.props.roomId}/awaiting-results`);
+    // this.props.history.push(`/rooms/${this.props.roomId}/awaiting-results`);
     // axios.post('/api/saveVotes', submitObj)
+    this.setState({
+      submitted: true,
+    });
 
     this.props.io.emit('vote', submitObj)
 
@@ -78,36 +83,48 @@ class VotePanel extends Component {
   render() {
     const { classes } = this.props;
 
+    const formOrLoader = () => {
+      if (this.state.submitted) {
+        return (<AwaitingResults />);
+      } else {
+        return (
+          <Paper style={{
+            backgroundColor: 'rgba(255,255,255,.1)'
+          }}>
+            {/* TOP BAR */}
+            <div className={classes.root}>
+              <AppBar position="static" color="default">
+                <Toolbar>
+                  <Typography variant="title" color="inherit" className={classes.flex}>
+                    Voting
+                  </Typography>
+                </Toolbar>
+              </AppBar>
+            </div>
+
+            {this.props.members.map((user, i) =>
+              <VotePanelItem key={i} user={user} setVote={this.setVote.bind(this)} />
+            )}
+
+            {/* BOTTOM BAR */}
+            <BottomNavigation style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+            }}>
+              <Button variant="contained" color="secondary" aria-label="add" className={classes.button}
+                onClick={this.submitVotes.bind(this)}>
+                Submit
+              </Button>
+            </BottomNavigation>
+          </Paper>
+        )
+      }
+    }
+
     return (
-      <Paper style={{
-        backgroundColor: 'rgba(255,255,255,.1)'
-      }}>
-        {/* TOP BAR */}
-        <div className={classes.root}>
-          <AppBar position="static" color="default">
-            <Toolbar>
-              <Typography variant="title" color="inherit" className={classes.flex}>
-                Voting
-              </Typography>
-            </Toolbar>
-          </AppBar>
-        </div>
-
-        {this.props.members.map((user, i) =>
-          <VotePanelItem key={i} user={user} setVote={this.setVote.bind(this)} />
-        )}
-
-        {/* BOTTOM BAR */}
-        <BottomNavigation style={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-        }}>
-          <Button variant="contained" color="secondary" aria-label="add" className={classes.button}
-            onClick={this.submitVotes.bind(this)}>
-            Submit
-          </Button>
-        </BottomNavigation>
-      </Paper>
+      <div>
+        {formOrLoader()}
+      </div>
     );
   }
 }
