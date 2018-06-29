@@ -12,7 +12,7 @@ const socket = require('socket.io');
 const uniqueString = require('unique-string');
 const Tock = require('tocktimer');
 const mitsuku = require('../lib/mitsukuHelper')();
-const gameLogic = require('../lib/gameLogic')
+const gameLogic = require('../lib/gameLogic');
 
 const Mailjet = require('node-mailjet').connect(
   process.env.MAILJET_API_KEY,
@@ -157,7 +157,6 @@ app.post('/api/roomEmail', (req, res) => {
 // ─── CREATE ROOMS AND GET ROOM INFO ─────────────────────────────────────────────
 //
 app.post('/api/save', (req, res) => {
-  // console.log('NEW ROOM DATA', req.body);
   const { roomName, members } = req.body;
   const roomUnique = uniqueString();
   timerObj[roomUnique] = new Tock({
@@ -168,7 +167,7 @@ app.post('/api/save', (req, res) => {
   });
 
   // CHANGE THE ROOM TIMER LENGTH HERE
-  timerObj[roomUnique].start(30000);
+  timerObj[roomUnique].start(2000);
 
   dbHelpers.saveRoomAndMembers(roomName, members, roomUnique, (err, room, users) => {
     if (err) {
@@ -228,7 +227,6 @@ app.post('/api/userwins', (req, res) => {
 app.get('/api/getWinner/:roomID', (req, res) => {
   const { roomID } = req.params;
   dbHelpers.getWinner(roomID, (response) => {
-    console.log('WINNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNER', response);
     res.send(response);
   });
 });
@@ -262,8 +260,8 @@ app.get('/api/messages/:roomID', (req, res) => {
 });
 
 app.post('/api/saveVotes', (req, res) => {
-    console.log("SSAVED VOTES", req.body)
-    // rooms[socket.room].votes[req.body.user] = req.body.votes
+  console.log('SSAVED VOTES', req.body);
+  // rooms[socket.room].votes[req.body.user] = req.body.votes
 });
 
 app.post('/api/vetoes', (req, res) => {
@@ -305,15 +303,12 @@ db.models.sequelize.sync().then(() => {
   const io = socket(server);
   io.on('connection', (socket) => {
     socket.on('username connect', (data) => {
-      console.log('USERNAME CONNECT:', data);
       socket.username = data;
       userSockets[socket.username] = socket;
       users.push(socket.username);
-      console.log('USERSOCKETS:', userSockets);
     });
 
     socket.on('join', (data) => {
-      console.log('JOIN DATA:', data);
       socket.room = data.room;
       // socket.username = data.user
       // userSockets[socket.username] = socket
@@ -350,8 +345,6 @@ db.models.sequelize.sync().then(() => {
     });
 
     socket.on('invite', (data) => {
-      console.log('INVITE DATA:', data, 'users:', data.users, 'current username:', socket.username);
-
       // for(var el of data.users){
       //   console.log("IS THIS A FOR LOOP OR NOT", el)
       //   if(el === socket.username){
@@ -365,9 +358,7 @@ db.models.sequelize.sync().then(() => {
     });
 
     socket.on('chat', (data) => {
-      console.log('Received chat!', data);
       io.sockets.in(socket.room).emit('chat', data);
-      console.log('ROOMS IN SERVER:', rooms);
       // Mitsuku only responds half the time
 
       // Delay Mitsuku a random number of seconds
@@ -401,18 +392,13 @@ db.models.sequelize.sync().then(() => {
       }, Math.random() * 5000 + 2000);
     });
 
-  
 
     socket.on('vote', (data) => {
-      console.log("INCOMING DATA", data)
       // rooms[socket.room].votes[data.user] = data.votes
-      rooms[socket.room][0][data.user] = data.votes
-      console.log("THIS IS ROOOMS", rooms)
+      rooms[socket.room][0][data.user] = data.votes;
       // console.log('BEFORE CONDITIONAL:', rooms[socket.room].length, "votes obj length:", Object.keys(rooms[socket.room].votes).length)
-      console.log('BEFORE CONDITIONAL:', rooms[socket.room].length, "votes obj length:", Object.keys(rooms[socket.room][0]).length)
-      if(rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length){
-        console.log('HIT CONDITIONAL:', rooms[socket.room].length, "votes obj length:", Object.keys(rooms[socket.room][0]).length)
-        gameLogic.calcScores(rooms[socket.room])
+      if (rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length) {
+        gameLogic.calcScores(rooms[socket.room]);
       }
       // io.sockets.in(socket.room).emit()
     });
