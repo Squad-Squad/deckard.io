@@ -33,6 +33,7 @@ const styles = theme => ({
 });
 
 class VotePanel extends Component {
+
   constructor(props) {
     super(props);
     this.state = {
@@ -68,6 +69,10 @@ class VotePanel extends Component {
       votes: this.state.membersVoteMap
     };
     this.props.history.push(`/rooms/${this.props.roomId}/awaiting-results`);
+    // axios.post('/api/saveVotes', submitObj)
+
+    this.props.io.emit('vote', submitObj)
+
   }
 
   render() {
