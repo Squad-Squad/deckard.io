@@ -308,7 +308,7 @@ app.get('/api/messages/:roomID', (req, res) => {
           msgObj.name = key
           msgObj.user_id = null
         }
-        console.log("msgObj in forEACH FORMATTING", msgObj)
+        // console.log("msgObj in forEACH FORMATTING", msgObj)
         outputArray.push(msgObj)
       })
       console.log("outputArray TO CHECK:", outputArray)
