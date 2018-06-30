@@ -39,13 +39,17 @@ class ConnectedUserProfile extends Component {
     this.state = {
       membersVoteMap: {},
       submitted: false,
+      lifetimeScore: null
     };
   }
 
    componentDidMount() {
     axios.post('/api/userInfo', {user: this.props.loggedInUser})
     .then((response)=>{
-      console.log("response on userProfile", userProfile)
+      console.log("response on userProfile", response.data)
+      this.setState({
+        lifetimeScore: response.data
+      }, ()=>{console.log("new lifetimeScore state", this.state.lifetimeScore)})
     })
   }
    
@@ -68,8 +72,13 @@ class ConnectedUserProfile extends Component {
                   </Typography>
                 </Toolbar>
               </AppBar>
+              <Typography variant="title" color="inherit" className={classes.flex}>
+                    Lifetime Score
+                  </Typography>
+                  <Typography variant="title" color="inherit" className={classes.flex}>
+                    {this.state.lifetimeScore}
+                  </Typography>
             </div>
-
 
             {/* BOTTOM BAR */}
             <BottomNavigation style={{

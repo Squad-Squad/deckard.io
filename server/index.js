@@ -245,23 +245,8 @@ app.post('/api/userrooms', (req, res) => {
   });
 });
 
-app.post('/api/userwins', (req, res) => {
-  const { username } = req.body;
-  dbHelpers.getWins(username, (err, wins) => {
-    if (err) {
-      console.log('Error getting wins', err);
-    } else {
-      res.send(wins);
-    }
-  });
-});
 
-app.get('/api/getWinner/:roomID', (req, res) => {
-  const { roomID } = req.params;
-  dbHelpers.getWinner(roomID, (response) => {
-    res.send(response);
-  });
-});
+
 
 
 //
@@ -317,28 +302,19 @@ app.get('/api/messages/:roomID', (req, res) => {
   })
 });
 
-app.post('/api/saveVotes', (req, res) => {
-  console.log('SSAVED VOTES', req.body);
-  // rooms[socket.room].votes[req.body.user] = req.body.votes
-});
 
-app.post('/api/vetoes', (req, res) => {
-  const {
-    name, roomID, voter, restaurant_id,
-  } = req.body;
-  dbHelpers.updateVetoes(voter, restaurant_id, name, roomID, (err, restaurant) => {
-    if (err) {
-      console.log('Error vetoing restaurant', err);
-    } else {
-      res.end('Restaurant vetoed!', restaurant);
-    }
-  });
-});
+
 
 app.post('/api/userInfo', (req, res)=>{
   console.log("USERINFO in server", req.body)
+     db.models.User.findOne({where : {email: req.body.user } })
+          .then((instance)=>{
+            console.log('USERINFO FROM DATABaSE', instance)
+            let lifeTimeScore = instance.get('lifetime_score')
+              res.send(JSON.stringify(lifeTimeScore))
+    })
+  })
 
-})
 
 
 // ────────────────────────────────────────────────────────────────────────────────
