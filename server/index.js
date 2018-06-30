@@ -176,11 +176,17 @@ app.post('/api/save', (req, res) => {
     countdown: true,
   });
 
-    for(var el of members){
-      multi.rpush(roomUnique, el)
-    }
+    // for(var el of members){
+    //   multi.rpush(roomUnique, el)
+    // }
 
-    multi.exec(function(errors, results) {})
+    // multi.exec(function(errors, results) {})
+
+    dbHelpers.aliasMembers(members, (results)=>{
+      client.hmset(roomUnique, results)
+    })
+
+    console.log("ROOMUNIQUE TO TEST:", roomUnique)
 
   // CHANGE THE ROOM TIMER LENGTH HERE
   timerObj[roomUnique].start(2000);
@@ -200,12 +206,12 @@ app.post('/api/save', (req, res) => {
 app.get('/api/rooms/:roomID', (req, res) => {
   const { roomID } = req.params;
 
-  client.lrange(roomID, 0, -1, (err, replies)=>{
+  client.hgetall(roomID, (err, replies)=>{
     if(err){
       console.log(err)
     }else{
       console.log("REDIS ROOM MEMBERS RETRIEVE", replies)
-      res.send(replies)
+      // res.send(replies)
     }
   })
 
