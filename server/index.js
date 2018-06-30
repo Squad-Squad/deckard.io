@@ -26,8 +26,14 @@ const dbHelpers = require('../db-controllers');
 
 const { Op } = db;
 
+// USE ENV FOR REDIS IF PROVIDED (FOR DEPLOYMENT)
+let client;
+if (process.env.REDIS_URL) {
+  client = redis.createClient(process.env.REDIS_URL);
+} else {
+  client = redis.createClient(process.env.REDIS_URL);
+}
 
-const client = redis.createClient();
 const multi = client.multi();
 
 client.on('connect', () => {

@@ -11,6 +11,9 @@
 @import "../../../node_modules/bulma/bulma";
 @import "../../../node_modules/bulmaswatch/cyborg/_overrides.scss";
 
+//
+// -------MEDIA QUERIES---------------------------------------
+//
 @media screen and (min-width: 0px) and (max-width: 700px) {
   #image-logo { display: block; }
   #typeface-logo { display: none; }
@@ -27,6 +30,7 @@
   font-size: 40px;
   padding: 5px 0px 0px 10px;
 }
+// -----------------------------------------------------------
 
 html {
   height: 100%;
