@@ -315,29 +315,6 @@ app.get('/api/messages/:roomID', (req, res) => {
       res.send(outputArray)
     }
   })
-
-
-
-  // [ 'HK-47 has joined the room!',
-  // 'adonesky@gmail.com: asdfasf',
-  // 'adonesky@gmail.com: effeefefef',
-  // 'mitsuku@mitsuku.com:  would you like to hear your horoscope?',
-  // 'adonesky@gmail.com: eee',
-  // 'mitsuku@mitsuku.com: undefined' ]
-
-// [{message:"Marvin has joined the room!"
-// name:"adonesky@gmail.com"
-// user_id:null}]
-
-  // dbHelpers.getMessages(roomID, (err, fetchedMessages) => {
-  //   if (err) {
-  //     console.log('Error retrieving messages', err);
-  //     res.status(404).end();
-  //   } else {
-  //     console.log("FETCHED MESSAGES IN RETRIEVE API:", fetchedMessages)
-  //     // res.send(fetchedMessages);
-  //   }
-  // });
 });
 
 app.post('/api/saveVotes', (req, res) => {
@@ -357,6 +334,11 @@ app.post('/api/vetoes', (req, res) => {
     }
   });
 });
+
+app.post('/api/userInfo', (req, res)=>{
+  console.log("USERINFO in server", req.body)
+
+})
 
 
 // ────────────────────────────────────────────────────────────────────────────────
