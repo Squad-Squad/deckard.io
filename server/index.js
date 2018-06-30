@@ -421,7 +421,6 @@ db.models.sequelize.sync().then(() => {
       rooms[socket.room][0][data.user] = data.votes
       if(rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length){
         gameLogic.calcScores(rooms[socket.room])
-
       rooms[socket.room][0][data.user] = data.votes;
       if (rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length) {
         const scores = gameLogic.calcScores(rooms[socket.room]);
@@ -437,13 +436,13 @@ db.models.sequelize.sync().then(() => {
             }
           });
         io.sockets.in(socket.room).emit('scores', scores);
-
       }
-    });
+    };
 
  
-  });
+  })
 });
+})
 
 let timerObj = {};
 const nominateTimerObj = {};
