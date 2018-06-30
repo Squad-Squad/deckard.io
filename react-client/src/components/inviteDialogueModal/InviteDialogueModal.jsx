@@ -42,17 +42,6 @@ class InviteDialogue extends React.Component {
     this.setState({ open: true });
   };
 
-  // handleClose = () => {
-  //   this.setState({ open: false });
-  // };
-
-  // componentDidUpdate(){
-  //   this.setState({
-  //     open: this.props.addOpen
-  //   }, ()=> console.log("new open state on modal", this.state.open))
-  // }
-
-
 
   render() {
     const { classes } = this.props;
@@ -66,9 +55,6 @@ class InviteDialogue extends React.Component {
           onClose={this.props.handleClose}
         >
           <div style={getModalStyle()} className={classes.paper}>
-            <Typography variant="title" id="modal-title">
-              SPOT THE BOT
-            </Typography>
             <Typography variant="subheading" id="simple-modal-description">
               You've Been Invited to Play with {this.props.host}!
             </Typography>
