@@ -82,14 +82,14 @@ class ConnectedRoom extends React.Component {
     $.get(`/api/messages/${this.roomID}`).then(messages => {
       this.setState({
         messages: messages,
-      });
+      }, ()=> console.log('message format state received:', messages));
     });
   }
 
   getRoomInfo() {
     $.get(`/api/rooms/${this.roomID}`).then(roomMembers => {
       // console.log(`Got roommembers: ${JSON.stringify(roomMembers)} from ${this.roomID}`);
-      // console.log("GET ROOM INFO RECEIVING OBJ:", roomMembers);
+      console.log("GET ROOM INFO RECEIVING OBJ:", roomMembers);
 
 
       // this.setState({
