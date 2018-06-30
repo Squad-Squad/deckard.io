@@ -43,13 +43,13 @@ class VotePanel extends Component {
     };
   }
 
-  componentDidMount() {
+   componentDidMount() {
     this.setState({
       membersVoteMap: Object.keys(this.props.memberMap).reduce((obj, member) => {
         obj[member] = '';
         return obj;
-      }, ()=>{console.log("MEMBERSVOTEMAP", this.state.membersVoteMap)}),
-    });
+      }, {}),
+    }, ()=>console.log("MEMBERSVOTEMAP IN VotePanel:", this.state.membersVoteMap));
   }
 
   setVote(alias, humanOrAI) {
@@ -66,6 +66,7 @@ class VotePanel extends Component {
   }
 
   submitVotes() {
+    console.log('memberVOTEMAp:', this.state.membersVoteMap)
     const submitObj = {
       user: this.props.loggedInUser,
       votes: this.state.membersVoteMap

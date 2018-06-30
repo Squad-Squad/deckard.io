@@ -453,15 +453,15 @@ db.models.sequelize.sync().then(() => {
           client.rpush(`${socket.room}:messages`, JSON.stringify({'mitsuku@mitsuku.com': response}))
 
 
-            dbHelpers.saveMessage(
-              null,
-              'mitsuku@mitsuku.com',
-              response,
-              data.roomID,
-              (err) => {
-                if (err) { console.log('Error saving message', err); }
-              },
-            );
+            // dbHelpers.saveMessage(
+            //   null,
+            //   'mitsuku@mitsuku.com',
+            //   response,
+            //   data.roomID,
+            //   (err) => {
+            //     if (err) { console.log('Error saving message', err); }
+            //   },
+            // );
 
             // Emit her message via socket
             io.sockets.in(socket.room).emit(
@@ -481,6 +481,8 @@ db.models.sequelize.sync().then(() => {
 
 
     socket.on('vote', (data) => {
+
+      console.log('INITIAL VOTING DATA AT SOCKET:', data)
       rooms[socket.room][0][data.user] = data.votes
       if(rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length){
         gameLogic.calcScores(rooms[socket.room])
@@ -492,6 +494,8 @@ db.models.sequelize.sync().then(() => {
         db.models.Room.findOne({ where: { uniqueid: socket.room } })
           .then((room) => {
             // Check if record exists in db
+
+            console.log("AND THE scores before they go IN DB:", scores)
             if (room) {
               room.updateAttributes({
                 scores: JSON.stringify(scores),
