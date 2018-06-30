@@ -70,11 +70,9 @@ class ConnectedRoom extends React.Component {
 
   /// Send post request to server to fetch room info when user visits link
   componentDidMount() {
-    // console.log('ROOM RENDERED', this.roomID);
     this.getMessages();
     this.getRoomInfo();
     this.getTimer();
-    console.log("CHECKING BEFORE EMIT: memberMap:", this.state.memberMap, "and specific user:", this.props.loggedInUsername )
     // this.props.io.emit('join', { room: this.roomID, user: this.state.memberMap[this.props.loggedInUsername]});
   }
 
@@ -90,18 +88,6 @@ class ConnectedRoom extends React.Component {
     $.get(`/api/rooms/${this.roomID}`).then(roomMembers => {
       // console.log(`Got roommembers: ${JSON.stringify(roomMembers)} from ${this.roomID}`);
       console.log("GET ROOM INFO RECEIVING OBJ:", roomMembers);
-
-
-      // this.setState({
-      //   memberMap: roomMembers.reduce((obj, memArr) => {
-      //     obj[memArr.email] = memArr.alias;
-      //     return obj;
-      //   }, {}),
-      //   members: roomMembers.filter(member => member.email !== this.props.loggedInUsername)
-      //     .map(member => member.alias),
-      //   roomName: roomMembers[0].rooms[0].name,
-      // }, ()=> {console.log("WHAT ROOMMEMBERS NEED TO LOOK LIKE:", this.state.memberMap)});
-
 
 
         let aliasedMembers = [];
