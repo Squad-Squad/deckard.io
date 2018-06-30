@@ -102,8 +102,12 @@ class VotePanel extends Component {
               </AppBar>
             </div>
 
-            {this.props.members.map((user, i) =>
-              <VotePanelItem key={i} user={user} setVote={this.setVote.bind(this)} />
+            {this.props.members.map((user, i) =>{
+              console.log('USER:', user, "loggedInUser", this.props.memberMap[this.props.loggedInUser])
+              if(user !== this.props.memberMap[this.props.loggedInUser]){
+                return <VotePanelItem key={i} user={user} setVote={this.setVote.bind(this)} /> 
+                } 
+              }
             )}
 
             {/* BOTTOM BAR */}
