@@ -245,23 +245,8 @@ app.post('/api/userrooms', (req, res) => {
   });
 });
 
-app.post('/api/userwins', (req, res) => {
-  const { username } = req.body;
-  dbHelpers.getWins(username, (err, wins) => {
-    if (err) {
-      console.log('Error getting wins', err);
-    } else {
-      res.send(wins);
-    }
-  });
-});
 
-app.get('/api/getWinner/:roomID', (req, res) => {
-  const { roomID } = req.params;
-  dbHelpers.getWinner(roomID, (response) => {
-    res.send(response);
-  });
-});
+
 
 
 //
@@ -315,48 +300,21 @@ app.get('/api/messages/:roomID', (req, res) => {
       res.send(outputArray)
     }
   })
-
-
-
-  // [ 'HK-47 has joined the room!',
-  // 'adonesky@gmail.com: asdfasf',
-  // 'adonesky@gmail.com: effeefefef',
-  // 'mitsuku@mitsuku.com:  would you like to hear your horoscope?',
-  // 'adonesky@gmail.com: eee',
-  // 'mitsuku@mitsuku.com: undefined' ]
-
-// [{message:"Marvin has joined the room!"
-// name:"adonesky@gmail.com"
-// user_id:null}]
-
-  // dbHelpers.getMessages(roomID, (err, fetchedMessages) => {
-  //   if (err) {
-  //     console.log('Error retrieving messages', err);
-  //     res.status(404).end();
-  //   } else {
-  //     console.log("FETCHED MESSAGES IN RETRIEVE API:", fetchedMessages)
-  //     // res.send(fetchedMessages);
-  //   }
-  // });
 });
 
-app.post('/api/saveVotes', (req, res) => {
-  console.log('SSAVED VOTES', req.body);
-  // rooms[socket.room].votes[req.body.user] = req.body.votes
-});
 
-app.post('/api/vetoes', (req, res) => {
-  const {
-    name, roomID, voter, restaurant_id,
-  } = req.body;
-  dbHelpers.updateVetoes(voter, restaurant_id, name, roomID, (err, restaurant) => {
-    if (err) {
-      console.log('Error vetoing restaurant', err);
-    } else {
-      res.end('Restaurant vetoed!', restaurant);
-    }
-  });
-});
+
+
+app.post('/api/userInfo', (req, res)=>{
+  console.log("USERINFO in server", req.body)
+     db.models.User.findOne({where : {email: req.body.user } })
+          .then((instance)=>{
+            console.log('USERINFO FROM DATABaSE', instance)
+            let lifeTimeScore = instance.get('lifetime_score')
+              res.send(JSON.stringify(lifeTimeScore))
+    })
+  })
+
 
 
 // ────────────────────────────────────────────────────────────────────────────────
@@ -485,15 +443,24 @@ db.models.sequelize.sync().then(() => {
       console.log('INITIAL VOTING DATA AT SOCKET:', data)
       rooms[socket.room][0][data.user] = data.votes;
 
-        // client.hmset(`${socket.room}:votes`, JSON.stringify(data.votes))
 
       
+      //determine if everyone has submitted there votes
+
       if (rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length) {
         const scores = gameLogic.calcScores(rooms[socket.room]);
 
-
-        // client.hmset(`${socket.room}:scores`, JSON.stringify(scores))
-
+        for(var user in scores){
+          db.models.User.findOne({where : {email: user } })
+          .then((instance)=>{
+            console.log('user in db', user)
+            let oldScore = instance.get('lifetime_score')
+            console.log('OLD LIFETIME SCORE:', oldScore)
+            instance.updateAttributes({
+              lifetime_score: oldScore + scores[user]
+            })
+          })
+        }
 
         db.models.Room.findOne({ where: { uniqueid: socket.room } })
           .then((room) => {
@@ -507,7 +474,9 @@ db.models.sequelize.sync().then(() => {
             }
           });
         io.sockets.in(socket.room).emit('scores', scores);
-      
+
+      // AND THE scores before they go IN DB: { 'adonesky@gmail.com': 5 }
+
     };
 
  

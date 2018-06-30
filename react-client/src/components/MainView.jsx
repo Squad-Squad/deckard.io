@@ -3,6 +3,7 @@ import CreateRoomContainer from './createRoomContainer/CreateRoomContainer.jsx';
 import Room from './room/Room.jsx';
 import InviteDialogueModal from './inviteDialogueModal/InviteDialogueModal.jsx'
 import { Route } from 'react-router-dom';
+import UserProfile from './UserProfile.jsx'
 import { connect } from 'react-redux'
 
 
@@ -78,6 +79,9 @@ class ConnectedMainView extends React.Component {
                 {...props} />
             ]
         } />
+        <Route path="/userprofile/:username" render={
+          ()=>  <UserProfile /> } />
+
         <Route path="/rooms/:roomID" render={
           (props) =>
             [
