@@ -87,17 +87,39 @@ class ConnectedRoom extends React.Component {
 
   getRoomInfo() {
     $.get(`/api/rooms/${this.roomID}`).then(roomMembers => {
-      console.log(`Got roommembers: ${JSON.stringify(roomMembers)} from ${this.roomID}`);
-      // this.props.addCurrUsersFromDB(roomMembers);
+      // console.log(`Got roommembers: ${JSON.stringify(roomMembers)} from ${this.roomID}`);
+      console.log("GET ROOM INFO RECEIVING OBJ:", roomMembers);
+
+
+      // this.setState({
+      //   memberMap: roomMembers.reduce((obj, memArr) => {
+      //     obj[memArr.email] = memArr.alias;
+      //     return obj;
+      //   }, {}),
+      //   members: roomMembers.filter(member => member.email !== this.props.loggedInUsername)
+      //     .map(member => member.alias),
+      //   roomName: roomMembers[0].rooms[0].name,
+      // }, ()=> {console.log("WHAT ROOMMEMBERS NEED TO LOOK LIKE:", this.state.memberMap)});
+
+
+
+        let aliasedMembers = [];
+        let memberMap = {};
+        for(var key in roomMembers){
+          if(key !== "room"){
+            memberMap[key] = roomMembers[key]
+            aliasedMembers.push(roomMembers[key])
+          }
+        };
+
+        console.log("STATE OF THE DATA BEFORE SETSTATE: memberMAP:", memberMap, "aliasedMembers:", aliasedMembers)
+
       this.setState({
-        memberMap: roomMembers.reduce((obj, memArr) => {
-          obj[memArr.email] = memArr.alias;
-          return obj;
-        }, {}),
-        members: roomMembers.filter(member => member.email !== this.props.loggedInUsername)
-          .map(member => member.alias),
-        roomName: roomMembers[0].rooms[0].name,
-      }, () => console.log(this.state.members));
+        memberMap: memberMap,       
+        members: aliasedMembers,
+        roomName: roomMembers.room,
+      }, ()=> console.log("WHAT ROOMMEMBERS NEED TO LOOK LIKE:", this.state.memberMap)
+      );
     });
   }
 

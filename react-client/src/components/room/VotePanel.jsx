@@ -48,7 +48,7 @@ class VotePanel extends Component {
       membersVoteMap: Object.keys(this.props.memberMap).reduce((obj, member) => {
         obj[member] = '';
         return obj;
-      }, {}),
+      }, ()=>{console.log("MEMBERSVOTEMAP", this.state.membersVoteMap)}),
     });
   }
 

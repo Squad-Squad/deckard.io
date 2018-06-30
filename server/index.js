@@ -12,7 +12,9 @@ const socket = require('socket.io');
 const uniqueString = require('unique-string');
 const Tock = require('tocktimer');
 const mitsuku = require('../lib/mitsukuHelper')();
-const gameLogic = require('../lib/gameLogic');
+const gameLogic = require('../lib/gameLogic')
+const redis = require('redis')
+
 
 const Mailjet = require('node-mailjet').connect(
   process.env.MAILJET_API_KEY,
@@ -23,6 +25,14 @@ const db = require('../database-postgresql/models/index');
 const dbHelpers = require('../db-controllers');
 
 const { Op } = db;
+
+
+const client = redis.createClient();
+const multi = client.multi()
+
+client.on('connect', function() {
+  console.log('Connected to Redis');
+});
 
 const app = express();
 
@@ -157,11 +167,26 @@ app.post('/api/roomEmail', (req, res) => {
 // ─── CREATE ROOMS AND GET ROOM INFO ─────────────────────────────────────────────
 //
 app.post('/api/save', (req, res) => {
+
+  console.log('NEW ROOM DATA', req.body);
+
   const { roomName, members } = req.body;
   const roomUnique = uniqueString();
   timerObj[roomUnique] = new Tock({
     countdown: true,
   });
+
+    // for(var el of members){
+    //   multi.rpush(roomUnique, el)
+    // }
+
+    // multi.exec(function(errors, results) {})
+
+    dbHelpers.aliasMembers(roomName, members, (results)=>{
+      client.hmset(roomUnique, results)
+    })
+
+    console.log("ROOMUNIQUE TO TEST:", roomUnique)
 
   // CHANGE THE ROOM TIMER LENGTH HERE
   timerObj[roomUnique].start(2000);
@@ -171,6 +196,7 @@ app.post('/api/save', (req, res) => {
       console.log('Error saving room and members', err);
     } else {
       console.log(`Saved room: ${roomName}`);
+      console.log('SAVED ROOM:', room, "AND USERS:", users)
       res.send(room[0].dataValues);
     }
   });
@@ -179,13 +205,23 @@ app.post('/api/save', (req, res) => {
 // Get room members here
 app.get('/api/rooms/:roomID', (req, res) => {
   const { roomID } = req.params;
-  dbHelpers.getRoomMembers(roomID, (err, roomMembers) => {
-    if (err) {
-      console.log('Error getting room members', err);
-    } else {
-      res.send(roomMembers);
+
+  client.hgetall(roomID, (err, replies)=>{
+    if(err){
+      console.log(err)
+    }else{
+      console.log("REDIS ROOM MEMBERS RETRIEVE", replies)
+      res.send(replies)
     }
-  });
+  })
+
+  // dbHelpers.getRoomMembers(roomID, (err, roomMembers) => {
+  //   if (err) {
+  //     console.log('Error getting room members', err);
+  //   } else {
+  //     res.send(roomMembers);
+  //   }
+  // });
 });
 
 app.get('/api/timer/:roomID', (req, res) => {
@@ -388,6 +424,9 @@ db.models.sequelize.sync().then(() => {
 
 
     socket.on('vote', (data) => {
+      rooms[socket.room][0][data.user] = data.votes
+      if(rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length){
+        gameLogic.calcScores(rooms[socket.room])
       rooms[socket.room][0][data.user] = data.votes;
       if (rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length) {
         const scores = gameLogic.calcScores(rooms[socket.room]);
@@ -404,14 +443,12 @@ db.models.sequelize.sync().then(() => {
           });
         io.sockets.in(socket.room).emit('scores', scores);
       }
-    });
+    };
 
-    // newSocket.on('veto', (data) => {
-    //   console.log('Received veto!', data);
-    //   io.sockets.emit('veto', data.roomID);
-    // });
-  });
+ 
+  })
 });
+})
 
 let timerObj = {};
 const nominateTimerObj = {};
