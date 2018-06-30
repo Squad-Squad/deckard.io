@@ -290,10 +290,10 @@ db.models.sequelize.sync().then(() => {
   });
 
   // Server-side socket events
-  users = [];
-  rooms = {};
-  connections = [];
-  userSockets = {};
+  const users = [];
+  const rooms = {};
+  const connections = [];
+  const userSockets = {};
 
 
   const io = socket(server);
