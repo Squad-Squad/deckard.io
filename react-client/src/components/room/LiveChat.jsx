@@ -111,7 +111,8 @@ class ConnectedLiveChat extends React.Component {
             } else {
               return (<div className="section" key={i}
                 style={{ textAlign: "left", borderTop: "1px solid black", padding: "17px", fontSize: "18px" }}>
-                <p><strong>{this.props.memberMap[message.name]}:&nbsp;</strong>{message.message}</p>
+                <p><strong>{this.props.memberMap[message.name]}
+                  {(() => this.props.memberMap[message.name] ? ':' : null)()}&nbsp;</strong>{message.message}</p>
               </div>)
             }
           })}

@@ -4,15 +4,20 @@ const Sequelize = require('sequelize');
 
 const { Op } = Sequelize;
 
-// set up connection and create sequelize instance
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
+// LOCAL TESTING
+const sequelize = new Sequelize('deckardtest', 'beeb', null, {
+  host: 'localhost',
   dialect: 'postgres',
   operatorsAliases: false,
   logging: false,
-  // dialectOptions: {
-  //   ssl: true,
-  // },
 });
+
+// DEPLOYMENT
+// const sequelize = new Sequelize(process.env.DATABASE_URL, {
+//   dialect: 'postgres',
+//   operatorsAliases: false,
+//   logging: false,
+// });
 
 // testing connection
 sequelize.authenticate()
