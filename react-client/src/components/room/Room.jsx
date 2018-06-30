@@ -38,7 +38,7 @@ class ConnectedRoom extends React.Component {
     this.roomID = this.props.match.params.roomID;
 
     this.sendMessage = this.sendMessage.bind(this);
-    this.voteApprove = this.voteApprove.bind(this);
+    // this.voteApprove = this.voteApprove.bind(this);
 
     this.props.io.on('chat', message => {
       console.log("MESSAGE IN CHAT :", message)
@@ -153,23 +153,23 @@ class ConnectedRoom extends React.Component {
 
   // Update from text boxes in the live chat
 
-  voteApprove(name, id, uname) {
-    let resName = name || this.state.currentSelection.name;
-    let resId = id || this.state.currentSelection.id;
-    let voteObj = {
-      voter: this.props.username,
-      // restaurant_id: resId,
-      name: resName,
-      roomID: this.roomID,
-      nominator: uname
-    };
-    $.post('/api/votes', voteObj).then(() => {
-      this.props.io.emit('vote', voteObj);
-    });
-    this.setState({
-      hasVoted: true,
-    });
-  }
+  // voteApprove(name, id, uname) {
+  //   let resName = name || this.state.currentSelection.name;
+  //   let resId = id || this.state.currentSelection.id;
+  //   let voteObj = {
+  //     voter: this.props.username,
+  //     // restaurant_id: resId,
+  //     name: resName,
+  //     roomID: this.roomID,
+  //     nominator: uname
+  //   };
+  //   $.post('/api/votes', voteObj).then(() => {
+  //     this.props.io.emit('vote', voteObj);
+  //   });
+  //   this.setState({
+  //     hasVoted: true,
+  //   });
+  // }
 
   render() {
     const { width, height } = this.props.size;
@@ -189,7 +189,7 @@ class ConnectedRoom extends React.Component {
       } else {
         return (
           <Scores
-            scores={this.state.scores} />
+            scores={this.state.scores} memberMap={this.state.memberMap} />
         )
       }
     }
