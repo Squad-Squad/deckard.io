@@ -189,7 +189,7 @@ class ConnectedRoom extends React.Component {
       } else {
         return (
           <Scores
-            scores={this.state.scores} />
+            scores={this.state.scores} memberMap={this.state.memberMap} />
         )
       }
     }

@@ -49,7 +49,7 @@ class VotePanel extends Component {
         obj[member] = '';
         return obj;
       }, {}),
-    }, ()=>console.log("MEMBERSVOTEMAP IN VotePanel:", this.state.membersVoteMap));
+    });
   }
 
   setVote(alias, humanOrAI) {
@@ -66,7 +66,6 @@ class VotePanel extends Component {
   }
 
   submitVotes() {
-    console.log('memberVOTEMAp:', this.state.membersVoteMap)
     const submitObj = {
       user: this.props.loggedInUser,
       votes: this.state.membersVoteMap
