@@ -4,13 +4,21 @@ const Sequelize = require('sequelize');
 
 const { Op } = Sequelize;
 
-// LOCAL TESTING
-const sequelize = new Sequelize('deckardtest', 'beeb', null, {
-  host: 'localhost',
-  dialect: 'postgres',
-  operatorsAliases: false,
-  logging: false,
-});
+let sequelize;
+if (process.env.DOMAIN) {
+  sequelize = new Sequelize(process.env.DOMAIN, {
+    dialect: 'postgres',
+    operatorsAliases: false,
+    logging: false,
+  });
+} else {
+  sequelize = new Sequelize('deckardtest', 'beeb', null, {
+    host: 'localhost',
+    dialect: 'postgres',
+    operatorsAliases: false,
+    logging: false,
+  });
+}
 
 // DEPLOYMENT
 // const sequelize = new Sequelize(process.env.DATABASE_URL, {
