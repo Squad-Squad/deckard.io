@@ -70,11 +70,12 @@ class ConnectedRoom extends React.Component {
 
   /// Send post request to server to fetch room info when user visits link
   componentDidMount() {
-    console.log('ROOM RENDERED', this.roomID);
+    // console.log('ROOM RENDERED', this.roomID);
     this.getMessages();
     this.getRoomInfo();
     this.getTimer();
-    this.props.io.emit('join', { room: this.roomID, user: this.props.loggedInUsername });
+    console.log("CHECKING BEFORE EMIT: memberMap:", this.state.memberMap, "and specific user:", this.props.loggedInUsername )
+    // this.props.io.emit('join', { room: this.roomID, user: this.state.memberMap[this.props.loggedInUsername]});
   }
 
   getMessages() {
@@ -88,7 +89,7 @@ class ConnectedRoom extends React.Component {
   getRoomInfo() {
     $.get(`/api/rooms/${this.roomID}`).then(roomMembers => {
       // console.log(`Got roommembers: ${JSON.stringify(roomMembers)} from ${this.roomID}`);
-      console.log("GET ROOM INFO RECEIVING OBJ:", roomMembers);
+      // console.log("GET ROOM INFO RECEIVING OBJ:", roomMembers);
 
 
       // this.setState({
@@ -120,7 +121,12 @@ class ConnectedRoom extends React.Component {
         roomName: roomMembers.room,
       }, ()=> console.log("WHAT ROOMMEMBERS NEED TO LOOK LIKE:", this.state.memberMap)
       );
+    })
+    .then(()=>{
+      this.props.io.emit('join', { room: this.roomID, user: this.state.memberMap[this.props.loggedInUsername]});
     });
+
+
   }
 
   getTimer() {
@@ -166,7 +172,7 @@ class ConnectedRoom extends React.Component {
     let resId = id || this.state.currentSelection.id;
     let voteObj = {
       voter: this.props.username,
-      restaurant_id: resId,
+      // restaurant_id: resId,
       name: resName,
       roomID: this.roomID,
       nominator: uname
