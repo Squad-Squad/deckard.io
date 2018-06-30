@@ -183,20 +183,20 @@ app.post('/api/save', (req, res) => {
     // multi.exec(function(errors, results) {})
 
     dbHelpers.aliasMembers(roomName, members, (results)=>{
-      client.hmset(roomUnique, results)
+      client.hmset(`${roomUnique}:members`, results)
     })
 
-    console.log("ROOMUNIQUE TO TEST:", roomUnique)
+    // console.log("ROOMUNIQUE TO TEST:", roomUnique)
 
   // CHANGE THE ROOM TIMER LENGTH HERE
-  timerObj[roomUnique].start(2000);
+  timerObj[roomUnique].start(20000);
 
   dbHelpers.saveRoomAndMembers(roomName, members, roomUnique, (err, room, users) => {
     if (err) {
       console.log('Error saving room and members', err);
     } else {
       console.log(`Saved room: ${roomName}`);
-      console.log('SAVED ROOM:', room, "AND USERS:", users)
+      // console.log('SAVED ROOM:', room, "AND USERS:", users)
       res.send(room[0].dataValues);
     }
   });
@@ -206,7 +206,7 @@ app.post('/api/save', (req, res) => {
 app.get('/api/rooms/:roomID', (req, res) => {
   const { roomID } = req.params;
 
-  client.hgetall(roomID, (err, replies)=>{
+  client.hgetall(`${roomID}:members`, (err, replies)=>{
     if(err){
       console.log(err)
     }else{
@@ -269,6 +269,16 @@ app.get('/api/getWinner/:roomID', (req, res) => {
 //
 app.post('/api/messages', (req, res) => {
   const { user_id, message, roomID } = req.body;
+
+  // console.log("user_id:", message.name, "and message:", message, "and roomID:", roomID)
+
+  const msg = message.message
+  const name = message.name
+
+
+
+  client.rpush(`${roomID}:messages`, JSON.stringify({[name]:msg}))
+
   dbHelpers.saveMessage(user_id, message.name, message.message, roomID, (err, savedMessage) => {
     if (err) {
       console.log('Error saving message', err);
@@ -281,14 +291,53 @@ app.post('/api/messages', (req, res) => {
 
 app.get('/api/messages/:roomID', (req, res) => {
   const { roomID } = req.params;
-  dbHelpers.getMessages(roomID, (err, fetchedMessages) => {
-    if (err) {
-      console.log('Error retrieving messages', err);
-      res.status(404).end();
+
+  client.lrange(`${roomID}:messages`, 0, -1, (err, replies)=>{
+    if(err){
+      console.log(err)
     } else {
-      res.send(fetchedMessages);
+      let outputArray = []
+    
+      console.log("MESSAGE RECEIVE", replies)
+      replies.forEach((reply)=>{
+        // testArr.push(JSON.parse(reply))
+        let msgObj = {}
+        let incoming = JSON.parse(reply)
+        for(var key in incoming){
+          msgObj.message = incoming[key]
+          msgObj.name = key
+          msgObj.user_id = null
+        }
+        // console.log("msgObj in forEACH FORMATTING", msgObj)
+        outputArray.push(msgObj)
+      })
+      console.log("outputArray TO CHECK:", outputArray)
+      res.send(outputArray)
     }
-  });
+  })
+
+
+
+  // [ 'HK-47 has joined the room!',
+  // 'adonesky@gmail.com: asdfasf',
+  // 'adonesky@gmail.com: effeefefef',
+  // 'mitsuku@mitsuku.com:  would you like to hear your horoscope?',
+  // 'adonesky@gmail.com: eee',
+  // 'mitsuku@mitsuku.com: undefined' ]
+
+// [{message:"Marvin has joined the room!"
+// name:"adonesky@gmail.com"
+// user_id:null}]
+
+  // dbHelpers.getMessages(roomID, (err, fetchedMessages) => {
+  //   if (err) {
+  //     console.log('Error retrieving messages', err);
+  //     res.status(404).end();
+  //   } else {
+  //     console.log("FETCHED MESSAGES IN RETRIEVE API:", fetchedMessages)
+  //     // res.send(fetchedMessages);
+  //   }
+  // });
 });
 
 app.post('/api/saveVotes', (req, res) => {
@@ -342,6 +391,7 @@ db.models.sequelize.sync().then(() => {
 
     socket.on('join', (data) => {
       socket.room = data.room;
+      console.log("GETTING USERALIAS IN SOCKET:", data.user)
       // socket.username = data.user
       // userSockets[socket.username] = socket
       // users.push(socket.username);
@@ -353,19 +403,22 @@ db.models.sequelize.sync().then(() => {
       }
 
       socket.join(socket.room);
-      io.sockets.in(socket.room).emit('roomJoin', socket.room);
+      // io.sockets.in(socket.room).emit('roomJoin', socket.room);
       io.sockets.in(socket.room).emit('chat', {
         message: {
           user_id: socket.username,
           name: socket.username,
-          message: `${socket.username} has joined the room!`,
+          message: `${data.user} has joined the room!`,
         },
         roomId: socket.room,
       });
 
       const user_id = socket.username;
       const name = socket.username;
-      const message = `${socket.username} has joined the room!`;
+      const message = `${data.user} has joined the room!`;
+
+      client.rpush(`${socket.room}:messages`, JSON.stringify({matrixOverLords:message}))
+
 
       dbHelpers.saveMessage(user_id, name, message, socket.room, (err, savedMessage) => {
         if (err) {
@@ -396,6 +449,10 @@ db.models.sequelize.sync().then(() => {
         mitsuku.send(data.message.message)
           .then((response) => {
             // Save her message to the db
+
+          client.rpush(`${socket.room}:messages`, JSON.stringify({'mitsuku@mitsuku.com': response}))
+
+
             dbHelpers.saveMessage(
               null,
               'mitsuku@mitsuku.com',
