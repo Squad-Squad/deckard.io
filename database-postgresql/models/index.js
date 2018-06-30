@@ -5,8 +5,7 @@ const Sequelize = require('sequelize');
 const { Op } = Sequelize;
 
 // set up connection and create sequelize instance
-const sequelize = new Sequelize(process.env.DB_NAME, process.env.PGUSER, process.env.PGPASSWORD, {
-  host: process.env.DATABASE_URL,
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: 'postgres',
   operatorsAliases: false,
   logging: false,
