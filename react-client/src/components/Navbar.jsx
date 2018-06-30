@@ -5,6 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import LoginDialog from './AuthUserMenu/LoginDialog.jsx';
 import SubscribeDialog from './AuthUserMenu/SubscribeDialog.jsx';
 import UserMenu from './AuthUserMenu/UserMenu.jsx';
+import logo from '../../dist/assets/unicorn.png';
 import { connect } from 'react-redux';
 
 const mapStateToProps = state => {
@@ -57,11 +58,16 @@ class ConnectedNavbar extends React.Component {
               variant="title"
               color="inherit"
               className={'title'}>
-              <div id="logo">
+              <div id="typeface-logo">
                 <a href="/"
                   style={{ color: "white" }}>
                   deckard.io
-              </a>
+                </a>
+              </div>
+              <div id="image-logo">
+                <a href="/">
+                  <img src={logo} style={{ height: '3em' }} />
+                </a>
               </div>
             </Typography>
           </div>

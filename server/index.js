@@ -188,7 +188,7 @@ app.post('/api/save', (req, res) => {
   // console.log("ROOMUNIQUE TO TEST:", roomUnique)
 
   // CHANGE THE ROOM TIMER LENGTH HERE
-  timerObj[roomUnique].start(20000);
+  timerObj[roomUnique].start(40000);
 
   dbHelpers.saveRoomAndMembers(roomName, members, roomUnique, (err, room, users) => {
     if (err) {
@@ -209,7 +209,6 @@ app.get('/api/rooms/:roomID', (req, res) => {
     if (err) {
       console.log(err);
     } else {
-      console.log('REDIS ROOM MEMBERS RETRIEVE', replies);
       res.send(replies);
     }
   });
@@ -296,7 +295,6 @@ app.get('/api/messages/:roomID', (req, res) => {
     } else {
       const outputArray = [];
 
-      console.log('MESSAGE RECEIVE', replies);
       replies.forEach((reply) => {
         // testArr.push(JSON.parse(reply))
         const msgObj = {};
@@ -309,7 +307,6 @@ app.get('/api/messages/:roomID', (req, res) => {
         // console.log("msgObj in forEACH FORMATTING", msgObj)
         outputArray.push(msgObj);
       });
-      console.log('outputArray TO CHECK:', outputArray);
       res.send(outputArray);
     }
   });
@@ -388,7 +385,6 @@ db.models.sequelize.sync().then(() => {
 
     socket.on('join', (data) => {
       socket.room = data.room;
-      console.log('GETTING USERALIAS IN SOCKET:', data.user);
       // socket.username = data.user
       // userSockets[socket.username] = socket
       // users.push(socket.username);
@@ -439,26 +435,23 @@ db.models.sequelize.sync().then(() => {
 
     socket.on('chat', (data) => {
       io.sockets.in(socket.room).emit('chat', data);
-      // Mitsuku only responds half the time
+      console.log('DIS DA DATA', data);
+      let extraDelay = 0;
 
       // Delay Mitsuku a random number of seconds
-      setTimeout(() => {
-        mitsuku.send(data.message.message)
-          .then((response) => {
-            // Save her message to the db
+      mitsuku.send(data.message.message)
+        .then((response) => {
+          if (/here\sin\sleeds/g.test(response)) {
+            response = response.slice(0, response.indexOf('here in leeds'));
+          }
 
+          // Add delay based on response length
+          extraDelay = response.length * 100;
+          console.log('EXTRA DELAY', extraDelay);
+
+          setTimeout(() => {
+            // Save her message to redis
             client.rpush(`${socket.room}:messages`, JSON.stringify({ 'mitsuku@mitsuku.com': response }));
-
-
-            dbHelpers.saveMessage(
-              null,
-              'mitsuku@mitsuku.com',
-              response,
-              data.roomID,
-              (err) => {
-                if (err) { console.log('Error saving message', err); }
-              },
-            );
 
             // Emit her message via socket
             io.sockets.in(socket.room).emit(
@@ -472,8 +465,8 @@ db.models.sequelize.sync().then(() => {
                 roomID: data.roomID,
               },
             );
-          });
-      }, Math.random() * 5000 + 2000);
+          }, Math.random() * 5000 + 2000 + extraDelay);
+        });
     });
 
 

@@ -42,15 +42,14 @@ class CreateRoomContainer extends React.Component {
     const { classes } = this.props;
 
     return (
-      <Grid container className={classes.root} spacing={16}>
-        <Grid container spacing={24}>
-          <Grid item xs={3}>
-          </Grid>
-          <Grid item xs={6}>
+      <div>
+        <div className="columns">
+          <div className="column is-2 hide-if-small"></div>
+          <div className="column is-8">
             <CreateRoom io={this.props.io}></CreateRoom>
-          </Grid>
-        </Grid>
-      </Grid>
+          </div>
+        </div>
+      </div>
     )
   }
 }

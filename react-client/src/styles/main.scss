@@ -11,6 +11,23 @@
 @import "../../../node_modules/bulma/bulma";
 @import "../../../node_modules/bulmaswatch/cyborg/_overrides.scss";
 
+@media screen and (min-width: 0px) and (max-width: 700px) {
+  #image-logo { display: block; }
+  #typeface-logo { display: none; }
+  .hide-if-small { display: none }
+}
+
+@media screen and (min-width: 701px) {
+  #image-logo { display: none; }
+  #typeface-logo { display: block; }
+}
+
+#typeface-logo {
+  font-family: 'Libre Barcode 39 Extended Text', cursive;
+  font-size: 40px;
+  padding: 5px 0px 0px 10px;
+}
+
 html {
   height: 100%;
 }
@@ -36,12 +53,6 @@ figure.image {
 
 #site-body p.title {
   margin-bottom: 10px;
-}
-
-#logo {
-  font-family: 'Libre Barcode 39 Extended Text', cursive;
-  font-size: 40px;
-  padding: 5px 0px 0px 10px;
 }
 
 #site-body {

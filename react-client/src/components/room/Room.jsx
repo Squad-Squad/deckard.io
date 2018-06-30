@@ -143,6 +143,7 @@ class ConnectedRoom extends React.Component {
       message: {
         name: this.props.username || this.state.name,
         message: msg,
+        numUsers: this.state.members.length,
       },
       roomID: this.roomID,
     };
@@ -197,7 +198,7 @@ class ConnectedRoom extends React.Component {
     return (
       <div>
         <div className="columns">
-          <div className="column is-2"></div>
+          <div className="column is-2 hide-if-small"></div>
           <div className="column is-8">
             {chatOrVote()}
           </div>
