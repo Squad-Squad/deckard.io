@@ -11,7 +11,7 @@ function mapStateToProps(state) {
 class ScoresItem extends Component {
   render() {
     return (
-      [<div style={{
+      [<div key={this.props.key} style={{
         display: 'flex',
         justifyContent: 'space-between',
         paddingLeft: '15px',

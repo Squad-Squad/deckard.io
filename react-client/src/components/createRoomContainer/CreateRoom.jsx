@@ -91,7 +91,6 @@ class ConnectedCreateRoom extends React.Component {
   }
 
   componentDidMount() {
-    console.log("PROPS IN CREATE ROOM:", this.props)
     axios.post('/searchUsers')
       .then(res => {
         this.setState({
@@ -225,8 +224,6 @@ class ConnectedCreateRoom extends React.Component {
           members: this.props.usersForNewRoom,
         },
         (roomInfo, status) => {
-          console.log('ROOMINFO', roomInfo);
-          console.log(`Room ${this.state.roomName} saved to the database:`, status);
           this.sendRoomEmail(roomInfo, this.props.usersForNewRoom);
           this.setState({
             roomLink: roomInfo.uniqueid
@@ -286,7 +283,6 @@ class ConnectedCreateRoom extends React.Component {
 
   render() {
     const { classes } = this.props;
-    console.log('USERNAMEMEMEMEMEME', this.props.loggedInUsername);
     this.props.addUserToNewRoom(this.props.loggedInUsername);
 
     var uniqueURL = this.state.roomID ?

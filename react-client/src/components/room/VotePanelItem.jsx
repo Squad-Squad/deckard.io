@@ -83,13 +83,18 @@ class VotePanelItem extends Component {
     }
 
     return (
-      [<div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <div><p style={{
-          paddingLeft: '15px',
-          paddingTop: '15px',
-          paddingBottom: '10px',
-          fontSize: '20px',
-        }}>{this.props.user}</p></div>
+      [<div style={{ display: 'flex', justifyContent: 'space-between' }}
+        key={this.props.key}>
+        <div>
+          <p style={{
+            paddingLeft: '15px',
+            paddingTop: '15px',
+            paddingBottom: '10px',
+            fontSize: '20px',
+          }}>
+            {this.props.user}
+          </p>
+        </div>
         {buttons()}
       </div>,
       <Divider />]
