@@ -10,9 +10,6 @@ function rand() {
 }
 
 function getModalStyle() {
-  const top = 50 + rand();
-  const left = 50 + rand();
-
   return {
     top: `${top}%`,
     left: `${left}%`,
@@ -31,12 +28,12 @@ const styles = theme => ({
 });
 
 class InviteDialogue extends React.Component {
-  constructor(props){
-      super(props)
-      this.state = {
-        open: false,
-      };
-      
+  constructor(props) {
+    super(props)
+    this.state = {
+      open: false,
+    };
+
     this.roomID = this.props.match.params.roomID
 
   }
