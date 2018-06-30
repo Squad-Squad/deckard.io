@@ -182,7 +182,7 @@ app.post('/api/save', (req, res) => {
 
     // multi.exec(function(errors, results) {})
 
-    dbHelpers.aliasMembers(members, (results)=>{
+    dbHelpers.aliasMembers(roomName, members, (results)=>{
       client.hmset(roomUnique, results)
     })
 
@@ -211,17 +211,17 @@ app.get('/api/rooms/:roomID', (req, res) => {
       console.log(err)
     }else{
       console.log("REDIS ROOM MEMBERS RETRIEVE", replies)
-      // res.send(replies)
+      res.send(replies)
     }
   })
 
-  dbHelpers.getRoomMembers(roomID, (err, roomMembers) => {
-    if (err) {
-      console.log('Error getting room members', err);
-    } else {
-      res.send(roomMembers);
-    }
-  });
+  // dbHelpers.getRoomMembers(roomID, (err, roomMembers) => {
+  //   if (err) {
+  //     console.log('Error getting room members', err);
+  //   } else {
+  //     res.send(roomMembers);
+  //   }
+  // });
 });
 
 app.get('/api/timer/:roomID', (req, res) => {

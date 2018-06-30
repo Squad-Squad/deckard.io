@@ -96,7 +96,7 @@ class LoginDialog extends React.Component {
                 variant="raised"
                 style={{ float: 'right', backgroundColor: '#4285f4', color: 'white' }}
                 href='/auth/google'>
-                <i class="fab fa-google"></i>
+                <i className="fab fa-google"></i>
                 <p style={{ paddingLeft: '15px' }}>Login With Google</p>
               </Button>
             </DialogTitle>
