@@ -485,15 +485,24 @@ db.models.sequelize.sync().then(() => {
       console.log('INITIAL VOTING DATA AT SOCKET:', data)
       rooms[socket.room][0][data.user] = data.votes;
 
-        // client.hmset(`${socket.room}:votes`, JSON.stringify(data.votes))
 
       
+      //determine if everyone has submitted there votes
+
       if (rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length) {
         const scores = gameLogic.calcScores(rooms[socket.room]);
 
-
-        // client.hmset(`${socket.room}:scores`, JSON.stringify(scores))
-
+        for(var user in scores){
+          db.models.User.findOne({where : {email: user } })
+          .then((instance)=>{
+            console.log('user in db', user)
+            let oldScore = instance.get('lifetime_score')
+            console.log('OLD LIFETIME SCORE:', oldScore)
+            instance.updateAttributes({
+              lifetime_score: oldScore + scores[user]
+            })
+          })
+        }
 
         db.models.Room.findOne({ where: { uniqueid: socket.room } })
           .then((room) => {
@@ -507,7 +516,9 @@ db.models.sequelize.sync().then(() => {
             }
           });
         io.sockets.in(socket.room).emit('scores', scores);
-      
+
+      // AND THE scores before they go IN DB: { 'adonesky@gmail.com': 5 }
+
     };
 
  
