@@ -37,6 +37,7 @@ const mapDispatchToProps = dispatch => {
     login: (username) => dispatch(login(username)),
     logout: () => dispatch(logout()),
     searchUsers: (users) => dispatch(searchUsers(users)),
+    removeAllUsersFromNewRoom: () => dispatch(removeAllUsersFromNewRoom()),
   };
 };
 
