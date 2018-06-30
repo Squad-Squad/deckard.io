@@ -5,6 +5,7 @@ const Sequelize = require('sequelize');
 const { Op } = Sequelize;
 
 let sequelize;
+console.log('DOMMMMMAINNNNN', process.env.DOMAIN);
 if (process.env.DOMAIN) {
   sequelize = new Sequelize(process.env.DOMAIN, {
     dialect: 'postgres',
