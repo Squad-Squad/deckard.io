@@ -89,7 +89,7 @@ class ConnectedApp extends React.Component {
       userRooms: [],
       userWins: ''
     };
-    // this.socket = io({ transports: ['websocket'] });
+    this.socket = io();
   }
 
   componentDidMount() {
