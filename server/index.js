@@ -164,7 +164,7 @@ app.post('/api/save', (req, res) => {
   });
 
   // CHANGE THE ROOM TIMER LENGTH HERE
-  timerObj[roomUnique].start(2000);
+  timerObj[roomUnique].start(20000);
 
   dbHelpers.saveRoomAndMembers(roomName, members, roomUnique, (err, room, users) => {
     if (err) {
@@ -290,10 +290,10 @@ db.models.sequelize.sync().then(() => {
   });
 
   // Server-side socket events
-  users = [];
-  rooms = {};
-  connections = [];
-  userSockets = {};
+  const users = [];
+  const rooms = {};
+  const connections = [];
+  const userSockets = {};
 
 
   const io = socket(server);

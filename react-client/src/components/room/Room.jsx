@@ -87,7 +87,6 @@ class ConnectedRoom extends React.Component {
 
   getRoomInfo() {
     $.get(`/api/rooms/${this.roomID}`).then(roomMembers => {
-      console.log(`Got roommembers: ${JSON.stringify(roomMembers)} from ${this.roomID}`);
       // this.props.addCurrUsersFromDB(roomMembers);
       this.setState({
         memberMap: roomMembers.reduce((obj, memArr) => {

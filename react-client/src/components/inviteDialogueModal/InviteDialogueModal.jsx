@@ -10,13 +10,10 @@ function rand() {
 }
 
 function getModalStyle() {
-  const top = 50 + rand();
-  const left = 50 + rand();
-
   return {
-    top: `${top}%`,
-    left: `${left}%`,
-    transform: `translate(-${top}%, -${left}%)`,
+    top: `50%`,
+    left: `50%`,
+    transform: `translate(-50%, -50%)`,
   };
 }
 
@@ -31,12 +28,12 @@ const styles = theme => ({
 });
 
 class InviteDialogue extends React.Component {
-  constructor(props){
-      super(props)
-      this.state = {
-        open: false,
-      };
-      
+  constructor(props) {
+    super(props)
+    this.state = {
+      open: false,
+    };
+
     this.roomID = this.props.match.params.roomID
 
   }
@@ -45,21 +42,9 @@ class InviteDialogue extends React.Component {
     this.setState({ open: true });
   };
 
-  // handleClose = () => {
-  //   this.setState({ open: false });
-  // };
-
-  // componentDidUpdate(){
-  //   this.setState({
-  //     open: this.props.addOpen
-  //   }, ()=> console.log("new open state on modal", this.state.open))
-  // }
-
-
 
   render() {
     const { classes } = this.props;
-    console.log("AM I RENDERINGGGG", this.roomID)
     return (
       <div>
         <Modal
@@ -69,9 +54,6 @@ class InviteDialogue extends React.Component {
           onClose={this.props.handleClose}
         >
           <div style={getModalStyle()} className={classes.paper}>
-            <Typography variant="title" id="modal-title">
-              SPOT THE BOT
-            </Typography>
             <Typography variant="subheading" id="simple-modal-description">
               You've Been Invited to Play with {this.props.host}!
             </Typography>

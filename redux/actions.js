@@ -29,6 +29,10 @@ const removeUserFromNewRoom = username => ({
   payload: { username },
 });
 
+const removeAllUsersFromNewRoom = () => ({
+  type: 'REMOVE_ALL_USERS_FROM_NEW_ROOM',
+});
+
 
 //
 // ─── ROOM LOGIC ─────────────────────────────────────────────────────────────────
@@ -45,5 +49,6 @@ module.exports = {
   searchUsers,
   addUserToNewRoom,
   removeUserFromNewRoom,
+  removeAllUsersFromNewRoom,
   addCurrRoomUsersFromDB,
 };

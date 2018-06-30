@@ -20,7 +20,7 @@ import './styles/main.scss';
 import { createStore, combineReducers, applyMiddleware } from 'redux';
 import { Provider, connect } from 'react-redux';
 import logger from 'redux-logger';
-import { login, logout, searchUsers } from '../../redux/actions';
+import { login, logout, searchUsers, removeAllUsersFromNewRoom } from '../../redux/actions';
 import reducer from '../../redux/reducer';
 
 const store = createStore(reducer, applyMiddleware(logger));
@@ -37,6 +37,7 @@ const mapDispatchToProps = dispatch => {
     login: (username) => dispatch(login(username)),
     logout: () => dispatch(logout()),
     searchUsers: (users) => dispatch(searchUsers(users)),
+    removeAllUsersFromNewRoom: () => dispatch(removeAllUsersFromNewRoom()),
   };
 };
 
@@ -89,7 +90,7 @@ class ConnectedApp extends React.Component {
       userRooms: [],
       userWins: ''
     };
-    this.socket = io({ transports: ['websocket'] });
+    this.socket = io();
   }
 
   componentDidMount() {
@@ -188,6 +189,7 @@ class ConnectedApp extends React.Component {
       .then(res => {
         console.log('Logging out');
         this.props.logout();
+        this.props.removeAllUsersFromNewRoom();
         this.setState({
           loginError: false
         });
