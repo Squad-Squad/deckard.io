@@ -94,7 +94,9 @@ class ConnectedCreateRoom extends React.Component {
     axios.post('/searchUsers')
       .then(res => {
         this.setState({
-          suggestions: res.data.map(user => user.email),
+          suggestions: res.data
+            .map(user => user.email)
+            .filter(email => email !== this.props.loggedInUsername),
         });
       });
   }

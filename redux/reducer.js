@@ -43,6 +43,12 @@ function reducer(state = initialState, action) {
         usersForNewRoom: state.usersForNewRoom.splice(state.usersForNewRoom.indexOf(action.payload.username), 1),
       });
 
+    case 'REMOVE_ALL_USERS_FROM_NEW_ROOM':
+      // THIS CONSOLE LOG IS NECESSARY, DON'T REMOVE
+      return Object.assign({}, state, {
+        usersForNewRoom: [],
+      });
+
 
     //
     // ─── ROOM LOGIC ──────────────────────────────────────────────────
