@@ -10,6 +10,12 @@ function rand() {
 }
 
 function getModalStyle() {
+<<<<<<< HEAD
+=======
+  const top = 50;
+  const left = 50;
+
+>>>>>>> 68149142468cf0631e2e8051e6b03404789d2972
   return {
     top: `50%`,
     left: `50%`,
@@ -20,6 +26,7 @@ function getModalStyle() {
 const styles = theme => ({
   paper: {
     position: 'absolute',
+
     width: theme.spacing.unit * 50,
     backgroundColor: theme.palette.background.paper,
     boxShadow: theme.shadows[5],

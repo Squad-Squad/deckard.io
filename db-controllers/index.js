@@ -90,6 +90,43 @@ const saveRoomAndMembers = (roomName, members, id, callback) => {
     });
 };
 
+const aliasMembers = (roomName, members, callback) => {
+  const aliases = ['HAL 9000',
+    'Android 18',
+    'AM',
+    'Marvin',
+    'Roy Batty',
+    'Pris',
+    'Rachael',
+    'C-3PO',
+    'Ash',
+    'T-800',
+    'T-1000',
+    'Data',
+    'Bishop',
+    'Johnny 5',
+    'Robocop',
+    'Rosie',
+    'Cortana',
+    'HK-47',
+    '2B',
+    'GlaDOS',
+    'SHODAN',
+    'Dolores'];
+
+   // const randomAlias = Math.floor(Math.random() * aliases.length);
+  const randomForAI = Math.floor(Math.random() * aliases.length)
+  let membersObj = {'room': roomName, 'mitsuku@mitsuku.com': aliases[randomForAI]}
+  aliases.splice(randomForAI, 1)
+   members.forEach((member)=>{
+    const randomAlias = Math.floor(Math.random() * aliases.length);
+    membersObj[member] = aliases[randomAlias]
+    aliases.splice(randomAlias, 1)
+   })
+    callback(membersObj)
+}
+
+
 // Add Mitsuku user to table if she doesn't already exist
 const addMitsuku = () => {
   db.models.User.findAll({ where: { email: 'mitsuku@mitsuku.com' } })
@@ -216,4 +253,5 @@ module.exports = {
   getMessages,
   getRooms,
   getWins,
+  aliasMembers,
 };

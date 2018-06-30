@@ -70,34 +70,49 @@ class ConnectedRoom extends React.Component {
 
   /// Send post request to server to fetch room info when user visits link
   componentDidMount() {
-    console.log('ROOM RENDERED', this.roomID);
     this.getMessages();
     this.getRoomInfo();
     this.getTimer();
-    this.props.io.emit('join', { room: this.roomID, user: this.props.loggedInUsername });
+    // this.props.io.emit('join', { room: this.roomID, user: this.state.memberMap[this.props.loggedInUsername]});
   }
 
   getMessages() {
     $.get(`/api/messages/${this.roomID}`).then(messages => {
       this.setState({
         messages: messages,
-      });
+      }, () => console.log('message format state received:', messages));
     });
   }
 
   getRoomInfo() {
     $.get(`/api/rooms/${this.roomID}`).then(roomMembers => {
-      // this.props.addCurrUsersFromDB(roomMembers);
+      // console.log(`Got roommembers: ${JSON.stringify(roomMembers)} from ${this.roomID}`);
+      console.log("GET ROOM INFO RECEIVING OBJ:", roomMembers);
+
+
+      let aliasedMembers = [];
+      let memberMap = {};
+      for (var key in roomMembers) {
+        if (key !== "room") {
+          memberMap[key] = roomMembers[key]
+          aliasedMembers.push(roomMembers[key])
+        }
+      };
+
+      console.log("STATE OF THE DATA BEFORE SETSTATE: memberMAP:", memberMap, "aliasedMembers:", aliasedMembers)
+
       this.setState({
-        memberMap: roomMembers.reduce((obj, memArr) => {
-          obj[memArr.email] = memArr.alias;
-          return obj;
-        }, {}),
-        members: roomMembers.filter(member => member.email !== this.props.loggedInUsername)
-          .map(member => member.alias),
-        roomName: roomMembers[0].rooms[0].name,
-      }, () => console.log(this.state.members));
-    });
+        memberMap: memberMap,
+        members: aliasedMembers,
+        roomName: roomMembers.room,
+      }, () => console.log("WHAT ROOMMEMBERS NEED TO LOOK LIKE:", this.state.memberMap)
+      );
+    })
+      .then(() => {
+        this.props.io.emit('join', { room: this.roomID, user: this.state.memberMap[this.props.loggedInUsername] });
+      });
+
+
   }
 
   getTimer() {
@@ -143,7 +158,7 @@ class ConnectedRoom extends React.Component {
     let resId = id || this.state.currentSelection.id;
     let voteObj = {
       voter: this.props.username,
-      restaurant_id: resId,
+      // restaurant_id: resId,
       name: resName,
       roomID: this.roomID,
       nominator: uname

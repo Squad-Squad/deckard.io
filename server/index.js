@@ -12,7 +12,9 @@ const socket = require('socket.io');
 const uniqueString = require('unique-string');
 const Tock = require('tocktimer');
 const mitsuku = require('../lib/mitsukuHelper')();
-const gameLogic = require('../lib/gameLogic');
+const gameLogic = require('../lib/gameLogic')
+const redis = require('redis')
+
 
 const Mailjet = require('node-mailjet').connect(
   process.env.MAILJET_API_KEY,
@@ -23,6 +25,14 @@ const db = require('../database-postgresql/models/index');
 const dbHelpers = require('../db-controllers');
 
 const { Op } = db;
+
+
+const client = redis.createClient();
+const multi = client.multi()
+
+client.on('connect', function() {
+  console.log('Connected to Redis');
+});
 
 const app = express();
 
@@ -114,8 +124,8 @@ app.post('/api/signupEmail', (req, res) => {
   console.log('Received request to send email to', req.body.email);
   const { email } = req.body;
   const emailData = {
-    FromEmail: 'foodfightHR@gmail.com',
-    FromName: 'Food Fight',
+    FromEmail: 'd3ck4rd.io@gmail.com',
+    FromName: 'deckard.io',
     Subject: 'You\'ve been invited to Food Fight!',
     'Text-part': `You've been invited to a Food Fight. Visit ${process.env.DOMAIN || 'http://localhost:3000/'}signup to signup.`,
     Recipients: [{ Email: email }],
@@ -135,10 +145,10 @@ app.post('/api/roomEmail', (req, res) => {
   console.log('Received request to send email to', req.body);
   const { email, roomInfo } = req.body;
   const emailData = {
-    FromEmail: 'foodfightHR@gmail.com',
-    FromName: 'Food Fight',
-    Subject: 'You\'ve been invited to join a Food Fight room!',
-    'Text-part': `You've been invited to a Food Fight room. Visit ${process.env.DOMAIN || 'http://localhost:3000/'}rooms/${roomInfo.uniqueid} to join.`,
+    FromEmail: 'd3ck4rd.io@gmail.com',
+    FromName: 'deckard.io',
+    Subject: 'You\'ve been invited to join a deckard.io room!',
+    'Text-part': `You've been invited to a deckard.io room. Visit ${process.env.DOMAIN || 'http://localhost:3000/'}rooms/${roomInfo.uniqueid} to join.`,
     Recipients: [{ Email: email }],
   };
   Mailjet.post('send')
@@ -157,11 +167,26 @@ app.post('/api/roomEmail', (req, res) => {
 // ─── CREATE ROOMS AND GET ROOM INFO ─────────────────────────────────────────────
 //
 app.post('/api/save', (req, res) => {
+
+  console.log('NEW ROOM DATA', req.body);
+
   const { roomName, members } = req.body;
   const roomUnique = uniqueString();
   timerObj[roomUnique] = new Tock({
     countdown: true,
   });
+
+    // for(var el of members){
+    //   multi.rpush(roomUnique, el)
+    // }
+
+    // multi.exec(function(errors, results) {})
+
+    dbHelpers.aliasMembers(roomName, members, (results)=>{
+      client.hmset(`${roomUnique}:members`, results)
+    })
+
+    // console.log("ROOMUNIQUE TO TEST:", roomUnique)
 
   // CHANGE THE ROOM TIMER LENGTH HERE
   timerObj[roomUnique].start(20000);
@@ -171,6 +196,7 @@ app.post('/api/save', (req, res) => {
       console.log('Error saving room and members', err);
     } else {
       console.log(`Saved room: ${roomName}`);
+      // console.log('SAVED ROOM:', room, "AND USERS:", users)
       res.send(room[0].dataValues);
     }
   });
@@ -179,13 +205,23 @@ app.post('/api/save', (req, res) => {
 // Get room members here
 app.get('/api/rooms/:roomID', (req, res) => {
   const { roomID } = req.params;
-  dbHelpers.getRoomMembers(roomID, (err, roomMembers) => {
-    if (err) {
-      console.log('Error getting room members', err);
-    } else {
-      res.send(roomMembers);
+
+  client.hgetall(`${roomID}:members`, (err, replies)=>{
+    if(err){
+      console.log(err)
+    }else{
+      console.log("REDIS ROOM MEMBERS RETRIEVE", replies)
+      res.send(replies)
     }
-  });
+  })
+
+  // dbHelpers.getRoomMembers(roomID, (err, roomMembers) => {
+  //   if (err) {
+  //     console.log('Error getting room members', err);
+  //   } else {
+  //     res.send(roomMembers);
+  //   }
+  // });
 });
 
 app.get('/api/timer/:roomID', (req, res) => {
@@ -233,6 +269,16 @@ app.get('/api/getWinner/:roomID', (req, res) => {
 //
 app.post('/api/messages', (req, res) => {
   const { user_id, message, roomID } = req.body;
+
+  // console.log("user_id:", message.name, "and message:", message, "and roomID:", roomID)
+
+  const msg = message.message
+  const name = message.name
+
+
+
+  client.rpush(`${roomID}:messages`, JSON.stringify({[name]:msg}))
+
   dbHelpers.saveMessage(user_id, message.name, message.message, roomID, (err, savedMessage) => {
     if (err) {
       console.log('Error saving message', err);
@@ -245,14 +291,53 @@ app.post('/api/messages', (req, res) => {
 
 app.get('/api/messages/:roomID', (req, res) => {
   const { roomID } = req.params;
-  dbHelpers.getMessages(roomID, (err, fetchedMessages) => {
-    if (err) {
-      console.log('Error retrieving messages', err);
-      res.status(404).end();
+
+  client.lrange(`${roomID}:messages`, 0, -1, (err, replies)=>{
+    if(err){
+      console.log(err)
     } else {
-      res.send(fetchedMessages);
+      let outputArray = []
+    
+      console.log("MESSAGE RECEIVE", replies)
+      replies.forEach((reply)=>{
+        // testArr.push(JSON.parse(reply))
+        let msgObj = {}
+        let incoming = JSON.parse(reply)
+        for(var key in incoming){
+          msgObj.message = incoming[key]
+          msgObj.name = key
+          msgObj.user_id = null
+        }
+        // console.log("msgObj in forEACH FORMATTING", msgObj)
+        outputArray.push(msgObj)
+      })
+      console.log("outputArray TO CHECK:", outputArray)
+      res.send(outputArray)
     }
-  });
+  })
+
+
+
+  // [ 'HK-47 has joined the room!',
+  // 'adonesky@gmail.com: asdfasf',
+  // 'adonesky@gmail.com: effeefefef',
+  // 'mitsuku@mitsuku.com:  would you like to hear your horoscope?',
+  // 'adonesky@gmail.com: eee',
+  // 'mitsuku@mitsuku.com: undefined' ]
+
+// [{message:"Marvin has joined the room!"
+// name:"adonesky@gmail.com"
+// user_id:null}]
+
+  // dbHelpers.getMessages(roomID, (err, fetchedMessages) => {
+  //   if (err) {
+  //     console.log('Error retrieving messages', err);
+  //     res.status(404).end();
+  //   } else {
+  //     console.log("FETCHED MESSAGES IN RETRIEVE API:", fetchedMessages)
+  //     // res.send(fetchedMessages);
+  //   }
+  // });
 });
 
 app.post('/api/saveVotes', (req, res) => {
@@ -306,6 +391,7 @@ db.models.sequelize.sync().then(() => {
 
     socket.on('join', (data) => {
       socket.room = data.room;
+      console.log("GETTING USERALIAS IN SOCKET:", data.user)
       // socket.username = data.user
       // userSockets[socket.username] = socket
       // users.push(socket.username);
@@ -317,19 +403,22 @@ db.models.sequelize.sync().then(() => {
       }
 
       socket.join(socket.room);
-      io.sockets.in(socket.room).emit('roomJoin', socket.room);
+      // io.sockets.in(socket.room).emit('roomJoin', socket.room);
       io.sockets.in(socket.room).emit('chat', {
         message: {
           user_id: socket.username,
           name: socket.username,
-          message: `${socket.username} has joined the room!`,
+          message: `${data.user} has joined the room!`,
         },
         roomId: socket.room,
       });
 
       const user_id = socket.username;
       const name = socket.username;
-      const message = `${socket.username} has joined the room!`;
+      const message = `${data.user} has joined the room!`;
+
+      client.rpush(`${socket.room}:messages`, JSON.stringify({matrixOverLords:message}))
+
 
       dbHelpers.saveMessage(user_id, name, message, socket.room, (err, savedMessage) => {
         if (err) {
@@ -360,6 +449,10 @@ db.models.sequelize.sync().then(() => {
         mitsuku.send(data.message.message)
           .then((response) => {
             // Save her message to the db
+
+          client.rpush(`${socket.room}:messages`, JSON.stringify({'mitsuku@mitsuku.com': response}))
+
+
             dbHelpers.saveMessage(
               null,
               'mitsuku@mitsuku.com',
@@ -388,6 +481,9 @@ db.models.sequelize.sync().then(() => {
 
 
     socket.on('vote', (data) => {
+      rooms[socket.room][0][data.user] = data.votes
+      if(rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length){
+        gameLogic.calcScores(rooms[socket.room])
       rooms[socket.room][0][data.user] = data.votes;
       if (rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length) {
         const scores = gameLogic.calcScores(rooms[socket.room]);
@@ -404,14 +500,12 @@ db.models.sequelize.sync().then(() => {
           });
         io.sockets.in(socket.room).emit('scores', scores);
       }
-    });
+    };
 
-    // newSocket.on('veto', (data) => {
-    //   console.log('Received veto!', data);
-    //   io.sockets.emit('veto', data.roomID);
-    // });
-  });
+ 
+  })
 });
+})
 
 let timerObj = {};
 const nominateTimerObj = {};
