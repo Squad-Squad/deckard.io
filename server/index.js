@@ -12,8 +12,8 @@ const socket = require('socket.io');
 const uniqueString = require('unique-string');
 const Tock = require('tocktimer');
 const mitsuku = require('../lib/mitsukuHelper')();
-const gameLogic = require('../lib/gameLogic')
-const redis = require('redis')
+const gameLogic = require('../lib/gameLogic');
+const redis = require('redis');
 
 
 const Mailjet = require('node-mailjet').connect(
@@ -28,9 +28,9 @@ const { Op } = db;
 
 
 const client = redis.createClient();
-const multi = client.multi()
+const multi = client.multi();
 
-client.on('connect', function() {
+client.on('connect', () => {
   console.log('Connected to Redis');
 });
 
@@ -167,7 +167,6 @@ app.post('/api/roomEmail', (req, res) => {
 // ─── CREATE ROOMS AND GET ROOM INFO ─────────────────────────────────────────────
 //
 app.post('/api/save', (req, res) => {
-
   console.log('NEW ROOM DATA', req.body);
 
   const { roomName, members } = req.body;
@@ -176,17 +175,17 @@ app.post('/api/save', (req, res) => {
     countdown: true,
   });
 
-    // for(var el of members){
-    //   multi.rpush(roomUnique, el)
-    // }
+  // for(var el of members){
+  //   multi.rpush(roomUnique, el)
+  // }
 
-    // multi.exec(function(errors, results) {})
+  // multi.exec(function(errors, results) {})
 
-    dbHelpers.aliasMembers(roomName, members, (results)=>{
-      client.hmset(`${roomUnique}:members`, results)
-    })
+  dbHelpers.aliasMembers(roomName, members, (results) => {
+    client.hmset(`${roomUnique}:members`, results);
+  });
 
-    // console.log("ROOMUNIQUE TO TEST:", roomUnique)
+  // console.log("ROOMUNIQUE TO TEST:", roomUnique)
 
   // CHANGE THE ROOM TIMER LENGTH HERE
   timerObj[roomUnique].start(20000);
@@ -206,14 +205,14 @@ app.post('/api/save', (req, res) => {
 app.get('/api/rooms/:roomID', (req, res) => {
   const { roomID } = req.params;
 
-  client.hgetall(`${roomID}:members`, (err, replies)=>{
-    if(err){
-      console.log(err)
-    }else{
-      console.log("REDIS ROOM MEMBERS RETRIEVE", replies)
-      res.send(replies)
+  client.hgetall(`${roomID}:members`, (err, replies) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log('REDIS ROOM MEMBERS RETRIEVE', replies);
+      res.send(replies);
     }
-  })
+  });
 
   // dbHelpers.getRoomMembers(roomID, (err, roomMembers) => {
   //   if (err) {
@@ -272,12 +271,11 @@ app.post('/api/messages', (req, res) => {
 
   // console.log("user_id:", message.name, "and message:", message, "and roomID:", roomID)
 
-  const msg = message.message
-  const name = message.name
+  const msg = message.message;
+  const name = message.name;
 
 
-
-  client.rpush(`${roomID}:messages`, JSON.stringify({[name]:msg}))
+  client.rpush(`${roomID}:messages`, JSON.stringify({ [name]: msg }));
 
   dbHelpers.saveMessage(user_id, message.name, message.message, roomID, (err, savedMessage) => {
     if (err) {
@@ -292,30 +290,29 @@ app.post('/api/messages', (req, res) => {
 app.get('/api/messages/:roomID', (req, res) => {
   const { roomID } = req.params;
 
-  client.lrange(`${roomID}:messages`, 0, -1, (err, replies)=>{
-    if(err){
-      console.log(err)
+  client.lrange(`${roomID}:messages`, 0, -1, (err, replies) => {
+    if (err) {
+      console.log(err);
     } else {
-      let outputArray = []
-    
-      console.log("MESSAGE RECEIVE", replies)
-      replies.forEach((reply)=>{
+      const outputArray = [];
+
+      console.log('MESSAGE RECEIVE', replies);
+      replies.forEach((reply) => {
         // testArr.push(JSON.parse(reply))
-        let msgObj = {}
-        let incoming = JSON.parse(reply)
-        for(var key in incoming){
-          msgObj.message = incoming[key]
-          msgObj.name = key
-          msgObj.user_id = null
+        const msgObj = {};
+        const incoming = JSON.parse(reply);
+        for (const key in incoming) {
+          msgObj.message = incoming[key];
+          msgObj.name = key;
+          msgObj.user_id = null;
         }
         // console.log("msgObj in forEACH FORMATTING", msgObj)
-        outputArray.push(msgObj)
-      })
-      console.log("outputArray TO CHECK:", outputArray)
-      res.send(outputArray)
+        outputArray.push(msgObj);
+      });
+      console.log('outputArray TO CHECK:', outputArray);
+      res.send(outputArray);
     }
-  })
-
+  });
 
 
   // [ 'HK-47 has joined the room!',
@@ -391,7 +388,7 @@ db.models.sequelize.sync().then(() => {
 
     socket.on('join', (data) => {
       socket.room = data.room;
-      console.log("GETTING USERALIAS IN SOCKET:", data.user)
+      console.log('GETTING USERALIAS IN SOCKET:', data.user);
       // socket.username = data.user
       // userSockets[socket.username] = socket
       // users.push(socket.username);
@@ -417,7 +414,7 @@ db.models.sequelize.sync().then(() => {
       const name = socket.username;
       const message = `${data.user} has joined the room!`;
 
-      client.rpush(`${socket.room}:messages`, JSON.stringify({matrixOverLords:message}))
+      client.rpush(`${socket.room}:messages`, JSON.stringify({ matrixOverLords: message }));
 
 
       dbHelpers.saveMessage(user_id, name, message, socket.room, (err, savedMessage) => {
@@ -450,7 +447,7 @@ db.models.sequelize.sync().then(() => {
           .then((response) => {
             // Save her message to the db
 
-          client.rpush(`${socket.room}:messages`, JSON.stringify({'mitsuku@mitsuku.com': response}))
+            client.rpush(`${socket.room}:messages`, JSON.stringify({ 'mitsuku@mitsuku.com': response }));
 
 
             dbHelpers.saveMessage(
@@ -481,31 +478,29 @@ db.models.sequelize.sync().then(() => {
 
 
     socket.on('vote', (data) => {
-      rooms[socket.room][0][data.user] = data.votes
-      if(rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length){
-        gameLogic.calcScores(rooms[socket.room])
       rooms[socket.room][0][data.user] = data.votes;
       if (rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length) {
-        const scores = gameLogic.calcScores(rooms[socket.room]);
-        // const scoresArr = [];
-        // Object.keys(scores).forEach(key => scoresArr.push([key, scores[key]]));
-        db.models.Room.findOne({ where: { uniqueid: socket.room } })
-          .then((room) => {
+        gameLogic.calcScores(rooms[socket.room]);
+        rooms[socket.room][0][data.user] = data.votes;
+        if (rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length) {
+          const scores = gameLogic.calcScores(rooms[socket.room]);
+          // const scoresArr = [];
+          // Object.keys(scores).forEach(key => scoresArr.push([key, scores[key]]));
+          db.models.Room.findOne({ where: { uniqueid: socket.room } })
+            .then((room) => {
             // Check if record exists in db
-            if (room) {
-              room.updateAttributes({
-                scores: JSON.stringify(scores),
-              });
-            }
-          });
-        io.sockets.in(socket.room).emit('scores', scores);
+              if (room) {
+                room.updateAttributes({
+                  scores: JSON.stringify(scores),
+                });
+              }
+            });
+          io.sockets.in(socket.room).emit('scores', scores);
+        }
       }
-    };
-
- 
-  })
+    });
+  });
 });
-})
 
 let timerObj = {};
 const nominateTimerObj = {};
