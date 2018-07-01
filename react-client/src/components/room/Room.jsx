@@ -140,10 +140,10 @@ class ConnectedRoom extends React.Component {
 
   sendMessage(msg) {
     let messageObj = {
+      numUsers: this.state.members.length,
       message: {
         name: this.props.username || this.state.name,
         message: msg,
-        numUsers: this.state.members.length,
       },
       roomID: this.roomID,
     };

@@ -402,6 +402,7 @@ db.models.sequelize.sync().then(() => {
       }
 
       socket.join(socket.room);
+      console.log('THIS IS THE USERNAME', socket.username);
       // io.sockets.in(socket.room).emit('roomJoin', socket.room);
       io.sockets.in(socket.room).emit('chat', {
         message: {
@@ -441,38 +442,41 @@ db.models.sequelize.sync().then(() => {
 
     socket.on('chat', (data) => {
       io.sockets.in(socket.room).emit('chat', data);
-      console.log('DIS DA DATA', data);
       let extraDelay = 0;
 
-      // Delay Mitsuku a random number of seconds
-      mitsuku.send(data.message.message)
-        .then((response) => {
-          if (/here\sin\sleeds/g.test(response)) {
-            response = response.slice(0, response.indexOf('here in leeds'));
-          }
+      // Change Mitsuku's response frequency based on the number of room users
+      if (Math.ceil(Math.random() * data.numUsers) === data.numUsers) {
+        // Delay Mitsuku a random number of seconds
+        mitsuku.send(data.message.message)
+          .then((response) => {
+            console.log('GETTING MESSAGE BACK', response);
+            if (/here\sin\sleeds/g.test(response)) {
+              response = response.slice(0, response.indexOf('here in leeds'));
+            }
 
-          // Add delay based on response length
-          extraDelay = response.length * 100;
-          console.log('EXTRA DELAY', extraDelay);
+            // Add delay based on response length
+            extraDelay = response.length * 100;
+            console.log('EXTRA DELAY', extraDelay);
 
-          setTimeout(() => {
-            // Save her message to redis
-            client.rpush(`${socket.room}:messages`, JSON.stringify({ 'mitsuku@mitsuku.com': response }));
+            setTimeout(() => {
+              // Save her message to redis
+              client.rpush(`${socket.room}:messages`, JSON.stringify({ 'mitsuku@mitsuku.com': response }));
 
-            // Emit her message via socket
-            io.sockets.in(socket.room).emit(
-              'chat',
-              {
-                message: {
-                  user_id: null,
-                  name: 'mitsuku@mitsuku.com',
-                  message: response,
+              // Emit her message via socket
+              io.sockets.in(socket.room).emit(
+                'chat',
+                {
+                  message: {
+                    user_id: null,
+                    name: 'mitsuku@mitsuku.com',
+                    message: response,
+                  },
+                  roomID: data.roomID,
                 },
-                roomID: data.roomID,
-              },
-            );
-          }, Math.random() * 5000 + 2000 + extraDelay);
-        });
+              );
+            }, Math.random() * 5000 + 2000 + extraDelay);
+          });
+      }
     });
 
 
