@@ -7,7 +7,9 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Icon from '@material-ui/core/Icon';
+import { withStyles } from '@material-ui/core/styles';
 
+const styles = {};
 class LoginDialog extends React.Component {
   constructor(props) {
     super(props);
@@ -74,6 +76,8 @@ class LoginDialog extends React.Component {
   // ─── RENDER ─────────────────────────────────────────────────────────────────────
   //
   render() {
+    const { classes } = this.props;
+
     // Login error
     const loginError = this.props.error ? (
       <DialogContentText id="login-error">
@@ -86,6 +90,7 @@ class LoginDialog extends React.Component {
         <Button onClick={this.handleClickOpen} className="auth-buttons">Login</Button>
         <div>
           <Dialog
+            className="auth-dialog"
             open={this.state.open}
             onClose={this.handleClose}
             aria-labelledby="form-dialog-title"
@@ -140,4 +145,4 @@ class LoginDialog extends React.Component {
   }
 }
 
-export default LoginDialog;
+export default withStyles(styles)(LoginDialog);

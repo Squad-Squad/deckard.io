@@ -155,6 +155,10 @@ div.columns {
   margin: 15px;
 }
 
+.auth-dialog > div {
+  background-color: rgba(33,33,33,.3) !important;
+}
+
 .tile.is-child.notification.combatants {
   margin-bottom: 10px !important;
 }
