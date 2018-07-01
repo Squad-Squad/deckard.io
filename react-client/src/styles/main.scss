@@ -27,14 +27,14 @@
   #login-prompt { width: 30%; }
 }
 
-@media screen and (min-width: 0px) and (max-width: 360px) {
-  #login-form-dialog-title { text-align: center; }
-  .google-login-button { text-align: center; margin-top: 20px !important; }
-
+@media screen and (min-width: 0px) and (max-width: 400px) {
+  #login-form-dialog-title { text-align: center !important; }
+  #google-login-button { margin-top: 20px; }
+  .login-title { margin-right: 20px; }
 }
 
-@media screen and (min-width: 361px) {
-  .google-login-button { float: right; }
+@media screen and (min-width: 400px) {
+  #google-login-button { float: right; }
 }
 // -----------------------------------------------------------
 

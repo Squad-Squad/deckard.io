@@ -90,10 +90,12 @@ class LoginDialog extends React.Component {
             onClose={this.handleClose}
             aria-labelledby="form-dialog-title"
           >
-            <DialogTitle id="login-form-dialog-title">
-              Login
-            <Button
-                className="google-login-button"
+            <DialogTitle id="login-form-dialog-title" >
+              <span className="login-title">
+                Login
+                </span>
+              <Button
+                id="google-login-button"
                 variant="raised"
                 style={{ backgroundColor: '#4285f4', color: 'white' }}
                 href='/auth/google'>
