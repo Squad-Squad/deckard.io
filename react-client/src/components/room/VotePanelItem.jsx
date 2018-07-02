@@ -52,7 +52,7 @@ class VotePanelItem extends Component {
               </Button>
           <Button variant="contained" color="secondary" className={classes.button}
             onClick={this.humanClick.bind(this)}>
-            Hyumon
+            Human
               </Button>
         </div>)
       } else if (this.state.humanOrAI === 'ai') {
@@ -63,7 +63,7 @@ class VotePanelItem extends Component {
           </Button>
           <span onClick={this.humanClick.bind(this)}>
             <Button variant="contained" color="secondary" disabled className={classes.button}>
-              Hyumon
+              Human
             </Button>
           </span>
         </div>)
@@ -76,7 +76,7 @@ class VotePanelItem extends Component {
           </span>
           <Button variant="contained" color="secondary" className={classes.button}
             onClick={this.humanClick.bind(this)}>
-            Hyumon
+            Human
           </Button>
         </div>)
       }
