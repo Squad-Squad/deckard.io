@@ -39,6 +39,10 @@ class ConnectedUserMenu extends React.Component {
         <Menu
           id="simple-menu"
           anchorEl={anchorEl}
+          anchorOrigin={{
+            horizontal: 'right',
+            vertical: 'top',
+          }}
           open={Boolean(anchorEl)}
           onClose={this.handleClose}
         >
