@@ -41,39 +41,33 @@ function ConnectedCombatantsContainer(props) {
       </Typography>
 
       {/* logged in user's chip */}
-      <div
-        className={classes.root}>
-        <Chip
-          style={{ zIndex: '0' }}
-          // avatar={
-          //   <Avatar>
-          //     <FaceIcon />
-          //   </Avatar>
-          // }
-          label={props.loggedInUser}
-          className={classes.chip}
-        />
-      </div>
+      <Chip
+        style={{ zIndex: '0' }}
+        // avatar={
+        //   <Avatar>
+        //     <FaceIcon />
+        //   </Avatar>
+        // }
+        label={props.loggedInUser}
+        className={classes.chip}
+      />
 
       {/* invited users' chips */}
       {
         props.usersForNewRoom.slice(1).map((user, i) => {
           return (
-            <div
-              className={classes.root}
-              key={i}>
-              <Chip
-                style={{ zIndex: '0' }}
-                // avatar={
-                //   <Avatar>
-                //     <FaceIcon />
-                //   </Avatar>
-                // }
-                label={user}
-                onDelete={props.removeUserFromNewRoom.bind(this, user)}
-                className={classes.chip}
-              />
-            </div>
+            <Chip
+              style={{ zIndex: '0' }}
+              // avatar={
+              //   <Avatar>
+              //     <FaceIcon />
+              //   </Avatar>
+              // }
+              key={i}
+              label={user}
+              onDelete={props.removeUserFromNewRoom.bind(this, user)}
+              className={classes.chip}
+            />
           )
         })
       }
