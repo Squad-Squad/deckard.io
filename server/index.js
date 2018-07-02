@@ -395,7 +395,7 @@ db.models.sequelize.sync().then(() => {
             }
 
             // Add delay based on response length
-            extraDelay = response.length * 75;
+            extraDelay = response.length * 50;
             console.log('EXTRA DELAY', extraDelay);
 
             setTimeout(() => {
