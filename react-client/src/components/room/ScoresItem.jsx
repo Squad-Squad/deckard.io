@@ -21,7 +21,7 @@ class ScoresItem extends Component {
         fontSize: '20px',
       }}>
         <div>
-          {this.props.user}
+          {this.props.user} ({this.props.alias})
         </div>
         <div>
           {this.props.score}

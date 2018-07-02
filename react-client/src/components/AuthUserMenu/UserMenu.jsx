@@ -23,6 +23,7 @@ class ConnectedUserMenu extends React.Component {
     this.setState({ anchorEl: null });
   };
 
+
   render() {
     const { anchorEl } = this.state;
 
@@ -42,6 +43,7 @@ class ConnectedUserMenu extends React.Component {
           onClose={this.handleClose}
         >
           <MenuItem onClick={this.props.logout}>Logout</MenuItem>
+          <MenuItem onClick={this.props.profile}>Your Profile</MenuItem>
         </Menu>
       </div>
     );

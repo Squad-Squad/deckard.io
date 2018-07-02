@@ -120,7 +120,9 @@ class SubscribeDialog extends React.Component {
           onClose={this.handleClose}
           aria-labelledby="form-dialog-title"
         >
-          <DialogTitle id="form-dialog-title">SignUp</DialogTitle>
+          <DialogTitle id="form-dialog-title">
+            Sign Up
+          </DialogTitle>
           <DialogContent>
             <TextField
               {...isEmailValid}

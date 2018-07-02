@@ -52,7 +52,7 @@ const User = sequelize.define('user', {
     type: Sequelize.STRING,
     allowNull: true,
   },
-  wins: {
+  lifetime_score: {
     type: Sequelize.INTEGER(6),
     defaultValue: 0,
     allowNull: true,

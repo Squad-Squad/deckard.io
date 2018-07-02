@@ -43,12 +43,12 @@ class VotePanel extends Component {
     };
   }
 
-  componentDidMount() {
+   componentDidMount() {
     this.setState({
       membersVoteMap: Object.keys(this.props.memberMap).reduce((obj, member) => {
         obj[member] = '';
         return obj;
-      }, ()=>{console.log("MEMBERSVOTEMAP", this.state.membersVoteMap)}),
+      }, {}),
     });
   }
 
@@ -102,8 +102,12 @@ class VotePanel extends Component {
               </AppBar>
             </div>
 
-            {this.props.members.map((user, i) =>
-              <VotePanelItem key={i} user={user} setVote={this.setVote.bind(this)} />
+            {this.props.members.map((user, i) =>{
+              console.log('USER:', user, "loggedInUser", this.props.memberMap[this.props.loggedInUser])
+              if(user !== this.props.memberMap[this.props.loggedInUser]){
+                return <VotePanelItem key={i} user={user} setVote={this.setVote.bind(this)} /> 
+                } 
+              }
             )}
 
             {/* BOTTOM BAR */}

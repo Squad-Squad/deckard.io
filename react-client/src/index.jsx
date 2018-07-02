@@ -11,6 +11,7 @@ import Navbar from './components/Navbar.jsx';
 import MainView from './components/MainView.jsx'
 import SignupPage from './components/AuthUserMenu/SignupPage.jsx';
 import io from 'socket.io-client';
+import { withRouter } from 'react-router-dom';
 
 import 'animate.css/animate.css';
 import './styles/main.scss';
@@ -195,6 +196,11 @@ class ConnectedApp extends React.Component {
         });
       })
   }
+
+  profileRedirect(){
+    this.props.history.push(`/userprofile/${this.props.loggedInUsername}`)
+  }
+
   // ────────────────────────────────────────────────────────────────────────────────
 
 
@@ -329,7 +335,8 @@ class ConnectedApp extends React.Component {
               subscribe={this.subscribe.bind(this)}
               error={this.state.loginError}
               subscribeError={this.state.subscribeError}
-              wins={this.state.userWins} />
+              wins={this.state.userWins}
+              profile={this.profileRedirect.bind(this)} />
           </div>
           <div className="container">
             <Route path="/" render={

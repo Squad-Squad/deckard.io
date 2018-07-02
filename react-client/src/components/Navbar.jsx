@@ -7,16 +7,27 @@ import SubscribeDialog from './AuthUserMenu/SubscribeDialog.jsx';
 import UserMenu from './AuthUserMenu/UserMenu.jsx';
 import logo from '../../dist/assets/unicorn.png';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
+
+
 
 const mapStateToProps = state => {
   return {
     loggedIn: state.loggedIn,
+    loggedInUsername: state.username,
   };
 };
 
 class ConnectedNavbar extends React.Component {
   constructor(props) {
     super(props);
+
+    this.profileRedirect = this.profileRedirect.bind(this)
+  }
+
+  profileRedirect(){
+    console.log("ATTEMPTING TO REDIRECT")
+    this.props.history.push(`/userprofile/${this.props.loggedInUsername}`)
   }
 
   render() {
@@ -35,7 +46,8 @@ class ConnectedNavbar extends React.Component {
       (
         <UserMenu
           logout={this.props.logout}
-          username={this.props.username} />
+          username={this.props.username} 
+          profile={this.profileRedirect} />
       )
       : (
         <Toolbar style={{
@@ -80,4 +92,4 @@ class ConnectedNavbar extends React.Component {
 
 const Navbar = connect(mapStateToProps)(ConnectedNavbar);
 
-export default Navbar;
+export default withRouter(Navbar);
