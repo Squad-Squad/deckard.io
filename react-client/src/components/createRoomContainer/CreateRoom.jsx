@@ -14,6 +14,7 @@ import Input from '@material-ui/core/Input';
 import CombatantsContainer from './CombatantsContainer.jsx';
 import Button from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
+import Snackbar from '@material-ui/core/Snackbar';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { addUserToNewRoom } from '../../../../redux/actions.js';
@@ -205,9 +206,6 @@ class ConnectedCreateRoom extends React.Component {
       currSuggestions: [],
     });
   };
-
-  handleSuggestionClick = (username) => {
-  }
   // ────────────────────────────────────────────────────────────────────────────────
 
 
@@ -281,10 +279,10 @@ class ConnectedCreateRoom extends React.Component {
     }
   }
 
-
   render() {
     const { classes } = this.props;
     this.props.addUserToNewRoom(this.props.loggedInUsername);
+    const { vertical, horizontal, open } = this.state;
 
     var uniqueURL = this.state.roomID ?
       `https://food-fight-greenfield.herokuapp.com/rooms/${this.state.roomID}`
