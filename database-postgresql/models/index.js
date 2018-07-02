@@ -12,12 +12,17 @@ if (process.env.DATABASE_URL) {
     logging: false,
   });
 } else {
-  sequelize = new Sequelize('deckardtest', 'beeb', null, {
-    host: 'localhost',
-    dialect: 'postgres',
-    operatorsAliases: false,
-    logging: false,
-  });
+  sequelize = new Sequelize(
+    'deckardtest',
+    process.env.DB_USER,
+    process.env.DB_PASSWORD,
+    {
+      host: 'localhost',
+      dialect: 'postgres',
+      operatorsAliases: false,
+      logging: false,
+    },
+  );
 }
 
 // DEPLOYMENT

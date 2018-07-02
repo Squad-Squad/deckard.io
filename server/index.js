@@ -15,7 +15,6 @@ const mitsuku = require('../lib/mitsukuHelper')();
 const gameLogic = require('../lib/gameLogic');
 const redis = require('redis');
 
-
 const Mailjet = require('node-mailjet').connect(
   process.env.MAILJET_API_KEY,
   process.env.MAILJET_API_SECRET,
@@ -35,10 +34,6 @@ if (process.env.REDIS_URL) {
 }
 
 const multi = client.multi();
-
-client.on('connect', () => {
-  console.log('Connected to Redis');
-});
 
 const app = express();
 
