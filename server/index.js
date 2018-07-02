@@ -350,8 +350,7 @@ db.models.sequelize.sync().then(() => {
       }
 
       socket.join(socket.room);
-      console.log('THIS IS THE USERNAME', socket.username);
-      // io.sockets.in(socket.room).emit('roomJoin', socket.room);
+
       io.sockets.in(socket.room).emit('chat', {
         message: {
           user_id: socket.username,
@@ -365,14 +364,7 @@ db.models.sequelize.sync().then(() => {
       const name = socket.username;
       const message = `${data.user} has joined the room!`;
 
-      client.rpush(`${socket.room}:messages`, JSON.stringify({ matrixOverLords: message }));
-
-
-      dbHelpers.saveMessage(user_id, name, message, socket.room, (err, savedMessage) => {
-        if (err) {
-          console.log('Error saving message', err);
-        }
-      });
+      // client.rpush(`${socket.room}:messages`, JSON.stringify({ matrixOverLords: message }));
     });
 
     socket.on('invite', (data) => {
