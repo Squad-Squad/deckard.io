@@ -385,7 +385,7 @@ db.models.sequelize.sync().then(() => {
       let extraDelay = 0;
 
       // Change Mitsuku's response frequency based on the number of room users
-      if (Math.ceil(Math.random() * data.numUsers) === data.numUsers) {
+      if (Math.ceil(Math.random() * (data.numUsers - 1)) === (data.numUsers - 1)) {
         // Delay Mitsuku a random number of seconds
         mitsuku.send(data.message.message)
           .then((response) => {
