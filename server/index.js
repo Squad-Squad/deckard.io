@@ -418,13 +418,35 @@ db.models.sequelize.sync().then(() => {
             }
 
             // Add delay based on response length
-            extraDelay = response.length * 100;
+            extraDelay = response.length * 70;
             console.log('EXTRA DELAY', extraDelay);
 
             setTimeout(() => {
               // Save her message to redis
               client.rpush(`${socket.room}:messages`, JSON.stringify({ 'mitsuku@mitsuku.com': response }));
+              client.lrange(`${socket.room}:messages`, 0, -1, (err, replies) => {
+                if (err) {
+                  console.log(err);
+                } else {
+                  const outputArray = [];
 
+                  replies.forEach((reply) => {
+                    const msgObj = {};
+                    const incoming = JSON.parse(reply);
+                    for (const key in incoming) {
+                      msgObj.message = incoming[key];
+                      msgObj.name = key;
+                      msgObj.user_id = null;
+                    }
+                    outputArray.push(msgObj);
+                  });
+
+                  console.log('MESSGAGE OBJ IN SOCKET:', outputArray)
+
+                io.sockets.in(socket.room).emit('chat', outputArray);
+
+                }
+              });
     
             }, Math.random() * 5000 + 2000 + extraDelay);
           });
@@ -481,6 +503,7 @@ db.models.sequelize.sync().then(() => {
 
 
       socket.leave(socket.room)
+      console.log('SOCKET.ROOMS', rooms)
 
       connections.splice(connections.indexOf(socket), 1)
 
