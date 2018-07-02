@@ -189,7 +189,7 @@ app.post('/api/save', (req, res) => {
   // console.log("ROOMUNIQUE TO TEST:", roomUnique)
 
   // CHANGE THE ROOM TIMER LENGTH HERE
-  timerObj[roomUnique].start(40000);
+  timerObj[roomUnique].start(240000);
 
   dbHelpers.saveRoomAndMembers(roomName, members, roomUnique, (err, room, users) => {
     if (err) {
@@ -403,7 +403,7 @@ db.models.sequelize.sync().then(() => {
             }
 
             // Add delay based on response length
-            extraDelay = response.length * 100;
+            extraDelay = response.length * 75;
             console.log('EXTRA DELAY', extraDelay);
 
             setTimeout(() => {
