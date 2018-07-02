@@ -339,6 +339,14 @@ db.models.sequelize.sync().then(() => {
     socket.on('username connect', (data) => {
       socket.username = data;
       console.log("USERNAME CONNECT:", data)
+
+      client.lrem('onlineUsers', 0, socket.username, (err, reply)=>{
+        console.log("removed before adding")
+      })
+
+      client.rpush('onlineUsers', socket.username, (err, reply)=>{
+        console.log("ONLINE USERS ADD:", reply)
+      })
       userSockets[socket.username] = socket;
       users.push(socket.username);
       console.log("USERS IN SERVER:", users)
@@ -346,9 +354,11 @@ db.models.sequelize.sync().then(() => {
 
     socket.on('join', (data) => {
       socket.room = data.room;
+      socket.alias = data.user
     
       if (!rooms[socket.room]) {
         rooms[socket.room] = [{}, socket.username];
+        console.log("ROOMS AFTER CREATION:", rooms)
       } else {
         rooms[socket.room].push(socket.username);
       }
@@ -369,7 +379,7 @@ db.models.sequelize.sync().then(() => {
       const name = socket.username;
       const message = `${data.user} has joined the room!`;
 
-      client.rpush(`${socket.room}:messages`, JSON.stringify({ matrixOverLords: message }));
+      client.rpush(`${socket.room}:messages`, JSON.stringify({ 'matrixOverLords': message }));
 
 
       dbHelpers.saveMessage(user_id, name, message, socket.room, (err, savedMessage) => {
@@ -378,7 +388,6 @@ db.models.sequelize.sync().then(() => {
         }
       });
     });
-
     socket.on('invite', (data) => {
      
       socket.broadcast.emit('invitation', {
@@ -431,14 +440,36 @@ db.models.sequelize.sync().then(() => {
       console.log('this users has disconnected:', socket.username, "AND ROOMS[SOCKET.ROOM]:", rooms[socket.room])
 
       if(rooms[socket.room]){
+        users.splice(users.indexOf(socket.username), 1)
         rooms[socket.room].splice(thisRoom.indexOf(socket.username), 1) 
         console.log('this users has disconnected:', socket.username, "AND ROOMS[SOCKET.ROOM] AFTER DISCONNECT:", rooms[socket.room])
-
       }
-        // delete userSockets[socket.username]
+      
+      client.rpush(`${socket.room}:messages`, JSON.stringify({ 'matrixOverLords': `${socket.alias} left the room` }));
+
+
+      io.sockets.in(socket.room).emit('chat', {
+        message: {
+          user_id: null,
+          name: "matrixOverLords",
+          message: `${socket.alias} has left the room!`,
+        },
+        roomId: socket.room,
+      })
+
+
+      client.lrem('onlineUsers', 1, socket.username, (err, replies)=>{
+        console.log("REMOVE REPLY", replies)
+      })
+
+      client.lrange('onlineUsers', 0, -1, (err, reply)=>{
+        console.log("ONLINE USERS CHECK:", reply)
+      })
+
+
+      socket.leave(socket.room)
 
       connections.splice(connections.indexOf(socket), 1)
-      // io.emit('disconnect', `${socket.username} disconnected`)
 
     })
 
@@ -453,16 +484,21 @@ db.models.sequelize.sync().then(() => {
         const scores = gameLogic.calcScores(rooms[socket.room]);
 
         for (var user in scores) {
+          console.log("USER:", user, "and their score:", scores[user])
+          if(!isNaN(scores[user])){
           db.models.User.findOne({ where: { email: user } })
             .then((instance) => {
               console.log('user in db', user);
               const oldScore = instance.get('lifetime_score');
-              console.log('OLD LIFETIME SCORE:', oldScore);
-              instance.updateAttributes({
-                lifetime_score: oldScore + scores[user],
-              });
-            });
+              // console.log('OLD LIFETIME SCORE:', oldScore);
+              console.log()
+                instance.updateAttributes({
+                  lifetime_score: oldScore + scores[user],
+                });                
+              })
+            };
         }
+      
 
         db.models.Room.findOne({ where: { uniqueid: socket.room } })
           .then((room) => {
@@ -476,9 +512,8 @@ db.models.sequelize.sync().then(() => {
           });
         io.sockets.in(socket.room).emit('scores', scores);
 
-      // AND THE scores before they go IN DB: { 'adonesky@gmail.com': 5 }
       }
-    });
+      })
   });
 });
 
