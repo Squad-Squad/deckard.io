@@ -96,7 +96,8 @@ class ConnectedCreateRoom extends React.Component {
         this.setState({
           suggestions: res.data
             .map(user => user.email)
-            .filter(email => email !== this.props.loggedInUsername),
+            .filter(email => (email !== this.props.loggedInUsername &&
+              email !== 'mitsuku@mitsuku.com')),
         });
       });
   }
