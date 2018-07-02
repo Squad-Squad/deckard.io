@@ -176,22 +176,16 @@ app.post('/api/save', (req, res) => {
   console.log('NEW ROOM DATA', req.body);
 
   const { roomName, members } = req.body;
-  const roomUnique = uniqueString();
+  const roomUnique = uniqueString().slice(0, 6);
   timerObj[roomUnique] = new Tock({
     countdown: true,
   });
 
-  // for(var el of members){
-  //   multi.rpush(roomUnique, el)
-  // }
-
-  // multi.exec(function(errors, results) {})
 
   dbHelpers.aliasMembers(roomName, members, (results) => {
     client.hmset(`${roomUnique}:members`, results);
   });
 
-  // console.log("ROOMUNIQUE TO TEST:", roomUnique)
 
   // CHANGE THE ROOM TIMER LENGTH HERE
   timerObj[roomUnique].start(40000);
@@ -201,7 +195,6 @@ app.post('/api/save', (req, res) => {
       console.log('Error saving room and members', err);
     } else {
       console.log(`Saved room: ${roomName}`);
-      // console.log('SAVED ROOM:', room, "AND USERS:", users)
       res.send(room[0].dataValues);
     }
   });
@@ -219,13 +212,6 @@ app.get('/api/rooms/:roomID', (req, res) => {
     }
   });
 
-  // dbHelpers.getRoomMembers(roomID, (err, roomMembers) => {
-  //   if (err) {
-  //     console.log('Error getting room members', err);
-  //   } else {
-  //     res.send(roomMembers);
-  //   }
-  // });
 });
 
 app.get('/api/timer/:roomID', (req, res) => {
@@ -253,52 +239,52 @@ app.post('/api/userrooms', (req, res) => {
 //
 // ─── HANDLE MESSAGES AND VOTES─────────────────────────────────────────────────────────
 //
-app.post('/api/messages', (req, res) => {
-  const { user_id, message, roomID } = req.body;
+// app.post('/api/messages', (req, res) => {
+//   const { user_id, message, roomID } = req.body;
 
-  // console.log("user_id:", message.name, "and message:", message, "and roomID:", roomID)
+//   // console.log("user_id:", message.name, "and message:", message, "and roomID:", roomID)
 
-  const msg = message.message;
-  const name = message.name;
+//   const msg = message.message;
+//   const name = message.name;
 
 
-  client.rpush(`${roomID}:messages`, JSON.stringify({ [name]: msg }));
+//   client.rpush(`${roomID}:messages`, JSON.stringify({ [name]: msg }));
 
-  dbHelpers.saveMessage(user_id, message.name, message.message, roomID, (err, savedMessage) => {
-    if (err) {
-      console.log('Error saving message', err);
-      res.status(404).end();
-    } else {
-      res.end('Message saved', savedMessage);
-    }
-  });
-});
+//   dbHelpers.saveMessage(user_id, message.name, message.message, roomID, (err, savedMessage) => {
+//     if (err) {
+//       console.log('Error saving message', err);
+//       res.status(404).end();
+//     } else {
+//       res.end('Message saved', savedMessage);
+//     }
+//   });
+// });
 
-app.get('/api/messages/:roomID', (req, res) => {
-  const { roomID } = req.params;
+// app.get('/api/messages/:roomID', (req, res) => {
+//   const { roomID } = req.params;
 
-  client.lrange(`${roomID}:messages`, 0, -1, (err, replies) => {
-    if (err) {
-      console.log(err);
-    } else {
-      const outputArray = [];
+//   client.lrange(`${roomID}:messages`, 0, -1, (err, replies) => {
+//     if (err) {
+//       console.log(err);
+//     } else {
+//       const outputArray = [];
 
-      replies.forEach((reply) => {
-        // testArr.push(JSON.parse(reply))
-        const msgObj = {};
-        const incoming = JSON.parse(reply);
-        for (const key in incoming) {
-          msgObj.message = incoming[key];
-          msgObj.name = key;
-          msgObj.user_id = null;
-        }
-        // console.log("msgObj in forEACH FORMATTING", msgObj)
-        outputArray.push(msgObj);
-      });
-      res.send(outputArray);
-    }
-  });
-});
+//       replies.forEach((reply) => {
+//         // testArr.push(JSON.parse(reply))
+//         const msgObj = {};
+//         const incoming = JSON.parse(reply);
+//         for (const key in incoming) {
+//           msgObj.message = incoming[key];
+//           msgObj.name = key;
+//           msgObj.user_id = null;
+//         }
+//         // console.log("msgObj in forEACH FORMATTING", msgObj)
+//         outputArray.push(msgObj);
+//       });
+//       res.send(outputArray);
+//     }
+//   });
+// });
 
 
 app.post('/api/userInfo', (req, res) => {
@@ -366,14 +352,6 @@ db.models.sequelize.sync().then(() => {
       socket.join(socket.room);
       console.log("ROOMS AT JOIN:", rooms, "and SPECIFICALLYthis  room:", rooms[socket.room])
 
-      io.sockets.in(socket.room).emit('chat', {
-        message: {
-          user_id: socket.username,
-          name: socket.username,
-          message: `${data.user} has joined the room!`,
-        },
-        roomId: socket.room,
-      });
 
       const user_id = socket.username;
       const name = socket.username;
@@ -381,13 +359,35 @@ db.models.sequelize.sync().then(() => {
 
       client.rpush(`${socket.room}:messages`, JSON.stringify({ 'matrixOverLords': message }));
 
-
-      dbHelpers.saveMessage(user_id, name, message, socket.room, (err, savedMessage) => {
+      client.lrange(`${socket.room}:messages`, 0, -1, (err, replies) => {
         if (err) {
-          console.log('Error saving message', err);
+          console.log(err);
+        } else {
+          const outputArray = [];
+
+          replies.forEach((reply) => {
+            // testArr.push(JSON.parse(reply))
+            const msgObj = {};
+            const incoming = JSON.parse(reply);
+            for (const key in incoming) {
+              msgObj.message = incoming[key];
+              msgObj.name = key;
+              msgObj.user_id = null;
+            }
+            outputArray.push(msgObj);
+          });
+
+          console.log('MESSGAGE OBJ IN SOCKET:', outputArray)
+
+        io.sockets.in(socket.room).emit('chat', outputArray);
+
         }
       });
+
     });
+
+
+
     socket.on('invite', (data) => {
      
       socket.broadcast.emit('invitation', {
@@ -396,7 +396,15 @@ db.models.sequelize.sync().then(() => {
     });
 
     socket.on('chat', (data) => {
-      io.sockets.in(socket.room).emit('chat', data);
+      console.log("CHAT IN SERVER SOCKET:", data)
+
+      let user = data.message.name
+      let message = data.message.message
+
+
+      client.rpush(`${socket.room}:messages`, JSON.stringify({ [user]:message }));
+
+
       let extraDelay = 0;
 
       // Change Mitsuku's response frequency based on the number of room users
@@ -417,21 +425,35 @@ db.models.sequelize.sync().then(() => {
               // Save her message to redis
               client.rpush(`${socket.room}:messages`, JSON.stringify({ 'mitsuku@mitsuku.com': response }));
 
-              // Emit her message via socket
-              io.sockets.in(socket.room).emit(
-                'chat',
-                {
-                  message: {
-                    user_id: null,
-                    name: 'mitsuku@mitsuku.com',
-                    message: response,
-                  },
-                  roomID: data.roomID,
-                },
-              );
+    
             }, Math.random() * 5000 + 2000 + extraDelay);
           });
       }
+
+
+      client.lrange(`${socket.room}:messages`, 0, -1, (err, replies) => {
+        if (err) {
+          console.log(err);
+        } else {
+          const outputArray = [];
+
+          replies.forEach((reply) => {
+            const msgObj = {};
+            const incoming = JSON.parse(reply);
+            for (const key in incoming) {
+              msgObj.message = incoming[key];
+              msgObj.name = key;
+              msgObj.user_id = null;
+            }
+            outputArray.push(msgObj);
+          });
+
+          console.log('MESSGAGE OBJ IN SOCKET:', outputArray)
+
+        io.sockets.in(socket.room).emit('chat', outputArray);
+
+        }
+      });
     });
 
 
@@ -447,15 +469,6 @@ db.models.sequelize.sync().then(() => {
       
       client.rpush(`${socket.room}:messages`, JSON.stringify({ 'matrixOverLords': `${socket.alias} left the room` }));
 
-
-      io.sockets.in(socket.room).emit('chat', {
-        message: {
-          user_id: null,
-          name: "matrixOverLords",
-          message: `${socket.alias} has left the room!`,
-        },
-        roomId: socket.room,
-      })
 
 
       client.lrem('onlineUsers', 1, socket.username, (err, replies)=>{

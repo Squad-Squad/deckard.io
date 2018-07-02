@@ -40,12 +40,13 @@ class ConnectedRoom extends React.Component {
     this.sendMessage = this.sendMessage.bind(this);
     // this.voteApprove = this.voteApprove.bind(this);
 
-    this.props.io.on('chat', message => {
-      console.log("MESSAGE IN CHAT :", message)
+    this.props.io.on('chat', messages => {
+      console.log("MESSAGE IN CHAT :", messages)
       this.setState({
-        messages: [...this.state.messages, message.message],
-      });
-      this.getMessages();
+        // messages: [...this.state.messages, message.message],
+        messages: messages
+      }, ()=>{console.log("this.state.messages in room:", this.state.messages)});
+      // this.getMessages();
     });
 
     this.props.io.on('vote', roomID => {
@@ -54,11 +55,6 @@ class ConnectedRoom extends React.Component {
       }
     });
 
-    this.props.io.on('veto', roomID => {
-      if (roomID === this.roomID) {
-        console.log('Received veto');
-      }
-    });
 
     this.props.io.on('scores', scores => {
       console.log('RECEIVING SCORES');
@@ -66,23 +62,26 @@ class ConnectedRoom extends React.Component {
         scores
       });
     });
+
+
   }
 
   /// Send post request to server to fetch room info when user visits link
   componentDidMount() {
-    this.getMessages();
+    // this.getMessages();
     this.getRoomInfo();
     this.getTimer();
     // this.props.io.emit('join', { room: this.roomID, user: this.state.memberMap[this.props.loggedInUsername]});
   }
 
-  getMessages() {
-    $.get(`/api/messages/${this.roomID}`).then(messages => {
-      this.setState({
-        messages: messages,
-      }, () => console.log('message format state received:', messages));
-    });
-  }
+  // getMessages() {
+  //   // $.get(`/api/messages/${this.roomID}`).then(messages => {
+  //   //   this.setState({
+  //   //     messages: messages,
+  //   //   }, () => console.log('message format state received:', messages));
+  //   // });
+  //   this.props.io.emit('roomStart')
+  // }
 
   getRoomInfo() {
     $.get(`/api/rooms/${this.roomID}`).then(roomMembers => {
@@ -147,9 +146,9 @@ class ConnectedRoom extends React.Component {
       },
       roomID: this.roomID,
     };
-    $.post('/api/messages', messageObj).then(() => {
+    // $.post('/api/messages', messageObj).then(() => {
       this.props.io.emit('chat', messageObj);
-    });
+    // });
   }
 
   // Update from text boxes in the live chat
