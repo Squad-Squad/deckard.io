@@ -12,7 +12,7 @@ if (process.env.DATABASE_URL) {
     logging: false,
   });
 } else {
-  sequelize = new Sequelize('deckardtest', process.env.DB_USER, process.env.DB_PASSWORD, {
+  sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, null, {
     host: 'localhost',
     dialect: 'postgres',
     operatorsAliases: false,
