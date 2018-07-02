@@ -433,6 +433,11 @@ db.models.sequelize.sync().then(() => {
     });
 
 
+    socket.on('disconnect', (data) =>{
+      
+    })
+
+
     socket.on('vote', (data) => {
       rooms[socket.room][0][data.user] = data.votes;
 
