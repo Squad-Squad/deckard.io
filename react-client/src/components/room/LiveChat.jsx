@@ -102,16 +102,17 @@ class ConnectedLiveChat extends React.Component {
 
         {/* MESSAGE LIST */}
         <div className="chat-messages" ref={(el) => { this.messageList = el; }}>
-          {this.props.messages.map(message => {
+          {this.props.messages.map((message, i) => {
             if (this.props.username === message.name) {
-              return (<div className="section"
+              return (<div className="section" key={i}
                 style={{ textAlign: "right", borderTop: "1px solid black", padding: "17px", fontSize: "18px" }}>
                 <p>{message.message}</p>
               </div>)
             } else {
-              return (<div className="section"
+              return (<div className="section" key={i}
                 style={{ textAlign: "left", borderTop: "1px solid black", padding: "17px", fontSize: "18px" }}>
-                <p><strong>{this.props.memberMap[message.name]}:&nbsp;</strong>{message.message}</p>
+                <p><strong>{this.props.memberMap[message.name]}
+                  {(() => this.props.memberMap[message.name] ? ':' : null)()}&nbsp;</strong>{message.message}</p>
               </div>)
             }
           })}

@@ -11,6 +11,39 @@
 @import "../../../node_modules/bulma/bulma";
 @import "../../../node_modules/bulmaswatch/cyborg/_overrides.scss";
 
+//
+// -------MEDIA QUERIES---------------------------------------
+//
+@media screen and (min-width: 0px) and (max-width: 700px) {
+  #image-logo { display: block; }
+  #typeface-logo { display: none; }
+  #login-prompt { width: auto; }
+  .hide-if-small { display: none }
+}
+
+@media screen and (min-width: 701px) {
+  #image-logo { display: none; }
+  #typeface-logo { display: block; }
+  #login-prompt { width: 30%; }
+}
+
+@media screen and (min-width: 0px) and (max-width: 400px) {
+  #login-form-dialog-title { text-align: center !important; }
+  #google-login-button { margin: 30px 20px 0px 20px; }
+  .login-title { float: left; }
+}
+
+@media screen and (min-width: 400px) {
+  #google-login-button { float: right; }
+}
+// -----------------------------------------------------------
+
+#typeface-logo {
+  font-family: 'Libre Barcode 39 Extended Text', cursive;
+  font-size: 40px;
+  padding: 5px 0px 0px 10px;
+}
+
 html {
   height: 100%;
 }
@@ -38,12 +71,6 @@ figure.image {
   margin-bottom: 10px;
 }
 
-#logo {
-  font-family: 'Libre Barcode 39 Extended Text', cursive;
-  font-size: 40px;
-  padding: 5px 0px 0px 10px;
-}
-
 #site-body {
   height: 800px;
   margin: 10px;
@@ -69,7 +96,6 @@ figure.image {
 
 #login-prompt {
   margin: auto;
-  width: 30%;
   padding: 10px;
   text-align: center;
   margin-top: 80px;
@@ -127,6 +153,10 @@ figure.image {
 
 div.columns {
   margin: 15px;
+}
+
+.auth-dialog > div {
+  background-color: rgba(33,33,33,.3) !important;
 }
 
 .tile.is-child.notification.combatants {

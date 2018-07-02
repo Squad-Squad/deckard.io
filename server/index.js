@@ -12,8 +12,8 @@ const socket = require('socket.io');
 const uniqueString = require('unique-string');
 const Tock = require('tocktimer');
 const mitsuku = require('../lib/mitsukuHelper')();
-const gameLogic = require('../lib/gameLogic')
-const redis = require('redis')
+const gameLogic = require('../lib/gameLogic');
+const redis = require('redis');
 
 
 const Mailjet = require('node-mailjet').connect(
@@ -26,11 +26,17 @@ const dbHelpers = require('../db-controllers');
 
 const { Op } = db;
 
+// USE ENV FOR REDIS IF PROVIDED (FOR DEPLOYMENT)
+let client;
+if (process.env.REDIS_URL) {
+  client = redis.createClient(process.env.REDIS_URL);
+} else {
+  client = redis.createClient(process.env.REDIS_URL);
+}
 
-const client = redis.createClient();
-const multi = client.multi()
+const multi = client.multi();
 
-client.on('connect', function() {
+client.on('connect', () => {
   console.log('Connected to Redis');
 });
 
@@ -167,7 +173,6 @@ app.post('/api/roomEmail', (req, res) => {
 // ─── CREATE ROOMS AND GET ROOM INFO ─────────────────────────────────────────────
 //
 app.post('/api/save', (req, res) => {
-
   console.log('NEW ROOM DATA', req.body);
 
   const { roomName, members } = req.body;
@@ -176,20 +181,20 @@ app.post('/api/save', (req, res) => {
     countdown: true,
   });
 
-    // for(var el of members){
-    //   multi.rpush(roomUnique, el)
-    // }
+  // for(var el of members){
+  //   multi.rpush(roomUnique, el)
+  // }
 
-    // multi.exec(function(errors, results) {})
+  // multi.exec(function(errors, results) {})
 
-    dbHelpers.aliasMembers(roomName, members, (results)=>{
-      client.hmset(`${roomUnique}:members`, results)
-    })
+  dbHelpers.aliasMembers(roomName, members, (results) => {
+    client.hmset(`${roomUnique}:members`, results);
+  });
 
-    // console.log("ROOMUNIQUE TO TEST:", roomUnique)
+  // console.log("ROOMUNIQUE TO TEST:", roomUnique)
 
   // CHANGE THE ROOM TIMER LENGTH HERE
-  timerObj[roomUnique].start(20000);
+  timerObj[roomUnique].start(40000);
 
   dbHelpers.saveRoomAndMembers(roomName, members, roomUnique, (err, room, users) => {
     if (err) {
@@ -206,14 +211,13 @@ app.post('/api/save', (req, res) => {
 app.get('/api/rooms/:roomID', (req, res) => {
   const { roomID } = req.params;
 
-  client.hgetall(`${roomID}:members`, (err, replies)=>{
-    if(err){
-      console.log(err)
-    }else{
-      console.log("REDIS ROOM MEMBERS RETRIEVE", replies)
-      res.send(replies)
+  client.hgetall(`${roomID}:members`, (err, replies) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send(replies);
     }
-  })
+  });
 
   // dbHelpers.getRoomMembers(roomID, (err, roomMembers) => {
   //   if (err) {
@@ -246,9 +250,6 @@ app.post('/api/userrooms', (req, res) => {
 });
 
 
-
-
-
 //
 // ─── HANDLE MESSAGES AND VOTES─────────────────────────────────────────────────────────
 //
@@ -257,12 +258,11 @@ app.post('/api/messages', (req, res) => {
 
   // console.log("user_id:", message.name, "and message:", message, "and roomID:", roomID)
 
-  const msg = message.message
-  const name = message.name
+  const msg = message.message;
+  const name = message.name;
 
 
-
-  client.rpush(`${roomID}:messages`, JSON.stringify({[name]:msg}))
+  client.rpush(`${roomID}:messages`, JSON.stringify({ [name]: msg }));
 
   dbHelpers.saveMessage(user_id, message.name, message.message, roomID, (err, savedMessage) => {
     if (err) {
@@ -277,44 +277,39 @@ app.post('/api/messages', (req, res) => {
 app.get('/api/messages/:roomID', (req, res) => {
   const { roomID } = req.params;
 
-  client.lrange(`${roomID}:messages`, 0, -1, (err, replies)=>{
-    if(err){
-      console.log(err)
+  client.lrange(`${roomID}:messages`, 0, -1, (err, replies) => {
+    if (err) {
+      console.log(err);
     } else {
-      let outputArray = []
-    
-      console.log("MESSAGE RECEIVE", replies)
-      replies.forEach((reply)=>{
+      const outputArray = [];
+
+      replies.forEach((reply) => {
         // testArr.push(JSON.parse(reply))
-        let msgObj = {}
-        let incoming = JSON.parse(reply)
-        for(var key in incoming){
-          msgObj.message = incoming[key]
-          msgObj.name = key
-          msgObj.user_id = null
+        const msgObj = {};
+        const incoming = JSON.parse(reply);
+        for (const key in incoming) {
+          msgObj.message = incoming[key];
+          msgObj.name = key;
+          msgObj.user_id = null;
         }
         // console.log("msgObj in forEACH FORMATTING", msgObj)
-        outputArray.push(msgObj)
-      })
-      console.log("outputArray TO CHECK:", outputArray)
-      res.send(outputArray)
+        outputArray.push(msgObj);
+      });
+      res.send(outputArray);
     }
-  })
+  });
 });
 
 
-
-
-app.post('/api/userInfo', (req, res)=>{
-  console.log("USERINFO in server", req.body)
-     db.models.User.findOne({where : {email: req.body.user } })
-          .then((instance)=>{
-            console.log('USERINFO FROM DATABaSE', instance)
-            let lifeTimeScore = instance.get('lifetime_score')
-              res.send(JSON.stringify(lifeTimeScore))
-    })
-  })
-
+app.post('/api/userInfo', (req, res) => {
+  console.log('USERINFO in server', req.body);
+  db.models.User.findOne({ where: { email: req.body.user } })
+    .then((instance) => {
+      console.log('USERINFO FROM DATABaSE', instance);
+      const lifeTimeScore = instance.get('lifetime_score');
+      res.send(JSON.stringify(lifeTimeScore));
+    });
+});
 
 
 // ────────────────────────────────────────────────────────────────────────────────
@@ -333,10 +328,10 @@ db.models.sequelize.sync().then(() => {
   });
 
   // Server-side socket events
-  users = [];
-  rooms = {};
-  connections = [];
-  userSockets = {};
+  const users = [];
+  const rooms = {};
+  const connections = [];
+  const userSockets = {};
 
 
   const io = socket(server);
@@ -349,7 +344,6 @@ db.models.sequelize.sync().then(() => {
 
     socket.on('join', (data) => {
       socket.room = data.room;
-      console.log("GETTING USERALIAS IN SOCKET:", data.user)
       // socket.username = data.user
       // userSockets[socket.username] = socket
       // users.push(socket.username);
@@ -361,6 +355,7 @@ db.models.sequelize.sync().then(() => {
       }
 
       socket.join(socket.room);
+      console.log('THIS IS THE USERNAME', socket.username);
       // io.sockets.in(socket.room).emit('roomJoin', socket.room);
       io.sockets.in(socket.room).emit('chat', {
         message: {
@@ -375,7 +370,7 @@ db.models.sequelize.sync().then(() => {
       const name = socket.username;
       const message = `${data.user} has joined the room!`;
 
-      client.rpush(`${socket.room}:messages`, JSON.stringify({matrixOverLords:message}))
+      client.rpush(`${socket.room}:messages`, JSON.stringify({ matrixOverLords: message }));
 
 
       dbHelpers.saveMessage(user_id, name, message, socket.room, (err, savedMessage) => {
@@ -400,73 +395,69 @@ db.models.sequelize.sync().then(() => {
 
     socket.on('chat', (data) => {
       io.sockets.in(socket.room).emit('chat', data);
-      // Mitsuku only responds half the time
+      let extraDelay = 0;
 
-      // Delay Mitsuku a random number of seconds
-      setTimeout(() => {
+      // Change Mitsuku's response frequency based on the number of room users
+      if (Math.ceil(Math.random() * data.numUsers) === data.numUsers) {
+        // Delay Mitsuku a random number of seconds
         mitsuku.send(data.message.message)
           .then((response) => {
-            // Save her message to the db
+            console.log('GETTING MESSAGE BACK', response);
+            if (/here\sin\sleeds/g.test(response)) {
+              response = response.slice(0, response.indexOf('here in leeds'));
+            }
 
-          client.rpush(`${socket.room}:messages`, JSON.stringify({'mitsuku@mitsuku.com': response}))
+            // Add delay based on response length
+            extraDelay = response.length * 100;
+            console.log('EXTRA DELAY', extraDelay);
 
+            setTimeout(() => {
+              // Save her message to redis
+              client.rpush(`${socket.room}:messages`, JSON.stringify({ 'mitsuku@mitsuku.com': response }));
 
-            // dbHelpers.saveMessage(
-            //   null,
-            //   'mitsuku@mitsuku.com',
-            //   response,
-            //   data.roomID,
-            //   (err) => {
-            //     if (err) { console.log('Error saving message', err); }
-            //   },
-            // );
-
-            // Emit her message via socket
-            io.sockets.in(socket.room).emit(
-              'chat',
-              {
-                message: {
-                  user_id: null,
-                  name: 'mitsuku@mitsuku.com',
-                  message: response,
+              // Emit her message via socket
+              io.sockets.in(socket.room).emit(
+                'chat',
+                {
+                  message: {
+                    user_id: null,
+                    name: 'mitsuku@mitsuku.com',
+                    message: response,
+                  },
+                  roomID: data.roomID,
                 },
-                roomID: data.roomID,
-              },
-            );
+              );
+            }, Math.random() * 5000 + 2000 + extraDelay);
           });
-      }, Math.random() * 5000 + 2000);
+      }
     });
 
 
     socket.on('vote', (data) => {
-
-      console.log('INITIAL VOTING DATA AT SOCKET:', data)
       rooms[socket.room][0][data.user] = data.votes;
 
 
-      
-      //determine if everyone has submitted there votes
+      // determine if everyone has submitted there votes
 
       if (rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length) {
         const scores = gameLogic.calcScores(rooms[socket.room]);
 
-        for(var user in scores){
-          db.models.User.findOne({where : {email: user } })
-          .then((instance)=>{
-            console.log('user in db', user)
-            let oldScore = instance.get('lifetime_score')
-            console.log('OLD LIFETIME SCORE:', oldScore)
-            instance.updateAttributes({
-              lifetime_score: oldScore + scores[user]
-            })
-          })
+        for (var user in scores) {
+          db.models.User.findOne({ where: { email: user } })
+            .then((instance) => {
+              console.log('user in db', user);
+              const oldScore = instance.get('lifetime_score');
+              console.log('OLD LIFETIME SCORE:', oldScore);
+              instance.updateAttributes({
+                lifetime_score: oldScore + scores[user],
+              });
+            });
         }
 
         db.models.Room.findOne({ where: { uniqueid: socket.room } })
           .then((room) => {
-
             // Check if record exists in db
-            console.log("AND THE scores before they go IN DB:", scores)
+            console.log('AND THE scores before they go IN DB:', scores);
             if (room) {
               room.updateAttributes({
                 scores: JSON.stringify(scores),
@@ -476,13 +467,10 @@ db.models.sequelize.sync().then(() => {
         io.sockets.in(socket.room).emit('scores', scores);
 
       // AND THE scores before they go IN DB: { 'adonesky@gmail.com': 5 }
-
-    };
-
- 
-  })
+      }
+    });
+  });
 });
-})
 
 let timerObj = {};
 const nominateTimerObj = {};

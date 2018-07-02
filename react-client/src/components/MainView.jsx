@@ -41,11 +41,9 @@ class ConnectedMainView extends React.Component {
   }
 
   componentDidMount() {
-    console.log('PROPS in MainView:', this.props)
     this.setState({
       loggedInUser: this.props.loggedInUsername
     });
-    console.log('MAINVIEW', this.props.loggedInUsername)
     this.props.io.emit('username connect', this.props.loggedInUsername)
   }
 

@@ -80,7 +80,7 @@ class ConnectedRoom extends React.Component {
     $.get(`/api/messages/${this.roomID}`).then(messages => {
       this.setState({
         messages: messages,
-      }, ()=> console.log('message format state received:', messages));
+      }, () => console.log('message format state received:', messages));
     });
   }
 
@@ -90,27 +90,27 @@ class ConnectedRoom extends React.Component {
       console.log("GET ROOM INFO RECEIVING OBJ:", roomMembers);
 
 
-        let aliasedMembers = [];
-        let memberMap = {};
-        for(var key in roomMembers){
-          if(key !== "room"){
-            memberMap[key] = roomMembers[key]
-            aliasedMembers.push(roomMembers[key])
-          }
-        };
+      let aliasedMembers = [];
+      let memberMap = {};
+      for (var key in roomMembers) {
+        if (key !== "room") {
+          memberMap[key] = roomMembers[key]
+          aliasedMembers.push(roomMembers[key])
+        }
+      };
 
-        console.log("STATE OF THE DATA BEFORE SETSTATE: memberMAP:", memberMap, "aliasedMembers:", aliasedMembers)
+      console.log("STATE OF THE DATA BEFORE SETSTATE: memberMAP:", memberMap, "aliasedMembers:", aliasedMembers)
 
       this.setState({
-        memberMap: memberMap,       
+        memberMap: memberMap,
         members: aliasedMembers,
         roomName: roomMembers.room,
-      }, ()=> console.log("WHAT ROOMMEMBERS NEED TO LOOK LIKE:", this.state.memberMap)
+      }, () => console.log("WHAT ROOMMEMBERS NEED TO LOOK LIKE:", this.state.memberMap)
       );
     })
-    .then(()=>{
-      this.props.io.emit('join', { room: this.roomID, user: this.state.memberMap[this.props.loggedInUsername]});
-    });
+      .then(() => {
+        this.props.io.emit('join', { room: this.roomID, user: this.state.memberMap[this.props.loggedInUsername] });
+      });
 
 
   }
@@ -140,6 +140,7 @@ class ConnectedRoom extends React.Component {
 
   sendMessage(msg) {
     let messageObj = {
+      numUsers: this.state.members.length,
       message: {
         name: this.props.username || this.state.name,
         message: msg,
@@ -197,7 +198,7 @@ class ConnectedRoom extends React.Component {
     return (
       <div>
         <div className="columns">
-          <div className="column is-2"></div>
+          <div className="column is-2 hide-if-small"></div>
           <div className="column is-8">
             {chatOrVote()}
           </div>
