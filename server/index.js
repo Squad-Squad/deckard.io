@@ -419,6 +419,8 @@ db.models.sequelize.sync().then(() => {
       }
     });
 
+    // DELETE THIS COMMENT
+
 
     socket.on('vote', (data) => {
       rooms[socket.room][0][data.user] = data.votes;
