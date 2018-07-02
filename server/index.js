@@ -338,25 +338,24 @@ db.models.sequelize.sync().then(() => {
   io.on('connection', (socket) => {
     socket.on('username connect', (data) => {
       socket.username = data;
+      console.log("USERNAME CONNECT:", data)
       userSockets[socket.username] = socket;
       users.push(socket.username);
+      console.log("USERS IN SERVER:", users)
     });
 
     socket.on('join', (data) => {
       socket.room = data.room;
-      // socket.username = data.user
-      // userSockets[socket.username] = socket
-      // users.push(socket.username);
+    
       if (!rooms[socket.room]) {
         rooms[socket.room] = [{}, socket.username];
-        // rooms[socket.room].votes = {}
       } else {
         rooms[socket.room].push(socket.username);
       }
 
       socket.join(socket.room);
-      console.log('THIS IS THE USERNAME', socket.username);
-      // io.sockets.in(socket.room).emit('roomJoin', socket.room);
+      console.log("ROOMS AT JOIN:", rooms, "and SPECIFICALLYthis  room:", rooms[socket.room])
+
       io.sockets.in(socket.room).emit('chat', {
         message: {
           user_id: socket.username,
@@ -381,16 +380,10 @@ db.models.sequelize.sync().then(() => {
     });
 
     socket.on('invite', (data) => {
-      // for(var el of data.users){
-      //   console.log("IS THIS A FOR LOOP OR NOT", el)
-      //   if(el === socket.username){
-      //     console.log('USERNAME HIT:', el)
-      // io.emit('invitation', `You're invited to play in ${data.room}`)
+     
       socket.broadcast.emit('invitation', {
         users: data.users, roomHash: data.roomHash, roomName: data.roomName, host: socket.username,
       });
-      // }
-      // }
     });
 
     socket.on('chat', (data) => {
@@ -434,7 +427,19 @@ db.models.sequelize.sync().then(() => {
 
 
     socket.on('disconnect', (data) =>{
-      
+      let thisRoom = rooms[socket.room]
+      console.log('this users has disconnected:', socket.username, "AND ROOMS[SOCKET.ROOM]:", rooms[socket.room])
+
+      if(rooms[socket.room]){
+        rooms[socket.room].splice(thisRoom.indexOf(socket.username), 1) 
+        console.log('this users has disconnected:', socket.username, "AND ROOMS[SOCKET.ROOM] AFTER DISCONNECT:", rooms[socket.room])
+
+      }
+        // delete userSockets[socket.username]
+
+      connections.splice(connections.indexOf(socket), 1)
+      // io.emit('disconnect', `${socket.username} disconnected`)
+
     })
 
 
