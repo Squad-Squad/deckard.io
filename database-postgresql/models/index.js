@@ -13,7 +13,7 @@ if (process.env.DATABASE_URL) {
   });
 } else {
   sequelize = new Sequelize(
-    'deckardtest',
+    process.env.DB_NAME,
     process.env.DB_USER,
     process.env.DB_PASSWORD,
     {

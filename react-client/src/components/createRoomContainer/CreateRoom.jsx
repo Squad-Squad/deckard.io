@@ -212,9 +212,7 @@ class ConnectedCreateRoom extends React.Component {
 
 
   createRoom() {
-    if (this.props.loggedIn === false ||
-      this.state.roomName.length === 0 ||
-      this.props.usersForNewRoom.length === 0) {
+    if (this.state.roomName.length === 0) {
       this.setState({
         error: true,
       });
@@ -294,27 +292,15 @@ class ConnectedCreateRoom extends React.Component {
 
     // Error creating room
     const createRoomError = () => {
-      if (!this.props.loggedIn) {
-        return (
-          <section className="section login-error" style={{ color: 'white' }}>
-            <div className="container">
-              <h2 className="subtitle">
-                Please login to create a room.
-              </h2>
-            </div>
-          </section>
-        )
-      } else {
-        return this.state.error ? (
-          <section className="section login-error" style={{ color: 'white' }}>
-            <div className="container">
-              <h2 className="subtitle">
-                You must have a name and the arena must have combatants.
-              </h2>
-            </div>
-          </section>
-        ) : null;
-      }
+      return this.state.error ? (
+        <section className="section login-error" style={{ color: 'white' }}>
+          <div className="container">
+            <p>
+              Your room must have a name.
+              </p>
+          </div>
+        </section>
+      ) : null;
     };
 
     return (
@@ -324,6 +310,7 @@ class ConnectedCreateRoom extends React.Component {
         </Typography>
 
         <Divider />
+        {createRoomError()}
         <div style={{ margin: '8px' }}>
           <FormControl style={{ width: '100%' }} >
             <Input
