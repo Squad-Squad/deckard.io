@@ -292,11 +292,9 @@ class ConnectedCreateRoom extends React.Component {
     const createRoomError = () => {
       return this.state.error ? (
         <section className="section login-error" style={{ color: 'white' }}>
-          <div className="container">
-            <p>
-              Your room must have a name.
-              </p>
-          </div>
+          <p>
+            Your room must have a name.
+          </p>
         </section>
       ) : null;
     };
