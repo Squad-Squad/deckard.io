@@ -95,18 +95,20 @@ class LoginDialog extends React.Component {
             onClose={this.handleClose}
             aria-labelledby="form-dialog-title"
           >
-            <DialogTitle id="login-form-dialog-title" >
-              <span className="login-title">
-                Login
+            <DialogTitle>
+              <div id="login-form-dialog-title">
+                <span className="login-title">
+                  Login
                 </span>
-              <Button
-                id="google-login-button"
-                variant="raised"
-                style={{ backgroundColor: '#4285f4', color: 'white' }}
-                href='/auth/google'>
-                <i className="fab fa-google"></i>
-                <p style={{ paddingLeft: '15px' }}>Login With Google</p>
-              </Button>
+                <Button
+                  id="google-login-button"
+                  variant="raised"
+                  style={{ backgroundColor: '#4285f4', color: 'white' }}
+                  href='/auth/google'>
+                  <i className="fab fa-google"></i>
+                  <p style={{ paddingLeft: '15px' }}>Login With Google</p>
+                </Button>
+              </div>
             </DialogTitle>
             <DialogContent>
               {loginError}
