@@ -63,7 +63,13 @@ class ConnectedRoom extends React.Component {
       });
     });
 
-
+    this.props.io.on('turn', player=>{
+      console.log("whose turn", player)
+      this.setState({
+        whoseTurn:player,
+        timer:"00:15"
+      })
+    })
   }
 
   /// Send post request to server to fetch room info when user visits link
@@ -98,7 +104,7 @@ class ConnectedRoom extends React.Component {
       );
     })
       .then(() => {
-        this.props.io.emit('join', { room: this.roomID, user: this.state.memberMap[this.props.loggedInUsername], mitsuku:this.state.memberMap['mitsuku@mitsuku.com']});
+        this.props.io.emit('join', { room: this.roomID, user: this.state.memberMap[this.props.loggedInUsername], mitsuku:this.state.memberMap['mitsuku@mitsuku.com'], roomMode: this.state.roomMode});
       });
 
 
@@ -150,7 +156,6 @@ class ConnectedRoom extends React.Component {
         return (<VotePanel members={this.state.members}
           memberMap={this.state.memberMap} io={this.props.io} />);
       } else if (!this.state.scores) {
-      console.log("HANGING OUT")
         return (<FreeLiveChat
           roomName={this.state.roomName}
           messages={this.state.messages}
@@ -167,38 +172,25 @@ class ConnectedRoom extends React.Component {
     }
 
    const roundchatOrVote = () => {
-    // console.log("AM I EVEN HAPPENING ROUND CHAT")
      if (this.state.timer === "00:00" && !this.state.scores) {
        return (<VotePanel members={this.state.members}
          memberMap={this.state.memberMap} io={this.props.io} />);
      } else if (!this.state.scores) {
-      console.log("HANGING OUT")
-       return (<RoundLiveChat
-         roomName={this.state.roomName}
-         messages={this.state.messages}
-         message={this.state.message}
-         sendMessage={this.sendMessage}
-         timer={this.state.timer}
-         memberMap={this.state.memberMap} />);
+      return (<RoundLiveChat
+        whoseTurn={this.state.whoseTurn}
+        roomName={this.state.roomName}
+        messages={this.state.messages}
+        message={this.state.message}
+        sendMessage={this.sendMessage}
+        timer={this.state.timer}
+        memberMap={this.state.memberMap} />);
      } else {
        return (
          <Scores
            scores={this.state.scores} memberMap={this.state.memberMap} />
        )
      }
-   } 
-
-       // {(() => {
-       //          switch(this.state.roomMode) {
-       //            case "round": roundchatOrVote()
-
-       //            break;
-       //            case "free": freechatOrVote()
-
-       //            break;
-       //          }
-       //      })()}  
-
+   }   
 
     return (
       <div>

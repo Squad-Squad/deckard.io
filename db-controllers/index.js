@@ -244,6 +244,34 @@ const getWins = (email, callback) => {
     });
 };
 
+
+
+const fetchRedisMessages = (client, socket, callback) =>{
+  console.log("SOCKET.ROOOM in the DBCONTROLLERS", socket.room)
+  const outputArray = [];
+  client.lrange(`${socket.room}:messages`, 0, -1, (err, replies) => {
+          if (err) {
+            console.log(err);
+          } else {
+            replies.forEach((reply) => {
+              const msgObj = {};
+              const incoming = JSON.parse(reply);
+              for (const key in incoming) {
+                msgObj.message = incoming[key];
+                msgObj.name = key;
+                msgObj.user_id = null;
+              }
+              outputArray.push(msgObj);
+            })
+            console.log("AM I GETTING A FULL ARRAY OF MESSAGES", outputArray)
+            callback(outputArray)
+            
+        }
+    });
+  // callback(outputArray)
+}
+
+
 module.exports = {
   saveMember,
   saveRoomAndMembers,
@@ -254,4 +282,5 @@ module.exports = {
   getRooms,
   getWins,
   aliasMembers,
+  fetchRedisMessages,
 };

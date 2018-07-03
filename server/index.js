@@ -301,42 +301,50 @@ db.models.sequelize.sync().then(() => {
       socket.join(socket.room);
 
 
+
+      //notify everyone when someone has joined the room
       const user_id = socket.username;
       const name = socket.username;
       const message = `${data.user} has joined the room!`;
-
       client.rpush(`${socket.room}:messages`, JSON.stringify({ 'matrixOverLords': message }));
 
-      const mitMessage = `${data.mitsuku} has joined the room`
 
+
+      //notify everyone when mitsuku's joined the room (but only with her alias)
       setTimeout(function(){
-        // Save her message to redis
+        const mitMessage = `${data.mitsuku} has joined the room`
         client.rpush(`${socket.room}:messages`, JSON.stringify({ 'matrixOverLords': mitMessage }), (err, reply)=>{
           console.log("I've pushed to redis:", reply)
-        });
-        
-        client.lrange(`${socket.room}:messages`, 0, -1, (err, replies) => {
-          if (err) {
-            console.log(err);
-          } else {
-            const outputArray = [];
+        });       
+        // client.lrange(`${socket.room}:messages`, 0, -1, (err, replies) => {
+        //   if (err) {
+        //     console.log(err);
+        //   } else {
+        //     const outputArray = [];
+        //     replies.forEach((reply) => {
+        //       const msgObj = {};
+        //       const incoming = JSON.parse(reply);
+        //       for (const key in incoming) {
+        //         msgObj.message = incoming[key];
+        //         msgObj.name = key;
+        //         msgObj.user_id = null;
+        //       }
+        //       outputArray.push(msgObj);
+        //     });
 
-            replies.forEach((reply) => {
-              const msgObj = {};
-              const incoming = JSON.parse(reply);
-              for (const key in incoming) {
-                msgObj.message = incoming[key];
-                msgObj.name = key;
-                msgObj.user_id = null;
-              }
-              outputArray.push(msgObj);
-            });
+        //   io.sockets.in(socket.room).emit('chat', outputArray);
 
-          io.sockets.in(socket.room).emit('chat', outputArray);
+        //   }
+        // });
+        dbHelpers.fetchRedisMessages(client, socket, (result)=>{
+          console.log("RESULTS FROM HELPER FUNCTION", result)
+          io.sockets.in(socket.room).emit('chat', result)
+          
+        })
 
-          }
-        });
-        console.log("I'm the end of the setTimeout")
+
+
+        // console.log("I'm the end of the setTimeout")
       }, Math.random() * 5000);
 
 
