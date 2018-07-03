@@ -1,14 +1,14 @@
-import React, { Component } from 'react';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import BottomNavigation from '@material-ui/core/BottomNavigation';
-import Button from '@material-ui/core/Button';
-import { withRouter } from 'react-router-dom';
+import React from 'react';
+import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import { connect } from 'react-redux';
-import axios from 'axios'
+import SwipeableViews from 'react-swipeable-views';
+import AppBar from '@material-ui/core/AppBar';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import Typography from '@material-ui/core/Typography';
+import Paper from '@material-ui/core/Paper';
+import axios from 'axios';
 
 function mapStateToProps(state) {
   return {
@@ -32,64 +32,69 @@ const styles = theme => ({
   },
 });
 
-class ConnectedUserProfile extends Component {
-
+class ConnectedUserProfile extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      membersVoteMap: {},
-      submitted: false,
+      value: 0,
       lifetimeScore: null
     };
   }
 
-   componentDidMount() {
-    axios.post('/api/userInfo', {user: this.props.loggedInUser})
-    .then((response)=>{
-      console.log("response on userProfile", response.data)
-      this.setState({
-        lifetimeScore: response.data
-      }, ()=>{console.log("new lifetimeScore state", this.state.lifetimeScore)})
-    })
+  componentDidMount() {
+    axios.post('/api/userInfo', { user: this.props.loggedInUser })
+      .then((response) => {
+        console.log("response on userProfile", response.data)
+        this.setState({
+          lifetimeScore: response.data
+        }, () => { console.log("new lifetimeScore state", this.state.lifetimeScore) })
+      })
   }
-   
 
+  handleChange = (event, value) => {
+    this.setState({ value });
+  };
+
+  handleChangeIndex = index => {
+    this.setState({ value: index });
+  };
 
   render() {
-    const { classes } = this.props;
+    const { classes, theme } = this.props;
 
     return (
       <div>
-        <Paper style={{
-            backgroundColor: 'rgba(255,255,255,.1)'
-          }}>
-            {/* TOP BAR */}
-            <div className={classes.root}>
-              <AppBar position="static" color="default">
-                <Toolbar>
-                  <Typography variant="title" color="inherit" className={classes.flex}>
-                    Your Player Profile
-                  </Typography>
-                </Toolbar>
-              </AppBar>
-              <Typography variant="title" color="inherit" className={classes.flex}>
-                    Lifetime Score
-                  </Typography>
-                  <Typography variant="title" color="inherit" className={classes.flex}>
-                    {this.state.lifetimeScore}
-                  </Typography>
-            </div>
-
-            {/* BOTTOM BAR */}
-            <BottomNavigation style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
+        <div className="columns">
+          <div className="column is-1 hide-if-small">
+          </div>
+          <div className="column is-10">
+            <Paper style={{
+              backgroundColor: 'rgba(255,255,255,.1)'
             }}>
-              <Button variant="contained" color="secondary" aria-label="add" className={classes.button}>
-                Submit
-              </Button>
-            </BottomNavigation>
-          </Paper>
+              <AppBar position="static" color="default">
+                <Tabs
+                  value={this.state.value}
+                  onChange={this.handleChange}
+                  indicatorColor="primary"
+                  textColor="white"
+                  fullWidth
+                >
+                  <Tab label="Profile" />
+                  <Tab label="Stats" />
+                </Tabs>
+              </AppBar>
+              <SwipeableViews
+                index={this.state.value}
+                onChangeIndex={this.handleChangeIndex}
+              >
+                <Typography component="div" style={{ padding: 8 * 3 }}>
+                </Typography>
+                <Typography component="div" style={{ padding: 8 * 3 }}>
+                </Typography>
+              </SwipeableViews>
+            </Paper>
+          </div>
+        </div>
       </div>
     );
   }
@@ -97,4 +102,5 @@ class ConnectedUserProfile extends Component {
 
 const UserProfile = connect(mapStateToProps)(ConnectedUserProfile)
 
-export default withStyles(styles)(withRouter(UserProfile));
+export default withStyles(styles)(UserProfile);
+
