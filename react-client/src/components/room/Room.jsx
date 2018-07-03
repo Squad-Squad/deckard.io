@@ -43,10 +43,8 @@ class ConnectedRoom extends React.Component {
     this.props.io.on('chat', messages => {
       console.log("MESSAGE IN CHAT :", messages)
       this.setState({
-        // messages: [...this.state.messages, message.message],
         messages: messages
       }, ()=>{console.log("this.state.messages in room:", this.state.messages)});
-      // this.getMessages();
     });
 
     this.props.io.on('vote', roomID => {

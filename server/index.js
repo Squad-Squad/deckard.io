@@ -341,6 +341,7 @@ db.models.sequelize.sync().then(() => {
     socket.on('join', (data) => {
       socket.room = data.room;
       socket.alias = data.user
+      console.log("JOIN ROOM IN SOCKETRS:", socket.room, socket.alias)
     
       if (!rooms[socket.room]) {
         rooms[socket.room] = [{}, socket.username];
@@ -396,7 +397,7 @@ db.models.sequelize.sync().then(() => {
     });
 
     socket.on('chat', (data) => {
-      console.log("CHAT IN SERVER SOCKET:", data)
+      // console.log("CHAT IN SERVER SOCKET:", data)
 
       let user = data.message.name
       let message = data.message.message
@@ -479,6 +480,43 @@ db.models.sequelize.sync().then(() => {
     });
 
 
+    socket.on('leaveRoom', data=>{
+
+      if(socket.room){
+
+        rooms[socket.room].splice(rooms[socket.room].indexOf(socket.username), 1)
+        console.log("AFTERLEAVING ROOMS OBJ", rooms[socket.room])
+
+        client.rpush(`${socket.room}:messages`, JSON.stringify({ 'matrixOverLords': `${socket.alias} left the room` }));
+
+        client.lrange(`${socket.room}:messages`, 0, -1, (err, replies) => {
+          if (err) {
+            console.log(err);
+          } else {
+            const outputArray = [];
+
+            replies.forEach((reply) => {
+              const msgObj = {};
+              const incoming = JSON.parse(reply);
+              for (const key in incoming) {
+                msgObj.message = incoming[key];
+                msgObj.name = key;
+                msgObj.user_id = null;
+              }
+              outputArray.push(msgObj);
+            });
+
+            console.log('MESSGAGE OBJ IN SOCKET:', outputArray)
+
+          io.sockets.in(socket.room).emit('chat', outputArray);
+
+          }
+        });
+
+      }
+    })
+
+
     socket.on('disconnect', (data) =>{
       let thisRoom = rooms[socket.room]
       console.log('this users has disconnected:', socket.username, "AND ROOMS[SOCKET.ROOM]:", rooms[socket.room])
@@ -504,6 +542,32 @@ db.models.sequelize.sync().then(() => {
 
       socket.leave(socket.room)
       console.log('SOCKET.ROOMS', rooms)
+
+
+      client.lrange(`${socket.room}:messages`, 0, -1, (err, replies) => {
+        if (err) {
+          console.log(err);
+        } else {
+          const outputArray = [];
+
+          replies.forEach((reply) => {
+            const msgObj = {};
+            const incoming = JSON.parse(reply);
+            for (const key in incoming) {
+              msgObj.message = incoming[key];
+              msgObj.name = key;
+              msgObj.user_id = null;
+            }
+            outputArray.push(msgObj);
+          });
+
+          console.log('MESSGAGE OBJ IN SOCKET:', outputArray)
+
+        io.sockets.in(socket.room).emit('chat', outputArray);
+
+        }
+      });
+
 
       connections.splice(connections.indexOf(socket), 1)
 

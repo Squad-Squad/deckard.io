@@ -26,10 +26,8 @@ class ConnectedMainView extends React.Component {
     this.props.io.on('invitation', (data) => {
       console.log("INVITATION USERS:", data.host)
       for (var el of data.users) {
-        // console.log("IS THIS A FOR LOOP OR NOT", el)
         if (el === this.props.loggedInUsername) {
-          // console.log('USERNAME HIT:', el)
-          console.log("WORD FROM THE OTHERSIDE:", data)
+          // console.log("WORD FROM THE OTHERSIDE:", data)
           this.setState({
             invite: true,
             inviteHost: data.host,
@@ -45,6 +43,7 @@ class ConnectedMainView extends React.Component {
       loggedInUser: this.props.loggedInUsername
     });
     this.props.io.emit('username connect', this.props.loggedInUsername)
+    this.props.io.emit('leaveRoom', this.props.loggedInUsername)
   }
 
   handleOpen = () => {
