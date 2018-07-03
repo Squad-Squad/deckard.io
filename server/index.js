@@ -573,7 +573,7 @@ db.models.sequelize.sync().then(() => {
                 });                
               })
             };
-        }
+        
       
 
         db.models.Room.findOne({ where: { uniqueid: socket.room } })
@@ -587,7 +587,9 @@ db.models.sequelize.sync().then(() => {
             }
           });
         io.sockets.in(socket.room).emit('scores', scores);
-      })
+      }
+
+    })
   });
 
 
