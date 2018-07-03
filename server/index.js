@@ -13,28 +13,51 @@ const uniqueString = require('unique-string');
 const Tock = require('tocktimer');
 const mitsuku = require('../lib/mitsukuHelper')();
 const gameLogic = require('../lib/gameLogic');
-const redis = require('redis');
-
 const Mailjet = require('node-mailjet').connect(
   process.env.MAILJET_API_KEY,
   process.env.MAILJET_API_SECRET,
 );
-
 const db = require('../database-postgresql/models/index');
 const dbHelpers = require('../db-controllers');
 
 const { Op } = db;
 
-// USE ENV FOR REDIS IF PROVIDED (FOR DEPLOYMENT)
+//
+// ─── REDIS ──────────────────────────────────────────────────────────────────────
+//
+const redis = require('redis');
+
 let client;
 if (process.env.REDIS_URL) {
   client = redis.createClient(process.env.REDIS_URL);
 } else {
   client = redis.createClient(process.env.REDIS_URL);
 }
-
 const multi = client.multi();
 
+
+//
+// ─── AWS CONFIG ─────────────────────────────────────────────────────────────────
+//
+const AWS = require('aws-sdk');
+const multer = require('multer');
+
+AWS.config.update({
+  accessKeyId: 'AKIAILGRIDM2NALR2ELA',
+  secretAccessKey: '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',
+});
+
+const upload = multer({});
+const s3 = new AWS.S3();
+const s3Params = {
+  bucket: 'deckard-io',
+  key: `avatars/${Date.now()}`,
+};
+
+
+//
+// ─── EXPRESS MIDDLEWARE ─────────────────────────────────────────────────────────
+//
 const app = express();
 
 app.use(bodyParser.json());
@@ -110,6 +133,12 @@ app.get('/logout', (req, res) => {
   res.redirect('/');
 });
 
+//
+// ─── USER PROFILE ENDPOINTS ─────────────────────────────────────────────────────
+//
+app.post('/profile/update-photo', upload.single('avatar'), (req, res) => {
+  console.log('SOMETHINGS HAPPENING AT LEAST');
+});
 
 //
 // ─── USER SEARCH AND INVITE ─────────────────────────────────────────────────────
@@ -235,9 +264,8 @@ app.post('/api/userrooms', (req, res) => {
 
 app.post('/api/userInfo', (req, res) => {
   console.log('USERINFO in server', req.body);
-  db.models.User.findOne({ where: { email: req.body.user } })
+  db.models.User.findOne({ where: { username: req.body.user } })
     .then((instance) => {
-      console.log('USERINFO FROM DATABaSE', instance);
       const lifeTimeScore = instance.get('lifetime_score');
       res.send(JSON.stringify(lifeTimeScore));
     });

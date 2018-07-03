@@ -8,6 +8,7 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
+import UserProfile from './UserProfile.jsx';
 import axios from 'axios';
 
 function mapStateToProps(state) {
@@ -32,7 +33,7 @@ const styles = theme => ({
   },
 });
 
-class ConnectedUserProfile extends React.Component {
+class ConnectedUserProfileContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -87,8 +88,7 @@ class ConnectedUserProfile extends React.Component {
                 index={this.state.value}
                 onChangeIndex={this.handleChangeIndex}
               >
-                <Typography component="div" style={{ padding: 8 * 3 }}>
-                </Typography>
+                <UserProfile />
                 <Typography component="div" style={{ padding: 8 * 3 }}>
                 </Typography>
               </SwipeableViews>
@@ -100,7 +100,7 @@ class ConnectedUserProfile extends React.Component {
   }
 }
 
-const UserProfile = connect(mapStateToProps)(ConnectedUserProfile)
+const UserProfileContainer = connect(mapStateToProps)(ConnectedUserProfileContainer)
 
-export default withStyles(styles)(UserProfile);
+export default withStyles(styles)(UserProfileContainer);
 
