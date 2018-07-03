@@ -76,19 +76,19 @@ class ConnectedCreateRoom extends React.Component {
       query: '',
       roomID: null,
       roomName: '',
-
       error: false,
-
       roomLink: '',
-
       suggestions: [],
       currSuggestions: [],
       value: '',
+      roomMode: null, 
     };
     this.handleKeyPress = this.handleKeyPress.bind(this);
     this.createRoom = this.createRoom.bind(this);
     this.updateRoomName = this.updateRoomName.bind(this);
     this.renderSuggestion = this.renderSuggestion.bind(this);
+    this.freeRoomMode = this.freeRoomMode.bind(this, "free")
+    this.roundRoomMode = this.roundRoomMode.bind(this, "round")
   }
 
   componentDidMount() {
@@ -206,6 +206,24 @@ class ConnectedCreateRoom extends React.Component {
       currSuggestions: [],
     });
   };
+
+  freeRoomMode(){
+    // console.log("ROOM MODE TARGET:", e.target.value)
+    console.log("ARGUENTMENS", arguments[0])
+    this.setState({
+      roomMode: arguments[0]
+    }, ()=>{console.log("NEW ROOM MODE:", this.state.roomMode)})
+  }
+
+  roundRoomMode(){
+    // console.log("ROOM MODE TARGET:", e.target.value)
+    console.log("ARGUMETS", arguments[0])
+    this.setState({
+      roomMode: arguments[0]
+    }, ()=>{console.log("NEW ROOM MODE:", this.state.roomMode)})
+  }
+
+
   // ────────────────────────────────────────────────────────────────────────────────
 
 
@@ -305,14 +323,14 @@ class ConnectedCreateRoom extends React.Component {
           New Room
         </Typography>
         <Button variant="contained"
+          onClick={this.freeRoomMode}
           color="secondary"
-          className={classes.newRoomButton}
           style={{ marginTop: '15px' }}>
           Free for All
         </Button>
         <Button variant="contained"
+          onClick={this.roundRoomMode}
           color="secondary"
-          className={classes.newRoomButton}
           style={{ marginTop: '15px' }}>
           Round Robin
           </Button>
