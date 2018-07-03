@@ -27,10 +27,14 @@
   #login-prompt { width: 30%; }
 }
 
+#login-form-dialog-title {
+  display: flex;
+  justify-content: space-between;
+}
+
 @media screen and (min-width: 0px) and (max-width: 400px) {
-  #login-form-dialog-title { text-align: center !important; }
-  #google-login-button { margin: 30px 20px 0px 20px; }
-  .login-title { float: left; }
+  #login-form-dialog-title { flex-direction: column; }
+  .login-title { float: left; margin-bottom: 20px; }
 }
 
 @media screen and (min-width: 400px) {
@@ -177,9 +181,9 @@ div.columns {
 }
 
 .section.login-error {
-  background-color: $primary;
-  padding: 10px;
-  margin-bottom: 10px;
+  background-color: rgba(255, 17, 0, .7);
+  padding: 5px;
+  margin: 10px 0px 10px 0px;
   border-radius: 5px;
 }
 

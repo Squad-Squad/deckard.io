@@ -14,6 +14,7 @@ import Input from '@material-ui/core/Input';
 import CombatantsContainer from './CombatantsContainer.jsx';
 import Button from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
+import Snackbar from '@material-ui/core/Snackbar';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { addUserToNewRoom } from '../../../../redux/actions.js';
@@ -96,7 +97,8 @@ class ConnectedCreateRoom extends React.Component {
         this.setState({
           suggestions: res.data
             .map(user => user.email)
-            .filter(email => email !== this.props.loggedInUsername),
+            .filter(email => (email !== this.props.loggedInUsername &&
+              email !== 'mitsuku@mitsuku.com')),
         });
       });
   }
@@ -204,16 +206,11 @@ class ConnectedCreateRoom extends React.Component {
       currSuggestions: [],
     });
   };
-
-  handleSuggestionClick = (username) => {
-  }
   // ────────────────────────────────────────────────────────────────────────────────
 
 
   createRoom() {
-    if (this.props.loggedIn === false ||
-      this.state.roomName.length === 0 ||
-      this.props.usersForNewRoom.length === 0) {
+    if (this.state.roomName.length === 0) {
       this.setState({
         error: true,
       });
@@ -282,10 +279,10 @@ class ConnectedCreateRoom extends React.Component {
     }
   }
 
-
   render() {
     const { classes } = this.props;
     this.props.addUserToNewRoom(this.props.loggedInUsername);
+    const { vertical, horizontal, open } = this.state;
 
     var uniqueURL = this.state.roomID ?
       `https://food-fight-greenfield.herokuapp.com/rooms/${this.state.roomID}`
@@ -293,27 +290,13 @@ class ConnectedCreateRoom extends React.Component {
 
     // Error creating room
     const createRoomError = () => {
-      if (!this.props.loggedIn) {
-        return (
-          <section className="section login-error" style={{ color: 'white' }}>
-            <div className="container">
-              <h2 className="subtitle">
-                Please login to create a room.
-              </h2>
-            </div>
-          </section>
-        )
-      } else {
-        return this.state.error ? (
-          <section className="section login-error" style={{ color: 'white' }}>
-            <div className="container">
-              <h2 className="subtitle">
-                You must have a name and the arena must have combatants.
-              </h2>
-            </div>
-          </section>
-        ) : null;
-      }
+      return this.state.error ? (
+        <section className="section login-error" style={{ color: 'white' }}>
+          <p>
+            Your room must have a name.
+          </p>
+        </section>
+      ) : null;
     };
 
     return (
@@ -321,8 +304,21 @@ class ConnectedCreateRoom extends React.Component {
         <Typography id="new-room-header" style={{ paddingBottom: '8px' }}>
           New Room
         </Typography>
+        <Button variant="contained"
+          color="secondary"
+          className={classes.newRoomButton}
+          style={{ marginTop: '15px' }}>
+          Free for All
+        </Button>
+        <Button variant="contained"
+          color="secondary"
+          className={classes.newRoomButton}
+          style={{ marginTop: '15px' }}>
+          Round Robin
+          </Button>
 
         <Divider />
+        {createRoomError()}
         <div style={{ margin: '8px' }}>
           <FormControl style={{ width: '100%' }} >
             <Input

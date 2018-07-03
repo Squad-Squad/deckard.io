@@ -15,7 +15,6 @@ const mitsuku = require('../lib/mitsukuHelper')();
 const gameLogic = require('../lib/gameLogic');
 const redis = require('redis');
 
-
 const Mailjet = require('node-mailjet').connect(
   process.env.MAILJET_API_KEY,
   process.env.MAILJET_API_SECRET,
@@ -35,10 +34,6 @@ if (process.env.REDIS_URL) {
 }
 
 const multi = client.multi();
-
-client.on('connect', () => {
-  console.log('Connected to Redis');
-});
 
 const app = express();
 
@@ -132,8 +127,8 @@ app.post('/api/signupEmail', (req, res) => {
   const emailData = {
     FromEmail: 'd3ck4rd.io@gmail.com',
     FromName: 'deckard.io',
-    Subject: 'You\'ve been invited to Food Fight!',
-    'Text-part': `You've been invited to a Food Fight. Visit ${process.env.DOMAIN || 'http://localhost:3000/'}signup to signup.`,
+    Subject: 'You\'ve been invited to deckard.io!',
+    'Text-part': `You've been invited to play deckard.io -- visit ${process.env.DOMAIN || 'http://localhost:3000/'}signup to signup.`,
     Recipients: [{ Email: email }],
   };
   Mailjet.post('send')
@@ -188,7 +183,7 @@ app.post('/api/save', (req, res) => {
 
 
   // CHANGE THE ROOM TIMER LENGTH HERE
-  timerObj[roomUnique].start(40000);
+  timerObj[roomUnique].start(20000);
 
   dbHelpers.saveRoomAndMembers(roomName, members, roomUnique, (err, room, users) => {
     if (err) {
@@ -235,56 +230,6 @@ app.post('/api/userrooms', (req, res) => {
   });
 });
 
-
-//
-// ─── HANDLE MESSAGES AND VOTES─────────────────────────────────────────────────────────
-//
-// app.post('/api/messages', (req, res) => {
-//   const { user_id, message, roomID } = req.body;
-
-//   // console.log("user_id:", message.name, "and message:", message, "and roomID:", roomID)
-
-//   const msg = message.message;
-//   const name = message.name;
-
-
-//   client.rpush(`${roomID}:messages`, JSON.stringify({ [name]: msg }));
-
-//   dbHelpers.saveMessage(user_id, message.name, message.message, roomID, (err, savedMessage) => {
-//     if (err) {
-//       console.log('Error saving message', err);
-//       res.status(404).end();
-//     } else {
-//       res.end('Message saved', savedMessage);
-//     }
-//   });
-// });
-
-// app.get('/api/messages/:roomID', (req, res) => {
-//   const { roomID } = req.params;
-
-//   client.lrange(`${roomID}:messages`, 0, -1, (err, replies) => {
-//     if (err) {
-//       console.log(err);
-//     } else {
-//       const outputArray = [];
-
-//       replies.forEach((reply) => {
-//         // testArr.push(JSON.parse(reply))
-//         const msgObj = {};
-//         const incoming = JSON.parse(reply);
-//         for (const key in incoming) {
-//           msgObj.message = incoming[key];
-//           msgObj.name = key;
-//           msgObj.user_id = null;
-//         }
-//         // console.log("msgObj in forEACH FORMATTING", msgObj)
-//         outputArray.push(msgObj);
-//       });
-//       res.send(outputArray);
-//     }
-//   });
-// });
 
 
 app.post('/api/userInfo', (req, res) => {
@@ -354,8 +299,16 @@ db.models.sequelize.sync().then(() => {
       }
 
       socket.join(socket.room);
-      // console.log("ROOMS AT JOIN:", rooms, "and SPECIFICALLYthis  room:", rooms[socket.room])
 
+
+      io.sockets.in(socket.room).emit('chat', {
+        message: {
+          user_id: socket.username,
+          name: socket.username,
+          message: `${data.user} has joined the room!`,
+        },
+        roomId: socket.room,
+      });
 
       const user_id = socket.username;
       const name = socket.username;
@@ -422,7 +375,6 @@ db.models.sequelize.sync().then(() => {
 
         }
       });
-
     });
 
 
@@ -447,7 +399,7 @@ db.models.sequelize.sync().then(() => {
       let extraDelay = 0;
 
       // Change Mitsuku's response frequency based on the number of room users
-      if (Math.ceil(Math.random() * data.numUsers) === data.numUsers) {
+      if (Math.ceil(Math.random() * (data.numUsers - 1)) === (data.numUsers - 1)) {
         // Delay Mitsuku a random number of seconds
         mitsuku.send(data.message.message)
           .then((response) => {
@@ -457,7 +409,7 @@ db.models.sequelize.sync().then(() => {
             }
 
             // Add delay based on response length
-            extraDelay = response.length * 70;
+            extraDelay = response.length * 50;
             console.log('EXTRA DELAY', extraDelay);
 
             setTimeout(() => {
@@ -515,6 +467,7 @@ db.models.sequelize.sync().then(() => {
       });
     });
 
+    // DELETE THIS COMMENT
 
     socket.on('leaveRoom', data=>{
 
@@ -541,8 +494,6 @@ db.models.sequelize.sync().then(() => {
               }
               outputArray.push(msgObj);
             });
-
-            console.log('MESSGAGE OBJ IN SOCKET:', outputArray)
 
           io.sockets.in(socket.room).emit('chat', outputArray);
 
@@ -618,9 +569,7 @@ db.models.sequelize.sync().then(() => {
         const scores = gameLogic.calcScores(rooms[socket.room]);
 
         for (var user in scores) {
-          console.log("USER:", user, "and their score:", scores[user])
-          if(!isNaN(scores[user])){
-          db.models.User.findOne({ where: { email: user } })
+          db.models.User.findOne({ where: { username: user } })
             .then((instance) => {
               console.log('user in db', user);
               const oldScore = instance.get('lifetime_score');
@@ -645,10 +594,10 @@ db.models.sequelize.sync().then(() => {
             }
           });
         io.sockets.in(socket.room).emit('scores', scores);
-
-      }
       })
   });
+
+
 });
 
 let timerObj = {};

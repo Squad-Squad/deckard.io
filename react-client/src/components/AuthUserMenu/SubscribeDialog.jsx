@@ -13,6 +13,8 @@ class SubscribeDialog extends React.Component {
     super(props);
     this.state = {
       open: false,
+
+      username: '',
       email: '',
       emailValid: false,
       password: '',
@@ -22,6 +24,7 @@ class SubscribeDialog extends React.Component {
     this.handleClickOpen = this.handleClickOpen.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.handleSubscribe = this.handleSubscribe.bind(this);
+    this.enterUsername = this.enterUsername.bind(this);
     this.enterEmail = this.enterEmail.bind(this);
     this.enterPassword = this.enterPassword.bind(this);
     this.handleKeyPress = this.handleKeyPress.bind(this);
@@ -46,6 +49,12 @@ class SubscribeDialog extends React.Component {
     });
   }
 
+  enterUsername(e) {
+    this.setState({
+      username: e.target.value
+    });
+  }
+
   enterEmail(e) {
     if (validator.isEmail(e.target.value)) {
       this.setState({
@@ -67,7 +76,9 @@ class SubscribeDialog extends React.Component {
   }
 
   handleSubscribe() {
+
     this.props.subscribe(
+      this.state.username,
       this.state.email,
       this.state.password);
   }
@@ -125,13 +136,23 @@ class SubscribeDialog extends React.Component {
           </DialogTitle>
           <DialogContent>
             <TextField
+              label="Username"
+              // InputLabelProps={{
+              //   shrink: true,
+              // }}
+              fullWidth
+              type="username"
+              autoFocus={true}
+              onChange={this.enterUsername}
+              onKeyUp={this.handleKeyPress}
+            />
+            <TextField
               {...isEmailValid}
               label="Email"
               // InputLabelProps={{
               //   shrink: true,
               // }}
               fullWidth
-              autoFocus={true}
               onChange={this.enterEmail}
             />
             <TextField
