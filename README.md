@@ -1,6 +1,6 @@
-# Food Fight!
+# Deckard.io
 
-App to vote over what local restaurant to eat at with your friends or coworkers. Allows users to nominate where to eat and others can either vote to approve or veto it and suggest somewhere else to eat.
+Deckard.io is gamifying the idea of the [Turing Test](https://en.wikipedia.org/wiki/Turing_test) by pitting you and some strangers in a chatroom with an ai bot. Your goal is to guess who the bot is correctly and have the other humans guess that you are the bot.
 
 ### Installing
 
@@ -39,9 +39,12 @@ DOMAIN=
 - [React](https://reactjs.org/)
 - [Postgres](https://www.postgresql.org/)
 - [Bulma](https://bulma.io/)
+- [Material UI]()
+- [Mitsuku](https://www.pandorabots.com/mitsuku/)
 - [Passport](http://www.passportjs.org/)
 - [Node](https://nodejs.org/en/)
 
+All other technologies not listed are in the package.json file
 
 ## Contributing
 
@@ -49,10 +52,10 @@ If you would like to contribute to the project, please submit a pull request and
 
 ## Authors
 
-- [**Carter Robinson**](https://github.com/ctrobins)
-- [**Mitchell Stewart**](https://github.com/mitchstewart08)
-- [**Raphael Croce**](https://github.com/riffryder)
+- [**Alex Donesky**](https://github.com/adonesky1)
+- [**John Ju**](https://github.com/john-ju)
 - [**Travis James Smith**](https://github.com/Trajamsmith)
+- [**Mitchell Stewart**](https://github.com/mitchstewart08)
 
 ## Acknowledgments
 
