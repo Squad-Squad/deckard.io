@@ -8,13 +8,14 @@ const bcrypt = require('bcrypt');
 //
 // ─── USER TABLE HELPERS ─────────────────────────────────────────────────────────
 //
-const saveMember = (email, password, callback) => {
+const saveMember = (username, email, password, callback) => {
   let hashedPW;
   if (password) {
     const salt = bcrypt.genSaltSync(3);
     hashedPW = bcrypt.hashSync(password, salt);
   }
   db.models.User.create({
+    username,
     email,
     password: hashedPW,
   })
@@ -132,7 +133,7 @@ const addMitsuku = () => {
   db.models.User.findAll({ where: { email: 'mitsuku@mitsuku.com' } })
     .then((res) => {
       if (!res.length) {
-        db.models.User.create({ email: 'mitsuku@mitsuku.com' });
+        db.models.User.create({ username: 'Mitsuku', email: 'mitsuku@mitsuku.com' });
       }
     });
 };

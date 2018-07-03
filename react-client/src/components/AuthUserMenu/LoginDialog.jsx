@@ -15,13 +15,13 @@ class LoginDialog extends React.Component {
     super(props);
     this.state = {
       open: false,
-      email: '',
+      usernameOrEmail: '',
       password: '',
     };
     this.handleClickOpen = this.handleClickOpen.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.handleLogin = this.handleLogin.bind(this);
-    this.enterEmail = this.enterEmail.bind(this);
+    this.enterUsernameOrEmail = this.enterUsernameOrEmail.bind(this);
     this.enterPassword = this.enterPassword.bind(this);
     this.handleKeyPress = this.handleKeyPress.bind(this);
   }
@@ -39,14 +39,14 @@ class LoginDialog extends React.Component {
   handleClose() {
     this.setState({
       open: false,
-      email: '',
+      usernameOrEmail: '',
       password: ''
     });
   }
 
-  enterEmail(e) {
+  enterUsernameOrEmail(e) {
     this.setState({
-      email: e.target.value
+      usernameOrEmail: e.target.value
     });
   }
 
@@ -57,7 +57,7 @@ class LoginDialog extends React.Component {
   }
 
   handleLogin() {
-    this.props.login(this.state.email, this.state.password);
+    this.props.login(this.state.usernameOrEmail, this.state.password);
   }
 
   handleKeyPress(event) {
@@ -80,9 +80,11 @@ class LoginDialog extends React.Component {
 
     // Login error
     const loginError = this.props.error ? (
-      <DialogContentText id="login-error">
-        That user does not exist.
-      </DialogContentText>
+      <section className="section login-error" style={{ color: 'white' }}>
+        <p>
+          Invalid login credentials.
+          </p>
+      </section>
     ) : null;
 
     return (
@@ -113,13 +115,13 @@ class LoginDialog extends React.Component {
             <DialogContent>
               {loginError}
               <TextField
-                label="Email"
+                label="Username / Email"
                 // InputLabelProps={{
                 //   shrink: true,
                 // }}
                 fullWidth
                 autoFocus={true}
-                onChange={this.enterEmail}
+                onChange={this.enterUsernameOrEmail}
               />
               <TextField
                 label="Password"

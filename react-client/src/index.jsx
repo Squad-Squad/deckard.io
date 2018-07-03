@@ -99,7 +99,7 @@ class ConnectedApp extends React.Component {
       .then(res => {
         if (res.data.user) {
           console.log('Logged in as:', res.data.user.email);
-          this.props.login(res.data.user.email);
+          this.props.login(res.data.user.username);
           this.setState({
             loginError: false,
           });
@@ -122,38 +122,39 @@ class ConnectedApp extends React.Component {
       });
   }
 
-  getUserRooms(email) {
-    axios.post('/api/userrooms', { username: email })
-      .then(res => {
-        this.setState({
-          userRooms: res.data
-        })
-      })
-  }
+  // getUserRooms(email) {
+  //   axios.post('/api/userrooms', { username: email })
+  //     .then(res => {
+  //       this.setState({
+  //         userRooms: res.data
+  //       })
+  //     })
+  // }
 
-  getUserWins(email) {
-    axios.post('/api/userwins', { username: email })
-      .then(res => {
-        this.setState({
-          userWins: res.data
-        })
-      })
-  }
+  // getUserWins(email) {
+  //   axios.post('/api/userwins', { username: email })
+  //     .then(res => {
+  //       this.setState({
+  //         userWins: res.data
+  //       })
+  //     })
+  // }
 
   //
   // ─── USER AUTH ──────────────────────────────────────────────────────────────────
   //
-  subscribe(email, password, zip) {
+  subscribe(username, email, password, zip) {
     console.log(`Subscribe with ${email} and ${password}`);
     axios.post('/subscribe', {
+      username,
       email,
       password,
-      zip
     })
       .then((res) => {
-        const email = JSON.parse(res.config.data).email;
+        console.log('THESE THE DATA', res.config.data);
+        const username = JSON.parse(res.config.data).username;
         if (res) {
-          this.props.login(email);
+          this.props.login(username);
         }
       })
       .catch(() => {
@@ -163,16 +164,16 @@ class ConnectedApp extends React.Component {
       });
   }
 
-  login(email, password) {
-    console.log(`Login with ${email} and ${password}`);
+  login(usernameOrEmail, password) {
     axios.post('/login', {
-      email,
+      username: usernameOrEmail,
+      email: usernameOrEmail,
       password
     })
       .then(res => {
         if (res.config.data) {
-          console.log('Logged in as:', JSON.parse(res.config.data).email);
-          this.props.login(JSON.parse(res.config.data).email);
+          console.log('Logged in as:', JSON.parse(res.config.data).username);
+          this.props.login(JSON.parse(res.config.data).username);
         }
       })
       .catch(
@@ -197,7 +198,7 @@ class ConnectedApp extends React.Component {
       })
   }
 
-  profileRedirect(){
+  profileRedirect() {
     this.props.history.push(`/userprofile/${this.props.loggedInUsername}`)
   }
 

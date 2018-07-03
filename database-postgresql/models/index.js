@@ -46,6 +46,10 @@ sequelize.authenticate()
 // ─── THESE CANT BE IN SEPARATE FILES ────────────────────────────────────────────
 //
 const User = sequelize.define('user', {
+  username: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
   email: {
     type: Sequelize.STRING,
     allowNull: false,
