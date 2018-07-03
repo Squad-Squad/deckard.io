@@ -94,14 +94,11 @@ class ConnectedRoom extends React.Component {
         }
       };
 
-      console.log("STATE OF THE DATA BEFORE SETSTATE: memberMAP:", memberMap, "aliasedMembers:", aliasedMembers)
-
       this.setState({
         memberMap: memberMap,
         members: aliasedMembers,
         roomName: roomMembers.room,
-      }, () => console.log("WHAT ROOMMEMBERS NEED TO LOOK LIKE:", this.state.memberMap)
-      );
+      });
     })
       .then(() => {
         this.props.io.emit('join', { room: this.roomID, user: this.state.memberMap[this.props.loggedInUsername], mitsuku:this.state.memberMap['mitsuku@mitsuku.com'], roomMode: this.state.roomMode});

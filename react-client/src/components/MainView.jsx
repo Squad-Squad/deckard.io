@@ -22,7 +22,7 @@ class ConnectedMainView extends React.Component {
       invite: false,
       inviteHost: null,
       roomHash: null,
-      roomMode: null, 
+      roomMode: "free", 
 
     };
     this.props.io.on('invitation', (data) => {

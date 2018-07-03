@@ -289,18 +289,26 @@ db.models.sequelize.sync().then(() => {
     socket.on('join', (data) => {
       socket.room = data.room;
       socket.alias = data.user
-      console.log("JOIN ROOM IN SOCKETRS:", socket.room, socket.alias)
+      socket.roomMode = data.roomMode
+      console.log("JOIN ROOM IN SOCKETRS:", socket.room, socket.alias, "AND ROOM MODE:", socket.roomMode)
     
       if (!rooms[socket.room]) {
         rooms[socket.room] = [{}, socket.username];
-        console.log("ROOMS AFTER CREATION:", rooms)
       } else {
         rooms[socket.room].push(socket.username);
       }
 
+
+      //actually join the socket namespace
       socket.join(socket.room);
 
-
+      client.rpush(`${socket.room}:membersList`, socket.username, (err, replies)=>{
+        if(err){
+          console.log(err)
+        }else{
+          console.log('addToRoomMembers in redis', replies)
+        }
+      })
 
       //notify everyone when someone has joined the room
       const user_id = socket.username;
@@ -309,95 +317,79 @@ db.models.sequelize.sync().then(() => {
       client.rpush(`${socket.room}:messages`, JSON.stringify({ 'matrixOverLords': message }));
 
 
-
       //notify everyone when mitsuku's joined the room (but only with her alias)
-      setTimeout(function(){
+      if (rooms[socket.room].length === 2) {
+        setTimeout(function(){
+          //add mitsuku to the members list in redis
+        client.rpush(`${socket.room}:membersList`, 'mitsuku@mitsuku.com', (err, replies)=>{
+          console.log("mitsuku added to redis db", replies)
+        });
+
+          //add a message to room messages in redis notifying that mitsuku has joined
         const mitMessage = `${data.mitsuku} has joined the room`
         client.rpush(`${socket.room}:messages`, JSON.stringify({ 'matrixOverLords': mitMessage }), (err, reply)=>{
           console.log("I've pushed to redis:", reply)
         });       
-        // client.lrange(`${socket.room}:messages`, 0, -1, (err, replies) => {
-        //   if (err) {
-        //     console.log(err);
-        //   } else {
-        //     const outputArray = [];
-        //     replies.forEach((reply) => {
-        //       const msgObj = {};
-        //       const incoming = JSON.parse(reply);
-        //       for (const key in incoming) {
-        //         msgObj.message = incoming[key];
-        //         msgObj.name = key;
-        //         msgObj.user_id = null;
-        //       }
-        //       outputArray.push(msgObj);
-        //     });
+       
 
-        //   io.sockets.in(socket.room).emit('chat', outputArray);
-
-        //   }
-        // });
+          //fetch all the messages from redis right after adding mitsuku's joined room message
         dbHelpers.fetchRedisMessages(client, socket, (result)=>{
           console.log("RESULTS FROM HELPER FUNCTION", result)
-          io.sockets.in(socket.room).emit('chat', result)
-          
+          io.sockets.in(socket.room).emit('chat', result)          
+        })
+      }, Math.random() * 5000);
+    }
+
+
+    if(rooms[socket.room].length === 3 && data.roomMode === "round"){
+      let currentMembers;
+      console.log("AM I HITTING THE ROUND ROBIN CONDITION")
+      client.lrange(`${socket.room}:membersList`, 0, -1, (err, replies)=>{
+        if(err){
+          console.log(err)
+        }else{
+          console.log("ALL ROOM MEMBERS FROM REDIS", replies)
+          currentMembers = replies
+        }
+      })
+
+
+
+
+
+      // io.sockets.in(socket.room).emit('turn', )
+
+    }
+
+    //fetch all the messages from redis
+     dbHelpers.fetchRedisMessages(client, socket, (result)=>{
+          console.log("RESULTS FROM HELPER FUNCTION", result)
+          io.sockets.in(socket.room).emit('chat', result)          
         })
 
-
-
-        // console.log("I'm the end of the setTimeout")
-      }, Math.random() * 5000);
-
-
-
-
-      client.lrange(`${socket.room}:messages`, 0, -1, (err, replies) => {
-        if (err) {
-          console.log(err);
-        } else {
-          const outputArray = [];
-
-          replies.forEach((reply) => {
-            // testArr.push(JSON.parse(reply))
-            const msgObj = {};
-            const incoming = JSON.parse(reply);
-            for (const key in incoming) {
-              msgObj.message = incoming[key];
-              msgObj.name = key;
-              msgObj.user_id = null;
-            }
-            outputArray.push(msgObj);
-          });
-
-          console.log('MESSGAGE OBJ IN SOCKET:', outputArray)
-
-        io.sockets.in(socket.room).emit('chat', outputArray);
-
-        }
-      });
     });
 
 
 
     socket.on('invite', (data) => {
      
+     //send invitation to all online users (whether they are invited or not is sorted on front end), except inviter
       socket.broadcast.emit('invitation', {
         users: data.users, roomHash: data.roomHash, roomName: data.roomName, host: socket.username,
       });
     });
 
-    socket.on('chat', (data) => {
-      // console.log("CHAT IN SERVER SOCKET:", data)
 
+    socket.on('chat', (data) => {
       let user = data.message.name
       let message = data.message.message
 
-
+      //push all the messages sent from client to redis room key message list
       client.rpush(`${socket.room}:messages`, JSON.stringify({ [user]:message }));
 
 
-      let extraDelay = 0;
-
       // Change Mitsuku's response frequency based on the number of room users
+      let extraDelay = 0;
       if (Math.ceil(Math.random() * (data.numUsers - 1)) === (data.numUsers - 1)) {
         // Delay Mitsuku a random number of seconds
         mitsuku.send(data.message.message)
@@ -414,90 +406,36 @@ db.models.sequelize.sync().then(() => {
             setTimeout(() => {
               // Save her message to redis
               client.rpush(`${socket.room}:messages`, JSON.stringify({ 'mitsuku@mitsuku.com': response }));
-              client.lrange(`${socket.room}:messages`, 0, -1, (err, replies) => {
-                if (err) {
-                  console.log(err);
-                } else {
-                  const outputArray = [];
-
-                  replies.forEach((reply) => {
-                    const msgObj = {};
-                    const incoming = JSON.parse(reply);
-                    for (const key in incoming) {
-                      msgObj.message = incoming[key];
-                      msgObj.name = key;
-                      msgObj.user_id = null;
-                    }
-                    outputArray.push(msgObj);
-                  });
-
-
-                io.sockets.in(socket.room).emit('chat', outputArray);
-
-                }
-              });
+              
+              //and retrieve all the messages immediately after
+              dbHelpers.fetchRedisMessages(client, socket, (result)=>{
+                io.sockets.in(socket.room).emit('chat', result)          
+                })
     
             }, Math.random() * 5000 + 2000 + extraDelay);
           });
       }
 
+      //retrieve all the messages from redis everytime a message is received
+    dbHelpers.fetchRedisMessages(client, socket, (result)=>{
+      io.sockets.in(socket.room).emit('chat', result)          
+      })
 
-      client.lrange(`${socket.room}:messages`, 0, -1, (err, replies) => {
-        if (err) {
-          console.log(err);
-        } else {
-          const outputArray = [];
-
-          replies.forEach((reply) => {
-            const msgObj = {};
-            const incoming = JSON.parse(reply);
-            for (const key in incoming) {
-              msgObj.message = incoming[key];
-              msgObj.name = key;
-              msgObj.user_id = null;
-            }
-            outputArray.push(msgObj);
-          });
-
-
-        io.sockets.in(socket.room).emit('chat', outputArray);
-
-        }
-      });
     });
 
-    // DELETE THIS COMMENT
 
+
+    //handle cases in which player leaves the room without completely disconnecting from the site
     socket.on('leaveRoom', data=>{
 
       if(socket.room){
-
         rooms[socket.room].splice(rooms[socket.room].indexOf(socket.username), 1)
-        console.log("AFTERLEAVING ROOMS OBJ", rooms[socket.room])
 
         client.rpush(`${socket.room}:messages`, JSON.stringify({ 'matrixOverLords': `${socket.alias} left the room` }));
 
-        client.lrange(`${socket.room}:messages`, 0, -1, (err, replies) => {
-          if (err) {
-            console.log(err);
-          } else {
-            const outputArray = [];
-
-            replies.forEach((reply) => {
-              const msgObj = {};
-              const incoming = JSON.parse(reply);
-              for (const key in incoming) {
-                msgObj.message = incoming[key];
-                msgObj.name = key;
-                msgObj.user_id = null;
-              }
-              outputArray.push(msgObj);
-            });
-
-          io.sockets.in(socket.room).emit('chat', outputArray);
-
-          }
-        });
+        dbHelpers.fetchRedisMessages(client, socket, (result)=>{
+          io.sockets.in(socket.room).emit('chat', result)          
+          })
 
       }
     })
@@ -514,8 +452,6 @@ db.models.sequelize.sync().then(() => {
       }
       
 
-
-
       client.lrem('onlineUsers', 1, socket.username, (err, replies)=>{
         console.log("REMOVE REPLY", replies)
       })
@@ -529,29 +465,9 @@ db.models.sequelize.sync().then(() => {
       console.log('SOCKET.ROOMS', rooms)
 
 
-      client.lrange(`${socket.room}:messages`, 0, -1, (err, replies) => {
-        if (err) {
-          console.log(err);
-        } else {
-          const outputArray = [];
-
-          replies.forEach((reply) => {
-            const msgObj = {};
-            const incoming = JSON.parse(reply);
-            for (const key in incoming) {
-              msgObj.message = incoming[key];
-              msgObj.name = key;
-              msgObj.user_id = null;
-            }
-            outputArray.push(msgObj);
-          });
-
-
-        io.sockets.in(socket.room).emit('chat', outputArray);
-
-        }
-      });
-
+      dbHelpers.fetchRedisMessages(client, socket, (result)=>{
+        io.sockets.in(socket.room).emit('chat', result)          
+        })
 
       connections.splice(connections.indexOf(socket), 1)
 
@@ -561,14 +477,11 @@ db.models.sequelize.sync().then(() => {
     socket.on('vote', (data) => {
       rooms[socket.room][0][data.user] = data.votes;
 
-
       // determine if everyone has submitted there votes
-
       if (rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length) {
         const scores = gameLogic.calcScores(rooms[socket.room]);
 
-        console.log("WHY AREN't there scores:", scores)
-
+      //add everyones scores to their lifetime scores in postgres db
         for (var user in scores) {
           db.models.User.findOne({ where: { username: user } })
             .then((instance) => {
@@ -581,19 +494,18 @@ db.models.sequelize.sync().then(() => {
                 });                
               })
             };
-        
       
+        // db.models.Room.findOne({ where: { uniqueid: socket.room } })
+        //   .then((room) => {
+        //     // Check if record exists in db
+        //     console.log('AND THE scores before they go IN DB:', scores);
+        //     if (room) {
+        //       room.updateAttributes({
+        //         scores: JSON.stringify(scores),
+        //       });
+        //     }
+        //   });
 
-        db.models.Room.findOne({ where: { uniqueid: socket.room } })
-          .then((room) => {
-            // Check if record exists in db
-            console.log('AND THE scores before they go IN DB:', scores);
-            if (room) {
-              room.updateAttributes({
-                scores: JSON.stringify(scores),
-              });
-            }
-          });
         io.sockets.in(socket.room).emit('scores', scores);
       }
 
