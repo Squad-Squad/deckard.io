@@ -174,6 +174,7 @@ class ConnectedRoom extends React.Component {
          memberMap={this.state.memberMap} io={this.props.io} />);
      } else if (!this.state.scores) {
       return (<RoundLiveChat
+        alias={this.state.memberMap[this.props.loggedInUsername]}
         whoseTurn={this.state.whoseTurn}
         roomName={this.state.roomName}
         messages={this.state.messages}

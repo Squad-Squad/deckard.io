@@ -341,31 +341,30 @@ db.models.sequelize.sync().then(() => {
     }
 
 
-    if(rooms[socket.room].length === 3 && data.roomMode === "round"){
+      //if round robin room-mode is selected as soon as there are 2 people in the room one is told to speak first
       let currentMembers;
-      console.log("AM I HITTING THE ROUND ROBIN CONDITION")
       client.lrange(`${socket.room}:membersList`, 0, -1, (err, replies)=>{
         if(err){
           console.log(err)
         }else{
           console.log("ALL ROOM MEMBERS FROM REDIS", replies)
-          currentMembers = replies
+          currentMembers = replies       
+            if(currentMembers.length === 2 && data.roomMode === "round"){
+          // io.sockets.in(socket.room).emit('turn', socket.username)
+            let firstTurnMessage = `${socket.alias}, you go first!`
+            client.rpush(`${socket.room}:messages`, JSON.stringify({ 'matrixOverLords': firstTurnMessage }), (err, reply)=>{
+              console.log("firstTurnMessage pushed to redis:", reply)
+            });  
+          }
         }
       })
 
-
-
-
-
-      // io.sockets.in(socket.room).emit('turn', )
-
-    }
 
     //fetch all the messages from redis
      dbHelpers.fetchRedisMessages(client, socket, (result)=>{
           console.log("RESULTS FROM HELPER FUNCTION", result)
           io.sockets.in(socket.room).emit('chat', result)          
-        })
+      })
 
     });
 

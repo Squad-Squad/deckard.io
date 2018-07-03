@@ -93,6 +93,9 @@ class ConnectedRoundLiveChat extends React.Component {
               <Typography variant="title" color="inherit" className={classes.flex}>
                 {this.props.roomName}
               </Typography>
+               <Typography variant="title" color="inherit" className={classes.flex}>
+                YOU ARE: {this.props.alias}
+              </Typography>
               <Typography variant="title" color="inherit">
                 {this.props.timer}
               </Typography>
