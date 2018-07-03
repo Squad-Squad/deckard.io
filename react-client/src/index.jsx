@@ -106,6 +106,7 @@ class ConnectedApp extends React.Component {
           });
         }
       });
+
   }
 
   updateQuery(e) {
@@ -188,6 +189,7 @@ class ConnectedApp extends React.Component {
   }
 
   logout() {
+    
     axios.get('/logout')
       .then(res => {
         console.log('Logging out');
@@ -197,6 +199,7 @@ class ConnectedApp extends React.Component {
           loginError: false
         });
       })
+    this.socket.emit('leaveRoom', this.props.loggedInUsername)
   }
 
   profileRedirect() {

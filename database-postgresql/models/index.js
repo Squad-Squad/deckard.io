@@ -12,6 +12,7 @@ if (process.env.DATABASE_URL) {
     logging: false,
   });
 } else {
+
   sequelize = new Sequelize(
     process.env.DB_NAME,
     process.env.DB_USER,
