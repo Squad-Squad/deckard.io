@@ -234,8 +234,6 @@ div.columns {
 .profile-photo-upload-container {
   position: relative;
   margin: 30px;
-  height: 200px;
-  width: 200px;
 }
 
 .profile-photo-upload-image {
@@ -244,6 +242,9 @@ div.columns {
   border-radius: 50%;
   transition: .5s ease;
   backface-visibility: hidden;
+  height: 200px;
+  width: 200px;
+  object-fit: cover;
 }
 
 .profile-photo-upload-middle {
@@ -273,6 +274,19 @@ div.columns {
 
 #photo-upload-input-proxy {
   cursor: pointer;
+}
+
+.user-profile-edit-area {
+  font-size: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 20px;
+  width: calc(100% - 300px);
+}
+
+.user-profile-edit-area > * {
+  margin-bottom: 10px;
 }
 
 

@@ -133,12 +133,22 @@ app.get('/logout', (req, res) => {
   res.redirect('/');
 });
 
+
 //
 // ─── USER PROFILE ENDPOINTS ─────────────────────────────────────────────────────
 //
+app.post('/api/userInfo', (req, res) => {
+  console.log('USERINFO in server', req.body);
+  db.models.User.findOne({ where: { username: req.body.user } })
+    .then((user) => {
+      res.send(JSON.parse(JSON.stringify(user)));
+    });
+});
+
 app.post('/profile/update-photo', upload.single('avatar'), (req, res) => {
   console.log('SOMETHINGS HAPPENING AT LEAST');
 });
+
 
 //
 // ─── USER SEARCH AND INVITE ─────────────────────────────────────────────────────
@@ -250,7 +260,6 @@ app.post('/room-redirect', (req, res) => {
   res.redirect(307, `/rooms/${req.body.id}`);
 });
 
-// Joseph
 app.post('/api/userrooms', (req, res) => {
   const { username } = req.body;
   dbHelpers.getRooms(username, (err, rooms) => {
@@ -260,15 +269,6 @@ app.post('/api/userrooms', (req, res) => {
       res.send(rooms);
     }
   });
-});
-
-app.post('/api/userInfo', (req, res) => {
-  console.log('USERINFO in server', req.body);
-  db.models.User.findOne({ where: { username: req.body.user } })
-    .then((instance) => {
-      const lifeTimeScore = instance.get('lifetime_score');
-      res.send(JSON.stringify(lifeTimeScore));
-    });
 });
 
 

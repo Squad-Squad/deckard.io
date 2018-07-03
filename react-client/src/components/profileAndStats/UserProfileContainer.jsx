@@ -38,27 +38,33 @@ class ConnectedUserProfileContainer extends React.Component {
     super(props);
     this.state = {
       value: 0,
-      lifetimeScore: null
+
+      username: '',
+      email: '',
+      lifetimeScore: null,
+      profileImageURL: '',
     };
   }
 
   componentDidMount() {
     axios.post('/api/userInfo', { user: this.props.loggedInUser })
       .then((response) => {
-        console.log("response on userProfile", response.data)
+        console.log("response on userProfile", response.data);
         this.setState({
-          lifetimeScore: response.data
-        }, () => { console.log("new lifetimeScore state", this.state.lifetimeScore) })
-      })
+          username: response.data.username,
+          email: response.data.email,
+          lifetimeScore: response.data.lifetime_score
+        }, () => (console.log(this.state)));
+      });
   }
 
-  handleChange = (event, value) => {
+  handleChange(event, value) {
     this.setState({ value });
-  };
+  }
 
-  handleChangeIndex = index => {
+  handleChangeIndex(index) {
     this.setState({ value: index });
-  };
+  }
 
   render() {
     const { classes, theme } = this.props;
@@ -88,8 +94,11 @@ class ConnectedUserProfileContainer extends React.Component {
                 index={this.state.value}
                 onChangeIndex={this.handleChangeIndex}
               >
-                <UserProfile />
+                <UserProfile
+                  username={this.state.username}
+                  email={this.state.email} />
                 <Typography component="div" style={{ padding: 8 * 3 }}>
+                  STATS
                 </Typography>
               </SwipeableViews>
             </Paper>
