@@ -103,6 +103,9 @@ app.post('/login', passport.authenticate('local-login', {
 }));
 
 app.get('/logout', (req, res) => {
+  client.lrem('onlineUsers', 0, req.user, (err, reply) => {
+    console.log('removed before adding');
+  });
   req.logout();
   res.redirect('/');
 });
@@ -112,9 +115,10 @@ app.get('/logout', (req, res) => {
 // ─── USER SEARCH AND INVITE ─────────────────────────────────────────────────────
 //
 app.post('/searchUsers', (req, res) => {
-  db.models.User.findAll()
-    .then(matches => res.status(200).send(matches))
-    .catch(err => res.status(200).send(err));
+  client.lrange('onlineUsers', 0, -1, (err, users) => {
+    console.log('DESE DA ONLINE USERS', users);
+    res.status(200).send(users);
+  });
 });
 
 
@@ -206,7 +210,6 @@ app.get('/api/rooms/:roomID', (req, res) => {
       res.send(replies);
     }
   });
-
 });
 
 app.get('/api/timer/:roomID', (req, res) => {
@@ -229,58 +232,6 @@ app.post('/api/userrooms', (req, res) => {
     }
   });
 });
-
-
-//
-// ─── HANDLE MESSAGES AND VOTES─────────────────────────────────────────────────────────
-//
-// app.post('/api/messages', (req, res) => {
-//   const { user_id, message, roomID } = req.body;
-
-//   // console.log("user_id:", message.name, "and message:", message, "and roomID:", roomID)
-
-//   const msg = message.message;
-//   const name = message.name;
-
-
-//   client.rpush(`${roomID}:messages`, JSON.stringify({ [name]: msg }));
-
-//   dbHelpers.saveMessage(user_id, message.name, message.message, roomID, (err, savedMessage) => {
-//     if (err) {
-//       console.log('Error saving message', err);
-//       res.status(404).end();
-//     } else {
-//       res.end('Message saved', savedMessage);
-//     }
-//   });
-// });
-
-// app.get('/api/messages/:roomID', (req, res) => {
-//   const { roomID } = req.params;
-
-//   client.lrange(`${roomID}:messages`, 0, -1, (err, replies) => {
-//     if (err) {
-//       console.log(err);
-//     } else {
-//       const outputArray = [];
-
-//       replies.forEach((reply) => {
-//         // testArr.push(JSON.parse(reply))
-//         const msgObj = {};
-//         const incoming = JSON.parse(reply);
-//         for (const key in incoming) {
-//           msgObj.message = incoming[key];
-//           msgObj.name = key;
-//           msgObj.user_id = null;
-//         }
-//         // console.log("msgObj in forEACH FORMATTING", msgObj)
-//         outputArray.push(msgObj);
-//       });
-//       res.send(outputArray);
-//     }
-//   });
-// });
-
 
 app.post('/api/userInfo', (req, res) => {
   console.log('USERINFO in server', req.body);
@@ -319,28 +270,29 @@ db.models.sequelize.sync().then(() => {
   io.on('connection', (socket) => {
     socket.on('username connect', (data) => {
       socket.username = data;
-      console.log("USERNAME CONNECT:", data)
+      console.log('USERNAME CONNECT:', data);
 
-      client.lrem('onlineUsers', 0, socket.username, (err, reply)=>{
-        console.log("removed before adding")
-      })
+      client.lrem('onlineUsers', 0, socket.username, (err, reply) => {
+        console.log('removed before adding');
+      });
 
-      client.rpush('onlineUsers', socket.username, (err, reply)=>{
-        console.log("ONLINE USERS ADD:", reply)
-      })
+      client.rpush('onlineUsers', socket.username, (err, reply) => {
+        console.log('ONLINE USERS ADD:', reply);
+      });
+
       userSockets[socket.username] = socket;
       users.push(socket.username);
-      console.log("USERS IN SERVER:", users)
+      console.log('USERS IN SERVER:', users);
     });
 
     socket.on('join', (data) => {
       socket.room = data.room;
-      socket.alias = data.user
-      console.log("JOIN ROOM IN SOCKETRS:", socket.room, socket.alias)
-    
+      socket.alias = data.user;
+      console.log('JOIN ROOM IN SOCKETRS:', socket.room, socket.alias);
+
       if (!rooms[socket.room]) {
         rooms[socket.room] = [{}, socket.username];
-        console.log("ROOMS AFTER CREATION:", rooms)
+        console.log('ROOMS AFTER CREATION:', rooms);
       } else {
         rooms[socket.room].push(socket.username);
       }
@@ -360,7 +312,7 @@ db.models.sequelize.sync().then(() => {
       const name = socket.username;
       const message = `${data.user} has joined the room!`;
 
-      client.rpush(`${socket.room}:messages`, JSON.stringify({ 'matrixOverLords': message }));
+      client.rpush(`${socket.room}:messages`, JSON.stringify({ matrixOverLords: message }));
 
       client.lrange(`${socket.room}:messages`, 0, -1, (err, replies) => {
         if (err) {
@@ -380,18 +332,13 @@ db.models.sequelize.sync().then(() => {
             outputArray.push(msgObj);
           });
 
-          console.log('MESSGAGE OBJ IN SOCKET:', outputArray)
-
-        io.sockets.in(socket.room).emit('chat', outputArray);
-
+          io.sockets.in(socket.room).emit('chat', outputArray);
         }
       });
     });
 
 
-
     socket.on('invite', (data) => {
-     
       socket.broadcast.emit('invitation', {
         users: data.users, roomHash: data.roomHash, roomName: data.roomName, host: socket.username,
       });
@@ -400,11 +347,11 @@ db.models.sequelize.sync().then(() => {
     socket.on('chat', (data) => {
       // console.log("CHAT IN SERVER SOCKET:", data)
 
-      let user = data.message.name
-      let message = data.message.message
+      const user = data.message.name;
+      const { message } = data.message;
 
 
-      client.rpush(`${socket.room}:messages`, JSON.stringify({ [user]:message }));
+      client.rpush(`${socket.room}:messages`, JSON.stringify({ [user]: message }));
 
 
       let extraDelay = 0;
@@ -443,13 +390,9 @@ db.models.sequelize.sync().then(() => {
                     outputArray.push(msgObj);
                   });
 
-                  console.log('MESSGAGE OBJ IN SOCKET:', outputArray)
-
-                io.sockets.in(socket.room).emit('chat', outputArray);
-
+                  io.sockets.in(socket.room).emit('chat', outputArray);
                 }
               });
-    
             }, Math.random() * 5000 + 2000 + extraDelay);
           });
       }
@@ -472,25 +415,18 @@ db.models.sequelize.sync().then(() => {
             outputArray.push(msgObj);
           });
 
-          console.log('MESSGAGE OBJ IN SOCKET:', outputArray)
-
-        io.sockets.in(socket.room).emit('chat', outputArray);
-
+          io.sockets.in(socket.room).emit('chat', outputArray);
         }
       });
     });
 
-    // DELETE THIS COMMENT
 
+    socket.on('leaveRoom', (data) => {
+      if (socket.room) {
+        rooms[socket.room].splice(rooms[socket.room].indexOf(socket.username), 1);
+        console.log('AFTERLEAVING ROOMS OBJ', rooms[socket.room]);
 
-    socket.on('leaveRoom', data=>{
-
-      if(socket.room){
-
-        rooms[socket.room].splice(rooms[socket.room].indexOf(socket.username), 1)
-        console.log("AFTERLEAVING ROOMS OBJ", rooms[socket.room])
-
-        client.rpush(`${socket.room}:messages`, JSON.stringify({ 'matrixOverLords': `${socket.alias} left the room` }));
+        client.rpush(`${socket.room}:messages`, JSON.stringify({ matrixOverLords: `${socket.alias} left the room` }));
 
         client.lrange(`${socket.room}:messages`, 0, -1, (err, replies) => {
           if (err) {
@@ -509,42 +445,37 @@ db.models.sequelize.sync().then(() => {
               outputArray.push(msgObj);
             });
 
-            console.log('MESSGAGE OBJ IN SOCKET:', outputArray)
-
-          io.sockets.in(socket.room).emit('chat', outputArray);
-
+            io.sockets.in(socket.room).emit('chat', outputArray);
           }
         });
-
       }
-    })
+    });
 
 
-    socket.on('disconnect', (data) =>{
-      let thisRoom = rooms[socket.room]
-      console.log('this users has disconnected:', socket.username, "AND ROOMS[SOCKET.ROOM]:", rooms[socket.room])
+    socket.on('disconnect', (data) => {
+      const thisRoom = rooms[socket.room];
+      console.log('this users has disconnected:', socket.username, 'AND ROOMS[SOCKET.ROOM]:', rooms[socket.room]);
 
-      if(rooms[socket.room]){
-        users.splice(users.indexOf(socket.username), 1)
-        rooms[socket.room].splice(thisRoom.indexOf(socket.username), 1) 
-        console.log('this users has disconnected:', socket.username, "AND ROOMS[SOCKET.ROOM] AFTER DISCONNECT:", rooms[socket.room])
+      if (rooms[socket.room]) {
+        users.splice(users.indexOf(socket.username), 1);
+        rooms[socket.room].splice(thisRoom.indexOf(socket.username), 1);
+        console.log('this users has disconnected:', socket.username, 'AND ROOMS[SOCKET.ROOM] AFTER DISCONNECT:', rooms[socket.room]);
       }
-      
-      client.rpush(`${socket.room}:messages`, JSON.stringify({ 'matrixOverLords': `${socket.alias} left the room` }));
+
+      client.rpush(`${socket.room}:messages`, JSON.stringify({ matrixOverLords: `${socket.alias} left the room` }));
 
 
+      client.lrem('onlineUsers', 1, socket.username, (err, replies) => {
+        console.log('REMOVE REPLY', replies);
+      });
 
-      client.lrem('onlineUsers', 1, socket.username, (err, replies)=>{
-        console.log("REMOVE REPLY", replies)
-      })
-
-      client.lrange('onlineUsers', 0, -1, (err, reply)=>{
-        console.log("ONLINE USERS CHECK:", reply)
-      })
+      client.lrange('onlineUsers', 0, -1, (err, reply) => {
+        console.log('ONLINE USERS CHECK:', reply);
+      });
 
 
-      socket.leave(socket.room)
-      console.log('SOCKET.ROOMS', rooms)
+      socket.leave(socket.room);
+      console.log('SOCKET.ROOMS', rooms);
 
 
       client.lrange(`${socket.room}:messages`, 0, -1, (err, replies) => {
@@ -564,17 +495,13 @@ db.models.sequelize.sync().then(() => {
             outputArray.push(msgObj);
           });
 
-          console.log('MESSGAGE OBJ IN SOCKET:', outputArray)
-
-        io.sockets.in(socket.room).emit('chat', outputArray);
-
+          io.sockets.in(socket.room).emit('chat', outputArray);
         }
       });
 
 
-      connections.splice(connections.indexOf(socket), 1)
-
-    })
+      connections.splice(connections.indexOf(socket), 1);
+    });
 
 
     socket.on('vote', (data) => {
@@ -592,29 +519,27 @@ db.models.sequelize.sync().then(() => {
               console.log('user in db', user);
               const oldScore = instance.get('lifetime_score');
               // console.log('OLD LIFETIME SCORE:', oldScore);
-              console.log()
-                instance.updateAttributes({
-                  lifetime_score: oldScore + scores[user],
-                });                
-              })
-            };
-        }
-      
-
-        db.models.Room.findOne({ where: { uniqueid: socket.room } })
-          .then((room) => {
-            // Check if record exists in db
-            console.log('AND THE scores before they go IN DB:', scores);
-            if (room) {
-              room.updateAttributes({
-                scores: JSON.stringify(scores),
+              console.log();
+              instance.updateAttributes({
+                lifetime_score: oldScore + scores[user],
               });
-            }
-          });
-        io.sockets.in(socket.room).emit('scores', scores);
-
+            });
+        }
       }
-      })
+
+
+      db.models.Room.findOne({ where: { uniqueid: socket.room } })
+        .then((room) => {
+          // Check if record exists in db
+          console.log('AND THE scores before they go IN DB:', scores);
+          if (room) {
+            room.updateAttributes({
+              scores: JSON.stringify(scores),
+            });
+          }
+        });
+      io.sockets.in(socket.room).emit('scores', scores);
+    });
   });
 });
 

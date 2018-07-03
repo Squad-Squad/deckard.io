@@ -1,17 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import $ from 'jquery';
 import { BrowserRouter, Route } from 'react-router-dom';
 import axios from 'axios';
+import { composeWithDevTools } from 'redux-devtools-extension';
+import io from 'socket.io-client';
+import { withRouter } from 'react-router-dom';
+
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Particles from 'react-particles-js';
-
 import Navbar from './components/Navbar.jsx';
-import MainView from './components/MainView.jsx'
+import MainView from './components/MainView.jsx';
 import SignupPage from './components/AuthUserMenu/SignupPage.jsx';
-import io from 'socket.io-client';
-import { withRouter } from 'react-router-dom';
 
 import 'animate.css/animate.css';
 import './styles/main.scss';
@@ -24,7 +24,7 @@ import { login, logout, searchUsers, removeAllUsersFromNewRoom } from '../../red
 import reducer from '../../redux/reducer';
 
 // redux devtools
-const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+const composeEnhancers = composeWithDevTools({});
 const store = createStore(reducer, composeEnhancers());
 
 const mapStateToProps = state => {
@@ -189,7 +189,7 @@ class ConnectedApp extends React.Component {
   }
 
   logout() {
-    
+
     axios.get('/logout')
       .then(res => {
         console.log('Logging out');
