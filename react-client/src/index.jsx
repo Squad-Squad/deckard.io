@@ -20,11 +20,12 @@ import './styles/main.scss';
 // ─── REDUX STUFF ────────────────────────────────────────────────────────────────
 import { createStore, combineReducers, applyMiddleware } from 'redux';
 import { Provider, connect } from 'react-redux';
-import logger from 'redux-logger';
 import { login, logout, searchUsers, removeAllUsersFromNewRoom } from '../../redux/actions';
 import reducer from '../../redux/reducer';
 
-const store = createStore(reducer, applyMiddleware(logger));
+// redux devtools
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+const store = createStore(reducer, composeEnhancers());
 
 const mapStateToProps = state => {
   return {

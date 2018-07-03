@@ -127,8 +127,8 @@ app.post('/api/signupEmail', (req, res) => {
   const emailData = {
     FromEmail: 'd3ck4rd.io@gmail.com',
     FromName: 'deckard.io',
-    Subject: 'You\'ve been invited to Food Fight!',
-    'Text-part': `You've been invited to a Food Fight. Visit ${process.env.DOMAIN || 'http://localhost:3000/'}signup to signup.`,
+    Subject: 'You\'ve been invited to deckard.io!',
+    'Text-part': `You've been invited to play deckard.io -- visit ${process.env.DOMAIN || 'http://localhost:3000/'}signup to signup.`,
     Recipients: [{ Email: email }],
   };
   Mailjet.post('send')
@@ -186,10 +186,9 @@ app.post('/api/save', (req, res) => {
     client.hmset(`${roomUnique}:members`, results);
   });
 
-  // console.log("ROOMUNIQUE TO TEST:", roomUnique)
 
   // CHANGE THE ROOM TIMER LENGTH HERE
-  timerObj[roomUnique].start(240000);
+  timerObj[roomUnique].start(20000);
 
   dbHelpers.saveRoomAndMembers(roomName, members, roomUnique, (err, room, users) => {
     if (err) {
@@ -432,7 +431,7 @@ db.models.sequelize.sync().then(() => {
         const scores = gameLogic.calcScores(rooms[socket.room]);
 
         for (var user in scores) {
-          db.models.User.findOne({ where: { email: user } })
+          db.models.User.findOne({ where: { username: user } })
             .then((instance) => {
               console.log('user in db', user);
               const oldScore = instance.get('lifetime_score');
