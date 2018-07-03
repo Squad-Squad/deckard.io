@@ -46,7 +46,12 @@ class CreateRoomContainer extends React.Component {
         <div className="columns">
           <div className="column is-2 hide-if-small"></div>
           <div className="column is-8">
-            <CreateRoom io={this.props.io}></CreateRoom>
+            <CreateRoom 
+            io={this.props.io}
+            freeRoomMode={this.props.freeRoomMode}
+            roundRoomMode={this.props.roundRoomMode}
+            >
+            </CreateRoom>
           </div>
         </div>
       </div>

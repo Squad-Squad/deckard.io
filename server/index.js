@@ -301,15 +301,6 @@ db.models.sequelize.sync().then(() => {
       socket.join(socket.room);
 
 
-      io.sockets.in(socket.room).emit('chat', {
-        message: {
-          user_id: socket.username,
-          name: socket.username,
-          message: `${data.user} has joined the room!`,
-        },
-        roomId: socket.room,
-      });
-
       const user_id = socket.username;
       const name = socket.username;
       const message = `${data.user} has joined the room!`;
@@ -567,6 +558,8 @@ db.models.sequelize.sync().then(() => {
 
       if (rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length) {
         const scores = gameLogic.calcScores(rooms[socket.room]);
+
+        console.log("WHY AREN't there scores:", scores)
 
         for (var user in scores) {
           db.models.User.findOne({ where: { username: user } })

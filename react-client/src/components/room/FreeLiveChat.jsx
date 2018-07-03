@@ -32,7 +32,7 @@ const styles = {
   },
 };
 
-class ConnectedLiveChat extends React.Component {
+class ConnectedFreeLiveChat extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -140,6 +140,6 @@ class ConnectedLiveChat extends React.Component {
   }
 }
 
-const LiveChat = connect(mapStateToProps)(ConnectedLiveChat);
+const FreeLiveChat = connect(mapStateToProps)(ConnectedFreeLiveChat);
 
-export default withStyles(styles)(LiveChat);
+export default withStyles(styles)(FreeLiveChat);

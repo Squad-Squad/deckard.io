@@ -4,7 +4,8 @@ import $ from 'jquery';
 import Tock from 'tocktimer';
 import sizeMe from 'react-sizeme';
 import Confetti from 'react-confetti';
-import LiveChat from './LiveChat.jsx';
+import FreeLiveChat from './FreeLiveChat.jsx';
+import RoundLiveChat from './RoundLiveChat.jsx';
 import VotePanel from './VotePanel.jsx';
 import Scores from './Scores.jsx';
 import { addCurrUsersFromDB } from '../../../../redux/actions';
@@ -34,6 +35,7 @@ class ConnectedRoom extends React.Component {
       roomName: '',
       timer: '',
       scores: null,
+      roomMode: this.props.roomMode
     };
     this.roomID = this.props.match.params.roomID;
 
@@ -66,20 +68,10 @@ class ConnectedRoom extends React.Component {
 
   /// Send post request to server to fetch room info when user visits link
   componentDidMount() {
-    // this.getMessages();
     this.getRoomInfo();
     this.getTimer();
-    // this.props.io.emit('join', { room: this.roomID, user: this.state.memberMap[this.props.loggedInUsername]});
   }
 
-  // getMessages() {
-  //   // $.get(`/api/messages/${this.roomID}`).then(messages => {
-  //   //   this.setState({
-  //   //     messages: messages,
-  //   //   }, () => console.log('message format state received:', messages));
-  //   // });
-  //   this.props.io.emit('roomStart')
-  // }
 
   getRoomInfo() {
     $.get(`/api/rooms/${this.roomID}`).then(roomMembers => {
@@ -106,7 +98,7 @@ class ConnectedRoom extends React.Component {
       );
     })
       .then(() => {
-        this.props.io.emit('join', { room: this.roomID, user: this.state.memberMap[this.props.loggedInUsername], mitsuku:this.state.memberMap['mitsuku@mitsuku.com'] });
+        this.props.io.emit('join', { room: this.roomID, user: this.state.memberMap[this.props.loggedInUsername], mitsuku:this.state.memberMap['mitsuku@mitsuku.com']});
       });
 
 
@@ -144,40 +136,22 @@ class ConnectedRoom extends React.Component {
       },
       roomID: this.roomID,
     };
-    // $.post('/api/messages', messageObj).then(() => {
       this.props.io.emit('chat', messageObj);
-    // });
   }
 
   // Update from text boxes in the live chat
 
-  // voteApprove(name, id, uname) {
-  //   let resName = name || this.state.currentSelection.name;
-  //   let resId = id || this.state.currentSelection.id;
-  //   let voteObj = {
-  //     voter: this.props.username,
-  //     // restaurant_id: resId,
-  //     name: resName,
-  //     roomID: this.roomID,
-  //     nominator: uname
-  //   };
-  //   $.post('/api/votes', voteObj).then(() => {
-  //     this.props.io.emit('vote', voteObj);
-  //   });
-  //   this.setState({
-  //     hasVoted: true,
-  //   });
-  // }
 
   render() {
     const { width, height } = this.props.size;
 
-    const chatOrVote = () => {
+    const freechatOrVote = () => {
       if (this.state.timer === "00:00" && !this.state.scores) {
         return (<VotePanel members={this.state.members}
           memberMap={this.state.memberMap} io={this.props.io} />);
       } else if (!this.state.scores) {
-        return (<LiveChat
+      console.log("HANGING OUT")
+        return (<FreeLiveChat
           roomName={this.state.roomName}
           messages={this.state.messages}
           message={this.state.message}
@@ -192,12 +166,55 @@ class ConnectedRoom extends React.Component {
       }
     }
 
+   const roundchatOrVote = () => {
+    // console.log("AM I EVEN HAPPENING ROUND CHAT")
+     if (this.state.timer === "00:00" && !this.state.scores) {
+       return (<VotePanel members={this.state.members}
+         memberMap={this.state.memberMap} io={this.props.io} />);
+     } else if (!this.state.scores) {
+      console.log("HANGING OUT")
+       return (<RoundLiveChat
+         roomName={this.state.roomName}
+         messages={this.state.messages}
+         message={this.state.message}
+         sendMessage={this.sendMessage}
+         timer={this.state.timer}
+         memberMap={this.state.memberMap} />);
+     } else {
+       return (
+         <Scores
+           scores={this.state.scores} memberMap={this.state.memberMap} />
+       )
+     }
+   } 
+
+       // {(() => {
+       //          switch(this.state.roomMode) {
+       //            case "round": roundchatOrVote()
+
+       //            break;
+       //            case "free": freechatOrVote()
+
+       //            break;
+       //          }
+       //      })()}  
+
+
     return (
       <div>
         <div className="columns">
           <div className="column is-2 hide-if-small"></div>
-          <div className="column is-8">
-            {chatOrVote()}
+          <div className="column is-8"> 
+            {(() => {
+                switch(this.state.roomMode) {
+                  case "round": 
+                  return roundchatOrVote()
+                  break;
+                  case "free": 
+                  return freechatOrVote()
+                  break;
+                }
+            })()}  
           </div>
         </div>
       </div>
