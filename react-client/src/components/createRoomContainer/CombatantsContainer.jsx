@@ -9,7 +9,10 @@ import { connect } from 'react-redux';
 import { removeUserFromNewRoom } from '../../../../redux/actions.js';
 
 const mapStateToProps = state => {
-  return { usersForNewRoom: state.usersForNewRoom };
+  return {
+    loggedInUser: state.username,
+    usersForNewRoom: state.usersForNewRoom
+  };
 };
 
 const mapDispatchToProps = dispatch => {
@@ -36,24 +39,35 @@ function ConnectedCombatantsContainer(props) {
       <Typography id="users-for-new-room-header">
         Users &ensp;<span style={{ flex: "right" }}>{props.usersForNewRoom.length}/7</span>
       </Typography>
+
+      {/* logged in user's chip */}
+      <Chip
+        style={{ zIndex: '0' }}
+        // avatar={
+        //   <Avatar>
+        //     <FaceIcon />
+        //   </Avatar>
+        // }
+        label={props.loggedInUser}
+        className={classes.chip}
+      />
+
+      {/* invited users' chips */}
       {
-        props.usersForNewRoom.map((user, i) => {
+        props.usersForNewRoom.slice(1).map((user, i) => {
           return (
-            <div
-              className={classes.root}
-              key={i}>
-              <Chip
-                style={{ zIndex: '0' }}
-                avatar={
-                  <Avatar>
-                    <FaceIcon />
-                  </Avatar>
-                }
-                label={user}
-                onDelete={props.removeUserFromNewRoom.bind(this, user)}
-                className={classes.chip}
-              />
-            </div>
+            <Chip
+              style={{ zIndex: '0' }}
+              // avatar={
+              //   <Avatar>
+              //     <FaceIcon />
+              //   </Avatar>
+              // }
+              key={i}
+              label={user}
+              onDelete={props.removeUserFromNewRoom.bind(this, user)}
+              className={classes.chip}
+            />
           )
         })
       }

@@ -8,13 +8,14 @@ const bcrypt = require('bcrypt');
 //
 // ─── USER TABLE HELPERS ─────────────────────────────────────────────────────────
 //
-const saveMember = (email, password, callback) => {
+const saveMember = (username, email, password, callback) => {
   let hashedPW;
   if (password) {
     const salt = bcrypt.genSaltSync(3);
     hashedPW = bcrypt.hashSync(password, salt);
   }
   db.models.User.create({
+    username,
     email,
     password: hashedPW,
   })
@@ -114,17 +115,17 @@ const aliasMembers = (roomName, members, callback) => {
     'SHODAN',
     'Dolores'];
 
-   // const randomAlias = Math.floor(Math.random() * aliases.length);
-  const randomForAI = Math.floor(Math.random() * aliases.length)
-  let membersObj = {'room': roomName, 'mitsuku@mitsuku.com': aliases[randomForAI]}
-  aliases.splice(randomForAI, 1)
-   members.forEach((member)=>{
+  // const randomAlias = Math.floor(Math.random() * aliases.length);
+  const randomForAI = Math.floor(Math.random() * aliases.length);
+  const membersObj = { room: roomName, 'mitsuku@mitsuku.com': aliases[randomForAI] };
+  aliases.splice(randomForAI, 1);
+  members.forEach((member) => {
     const randomAlias = Math.floor(Math.random() * aliases.length);
-    membersObj[member] = aliases[randomAlias]
-    aliases.splice(randomAlias, 1)
-   })
-    callback(membersObj)
-}
+    membersObj[member] = aliases[randomAlias];
+    aliases.splice(randomAlias, 1);
+  });
+  callback(membersObj);
+};
 
 
 // Add Mitsuku user to table if she doesn't already exist
@@ -132,7 +133,7 @@ const addMitsuku = () => {
   db.models.User.findAll({ where: { email: 'mitsuku@mitsuku.com' } })
     .then((res) => {
       if (!res.length) {
-        db.models.User.create({ email: 'mitsuku@mitsuku.com' });
+        db.models.User.create({ username: 'Mitsuku', email: 'mitsuku@mitsuku.com' });
       }
     });
 };
@@ -141,7 +142,6 @@ const addMitsuku = () => {
 // ─── MESSAGE TABLE HELPERS ─────────────────────────────────────────────────────────
 //
 const saveMessage = (user_id, name, message, roomID, callback) => {
-  console.log('Saving message', user_id, name, message, roomID);
   db.models.Room.findOne({
     where: {
       uniqueid: roomID,

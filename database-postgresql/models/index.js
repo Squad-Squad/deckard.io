@@ -12,12 +12,18 @@ if (process.env.DATABASE_URL) {
     logging: false,
   });
 } else {
-  sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, null, {
-    host: 'localhost',
-    dialect: 'postgres',
-    operatorsAliases: false,
-    logging: false,
-  });
+
+  sequelize = new Sequelize(
+    process.env.DB_NAME,
+    process.env.DB_USER,
+    process.env.DB_PASSWORD,
+    {
+      host: 'localhost',
+      dialect: 'postgres',
+      operatorsAliases: false,
+      logging: false,
+    },
+  );
 }
 
 // DEPLOYMENT
@@ -41,6 +47,10 @@ sequelize.authenticate()
 // ─── THESE CANT BE IN SEPARATE FILES ────────────────────────────────────────────
 //
 const User = sequelize.define('user', {
+  username: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
   email: {
     type: Sequelize.STRING,
     allowNull: false,
