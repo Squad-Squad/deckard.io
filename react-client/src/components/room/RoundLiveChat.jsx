@@ -37,7 +37,14 @@ class ConnectedRoundLiveChat extends React.Component {
     super(props);
     this.state = {
       msg: '',
+      yourTurn: null
     };
+
+    this.props.io.on('yourTurn', (data)=>{
+      this.setState({
+          yourTurn:data        
+      }) 
+    })
   }
 
   componentDidMount() {
@@ -93,9 +100,7 @@ class ConnectedRoundLiveChat extends React.Component {
               <Typography variant="title" color="inherit" className={classes.flex}>
                 {this.props.roomName}
               </Typography>
-               <Typography variant="title" color="inherit" className={classes.flex}>
-                YOU ARE: {this.props.alias}
-              </Typography>
+                {this.state.yourTurn ?  <Typography variant="title" color="inherit" className={classes.flex}>YOUR TURN</Typography> : null}
               <Typography variant="title" color="inherit">
                 {this.props.timer}
               </Typography>

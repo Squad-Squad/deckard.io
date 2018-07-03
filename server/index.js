@@ -183,7 +183,7 @@ app.post('/api/save', (req, res) => {
 
 
   // CHANGE THE ROOM TIMER LENGTH HERE
-  timerObj[roomUnique].start(20000);
+  timerObj[roomUnique].start(100000);
 
   dbHelpers.saveRoomAndMembers(roomName, members, roomUnique, (err, room, users) => {
     if (err) {
@@ -290,7 +290,7 @@ db.models.sequelize.sync().then(() => {
       socket.room = data.room;
       socket.alias = data.user
       socket.roomMode = data.roomMode
-      console.log("JOIN ROOM IN SOCKETRS:", socket.room, socket.alias, "AND ROOM MODE:", socket.roomMode)
+      console.log("JOIN ROOM IN SOCKETRS:", socket.room, socket.alias, socket.id, "AND ROOM MODE:", socket.roomMode)
     
       if (!rooms[socket.room]) {
         rooms[socket.room] = [{}, socket.username];
@@ -302,7 +302,9 @@ db.models.sequelize.sync().then(() => {
       //actually join the socket namespace
       socket.join(socket.room);
 
-      client.rpush(`${socket.room}:membersList`, socket.username, (err, replies)=>{
+      let user = socket.username
+
+      client.rpush(`${socket.room}:membersList`, JSON.stringify({[user]: socket.id}), (err, replies)=>{
         if(err){
           console.log(err)
         }else{
@@ -349,20 +351,20 @@ db.models.sequelize.sync().then(() => {
         }else{
           console.log("ALL ROOM MEMBERS FROM REDIS", replies)
           currentMembers = replies       
-            if(currentMembers.length === 2 && data.roomMode === "round"){
-          // io.sockets.in(socket.room).emit('turn', socket.username)
-            let firstTurnMessage = `${socket.alias}, you go first!`
-            client.rpush(`${socket.room}:messages`, JSON.stringify({ 'matrixOverLords': firstTurnMessage }), (err, reply)=>{
-              console.log("firstTurnMessage pushed to redis:", reply)
-            });  
+
+            //need to figure out how to make it so its not the first person in the room to go first always
+            //but to avoid it fall on the bot
+            if(currentMembers.length === 1 && data.roomMode === "round"){
+         
+            console.log("CURRENTMEMBERS:", JSON.parse(currentMembers))
+            io.sockets.sockets[socket.id].emit('yourTurn', true)
+            };  
           }
-        }
       })
 
 
     //fetch all the messages from redis
      dbHelpers.fetchRedisMessages(client, socket, (result)=>{
-          console.log("RESULTS FROM HELPER FUNCTION", result)
           io.sockets.in(socket.room).emit('chat', result)          
       })
 
