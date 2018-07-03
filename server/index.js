@@ -331,11 +331,14 @@ db.models.sequelize.sync().then(() => {
       })
 
       client.rpush('onlineUsers', socket.username, (err, reply)=>{
-        console.log("ONLINE USERS ADD:", reply)
+        // console.log("ONLINE USERS ADD:", reply)
       })
       userSockets[socket.username] = socket;
       users.push(socket.username);
-      console.log("USERS IN SERVER:", users)
+      // console.log("USERS IN SERVER:", users)
+      client.lrange('onlineUsers', 0, -1, (err, reply)=>{
+        console.log('ONLINE USERS:', reply)
+      })
     });
 
     socket.on('join', (data) => {
@@ -351,7 +354,7 @@ db.models.sequelize.sync().then(() => {
       }
 
       socket.join(socket.room);
-      console.log("ROOMS AT JOIN:", rooms, "and SPECIFICALLYthis  room:", rooms[socket.room])
+      // console.log("ROOMS AT JOIN:", rooms, "and SPECIFICALLYthis  room:", rooms[socket.room])
 
 
       const user_id = socket.username;
@@ -359,6 +362,41 @@ db.models.sequelize.sync().then(() => {
       const message = `${data.user} has joined the room!`;
 
       client.rpush(`${socket.room}:messages`, JSON.stringify({ 'matrixOverLords': message }));
+
+      const mitMessage = `${data.mitsuku} has joined the room`
+
+      setTimeout(function(){
+        // Save her message to redis
+        client.rpush(`${socket.room}:messages`, JSON.stringify({ 'matrixOverLords': mitMessage }), (err, reply)=>{
+          console.log("I've pushed to redis:", reply)
+        });
+        
+        client.lrange(`${socket.room}:messages`, 0, -1, (err, replies) => {
+          if (err) {
+            console.log(err);
+          } else {
+            const outputArray = [];
+
+            replies.forEach((reply) => {
+              const msgObj = {};
+              const incoming = JSON.parse(reply);
+              for (const key in incoming) {
+                msgObj.message = incoming[key];
+                msgObj.name = key;
+                msgObj.user_id = null;
+              }
+              outputArray.push(msgObj);
+            });
+
+          io.sockets.in(socket.room).emit('chat', outputArray);
+
+          }
+        });
+        console.log("I'm the end of the setTimeout")
+      }, Math.random() * 5000);
+
+
+
 
       client.lrange(`${socket.room}:messages`, 0, -1, (err, replies) => {
         if (err) {
@@ -442,7 +480,6 @@ db.models.sequelize.sync().then(() => {
                     outputArray.push(msgObj);
                   });
 
-                  console.log('MESSGAGE OBJ IN SOCKET:', outputArray)
 
                 io.sockets.in(socket.room).emit('chat', outputArray);
 
@@ -471,7 +508,6 @@ db.models.sequelize.sync().then(() => {
             outputArray.push(msgObj);
           });
 
-          console.log('MESSGAGE OBJ IN SOCKET:', outputArray)
 
         io.sockets.in(socket.room).emit('chat', outputArray);
 
@@ -519,15 +555,14 @@ db.models.sequelize.sync().then(() => {
 
     socket.on('disconnect', (data) =>{
       let thisRoom = rooms[socket.room]
-      console.log('this users has disconnected:', socket.username, "AND ROOMS[SOCKET.ROOM]:", rooms[socket.room])
 
       if(rooms[socket.room]){
         users.splice(users.indexOf(socket.username), 1)
         rooms[socket.room].splice(thisRoom.indexOf(socket.username), 1) 
         console.log('this users has disconnected:', socket.username, "AND ROOMS[SOCKET.ROOM] AFTER DISCONNECT:", rooms[socket.room])
+        client.rpush(`${socket.room}:messages`, JSON.stringify({ 'matrixOverLords': `${socket.alias} left the room` }));
       }
       
-      client.rpush(`${socket.room}:messages`, JSON.stringify({ 'matrixOverLords': `${socket.alias} left the room` }));
 
 
 
@@ -561,7 +596,6 @@ db.models.sequelize.sync().then(() => {
             outputArray.push(msgObj);
           });
 
-          console.log('MESSGAGE OBJ IN SOCKET:', outputArray)
 
         io.sockets.in(socket.room).emit('chat', outputArray);
 

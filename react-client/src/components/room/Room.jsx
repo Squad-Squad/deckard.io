@@ -106,7 +106,7 @@ class ConnectedRoom extends React.Component {
       );
     })
       .then(() => {
-        this.props.io.emit('join', { room: this.roomID, user: this.state.memberMap[this.props.loggedInUsername] });
+        this.props.io.emit('join', { room: this.roomID, user: this.state.memberMap[this.props.loggedInUsername], mitsuku:this.state.memberMap['mitsuku@mitsuku.com'] });
       });
 
 
