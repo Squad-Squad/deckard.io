@@ -315,23 +315,15 @@ db.models.sequelize.sync().then(() => {
       console.log('USERNAME CONNECT:', data);
 
       client.lrem('onlineUsers', 0, socket.username, (err, reply) => {
-        console.log('removed before adding');
+        console.log(socket.username, 'removed before adding');
       });
 
       client.rpush('onlineUsers', socket.username, (err, reply) => {
         console.log('ONLINE USERS ADD:', reply);
       });
 
-
-      client.rpush('onlineUsers', socket.username, (err, reply)=>{
-        // console.log("ONLINE USERS ADD:", reply)
-      })
       userSockets[socket.username] = socket;
-      users.push(socket.username);
-      // console.log("USERS IN SERVER:", users)
-      client.lrange('onlineUsers', 0, -1, (err, reply)=>{
-        console.log('ONLINE USERS:', reply)
-      })
+      
 
     });
 
@@ -428,10 +420,16 @@ db.models.sequelize.sync().then(() => {
     socket.on('invite', (data) => {
 
     data.users.forEach(user=>{
-      console.log('userINvites in socket', user)
+
+      console.log('userINvites in socket', user, "and dataHash", data.roomHash)
      client.rpush(`${data.roomHash}:membersInvited`, user, (err, reply)=>{
       console.log("replies from membersInvited", reply)
-     }) 
+     })
+     client.lrange(`${data.roomHash}:membersInvited`, 0, -1, (err, reply)=>{
+      console.log("updated members in membersInvited", reply)
+
+     })
+
     })
 
      //send invitation to all online users (whether they are invited or not is sorted on front end), except inviter
@@ -489,8 +487,12 @@ db.models.sequelize.sync().then(() => {
 
 
     socket.on('decline', user=>{
-      client.lrem(`${socket.room}:membersInvited`, user, (err, reply)=>{
-        console.log('repliesss', reply)
+      console.log("SOCKET.ROOM in decline socket", socket.room)
+      client.lrem(`${socket.room}:membersInvited`, 0, user, (err, reply)=>{
+        console.log('decline REPLIES', reply)
+      })
+      client.lrange(`${socket.room}:membersInvited`, 0, -1, (err, reply)=>{
+        console.log("updatedMembersInvitedList after decline:", reply)
       })
     })
 
