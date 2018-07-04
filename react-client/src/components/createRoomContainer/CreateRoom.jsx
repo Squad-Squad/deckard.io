@@ -94,11 +94,10 @@ class ConnectedCreateRoom extends React.Component {
   componentDidMount() {
     axios.post('/searchUsers')
       .then(res => {
+        console.log('USERS', res.data);
         this.setState({
           suggestions: res.data
-            .map(user => user.email)
-            .filter(email => (email !== this.props.loggedInUsername &&
-              email !== 'mitsuku@mitsuku.com')),
+            .filter(user => (user !== this.props.loggedInUsername)),
         });
       });
   }
