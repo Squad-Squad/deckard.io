@@ -127,6 +127,19 @@ const aliasMembers = (roomName, members, callback) => {
   callback(membersObj);
 };
 
+const updateUser = (updateData) => {
+  db.models.User.findOne({ username: updateData.username })
+    .then((user) => {
+      if (user) {
+        if (updateData.username) user.updateAttributes({ username: updateData.username });
+        if (updateData.email) user.updateAttributes({ email: updateData.email });
+        if (updateData.imageURL) user.updateAttributes({ imageURL: updateData.imageURL });
+      } else {
+        console.log('ERROR UPDATING THE USER');
+      }
+    });
+};
+
 
 // Add Mitsuku user to table if she doesn't already exist
 const addMitsuku = () => {

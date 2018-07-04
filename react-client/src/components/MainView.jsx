@@ -3,8 +3,8 @@ import CreateRoomContainer from './createRoomContainer/CreateRoomContainer.jsx';
 import Room from './room/Room.jsx';
 import InviteDialogueModal from './inviteDialogueModal/InviteDialogueModal.jsx'
 import { Route } from 'react-router-dom';
-import UserProfile from './UserProfile.jsx'
-import { connect } from 'react-redux'
+import UserProfileContainer from './profileAndStats/UserProfileContainer.jsx';
+import { connect } from 'react-redux';
 
 
 const mapStateToProps = state => {
@@ -102,7 +102,7 @@ class ConnectedMainView extends React.Component {
             ]
         } />
         <Route path="/userprofile/:username" render={
-          ()=>  <UserProfile /> } />
+          () => <UserProfileContainer />} />
 
         <Route path="/rooms/:roomID" render={
           (props) =>

@@ -13,28 +13,51 @@ const uniqueString = require('unique-string');
 const Tock = require('tocktimer');
 const mitsuku = require('../lib/mitsukuHelper')();
 const gameLogic = require('../lib/gameLogic');
-const redis = require('redis');
-
 const Mailjet = require('node-mailjet').connect(
   process.env.MAILJET_API_KEY,
   process.env.MAILJET_API_SECRET,
 );
-
 const db = require('../database-postgresql/models/index');
 const dbHelpers = require('../db-controllers');
 
 const { Op } = db;
 
-// USE ENV FOR REDIS IF PROVIDED (FOR DEPLOYMENT)
+//
+// ─── REDIS ──────────────────────────────────────────────────────────────────────
+//
+const redis = require('redis');
+
 let client;
 if (process.env.REDIS_URL) {
   client = redis.createClient(process.env.REDIS_URL);
 } else {
   client = redis.createClient(process.env.REDIS_URL);
 }
-
 const multi = client.multi();
 
+
+//
+// ─── AWS CONFIG ─────────────────────────────────────────────────────────────────
+//
+const AWS = require('aws-sdk');
+const multer = require('multer');
+
+AWS.config.update({
+  accessKeyId: 'AKIAILGRIDM2NALR2ELA',
+  secretAccessKey: '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',
+});
+
+const upload = multer({});
+const s3 = new AWS.S3();
+const s3Params = {
+  bucket: 'deckard-io',
+  key: `avatars/${Date.now()}`,
+};
+
+
+//
+// ─── EXPRESS MIDDLEWARE ─────────────────────────────────────────────────────────
+//
 const app = express();
 
 app.use(bodyParser.json());
@@ -103,8 +126,27 @@ app.post('/login', passport.authenticate('local-login', {
 }));
 
 app.get('/logout', (req, res) => {
+  client.lrem('onlineUsers', 0, req.user, (err, reply) => {
+    console.log('removed before adding');
+  });
   req.logout();
   res.redirect('/');
+});
+
+
+//
+// ─── USER PROFILE ENDPOINTS ─────────────────────────────────────────────────────
+//
+app.post('/api/userInfo', (req, res) => {
+  console.log('USERINFO in server', req.body);
+  db.models.User.findOne({ where: { username: req.body.user } })
+    .then((user) => {
+      res.send(JSON.parse(JSON.stringify(user)));
+    });
+});
+
+app.post('/profile/update-user', (req, res) => {
+  console.log('SOMETHINGS HAPPENING AT LEAST');
 });
 
 
@@ -112,9 +154,10 @@ app.get('/logout', (req, res) => {
 // ─── USER SEARCH AND INVITE ─────────────────────────────────────────────────────
 //
 app.post('/searchUsers', (req, res) => {
-  db.models.User.findAll()
-    .then(matches => res.status(200).send(matches))
-    .catch(err => res.status(200).send(err));
+  client.lrange('onlineUsers', 0, -1, (err, users) => {
+    console.log('DESE DA ONLINE USERS', users);
+    res.status(200).send(users);
+  });
 });
 
 
@@ -206,7 +249,6 @@ app.get('/api/rooms/:roomID', (req, res) => {
       res.send(replies);
     }
   });
-
 });
 
 app.get('/api/timer/:roomID', (req, res) => {
@@ -218,7 +260,6 @@ app.post('/room-redirect', (req, res) => {
   res.redirect(307, `/rooms/${req.body.id}`);
 });
 
-// Joseph
 app.post('/api/userrooms', (req, res) => {
   const { username } = req.body;
   dbHelpers.getRooms(username, (err, rooms) => {
@@ -232,6 +273,7 @@ app.post('/api/userrooms', (req, res) => {
 
 
 
+
 app.post('/api/userInfo', (req, res) => {
   console.log('USERINFO in server', req.body);
   db.models.User.findOne({ where: { email: req.body.user } })
@@ -241,6 +283,7 @@ app.post('/api/userInfo', (req, res) => {
       res.send(JSON.stringify(lifeTimeScore));
     });
 });
+
 
 
 // ────────────────────────────────────────────────────────────────────────────────
@@ -269,11 +312,16 @@ db.models.sequelize.sync().then(() => {
   io.on('connection', (socket) => {
     socket.on('username connect', (data) => {
       socket.username = data;
-      console.log("USERNAME CONNECT:", data)
+      console.log('USERNAME CONNECT:', data);
 
-      client.lrem('onlineUsers', 0, socket.username, (err, reply)=>{
-        console.log("removed before adding")
-      })
+      client.lrem('onlineUsers', 0, socket.username, (err, reply) => {
+        console.log('removed before adding');
+      });
+
+      client.rpush('onlineUsers', socket.username, (err, reply) => {
+        console.log('ONLINE USERS ADD:', reply);
+      });
+
 
       client.rpush('onlineUsers', socket.username, (err, reply)=>{
         // console.log("ONLINE USERS ADD:", reply)
@@ -284,6 +332,7 @@ db.models.sequelize.sync().then(() => {
       client.lrange('onlineUsers', 0, -1, (err, reply)=>{
         console.log('ONLINE USERS:', reply)
       })
+
     });
 
     socket.on('join', (data) => {
@@ -294,6 +343,7 @@ db.models.sequelize.sync().then(() => {
     
       if (!rooms[socket.room]) {
         rooms[socket.room] = [{}, socket.username];
+
       } else {
         rooms[socket.room].push(socket.username);
       }
@@ -316,7 +366,10 @@ db.models.sequelize.sync().then(() => {
       const user_id = socket.username;
       const name = socket.username;
       const message = `${data.user} has joined the room!`;
+
       client.rpush(`${socket.room}:messages`, JSON.stringify({ 'matrixOverLords': message }));
+
+
 
 
       //notify everyone when mitsuku's joined the room (but only with her alias)
@@ -368,17 +421,20 @@ db.models.sequelize.sync().then(() => {
           io.sockets.in(socket.room).emit('chat', result)          
       })
 
+
     });
 
 
-
     socket.on('invite', (data) => {
+
      
      //send invitation to all online users (whether they are invited or not is sorted on front end), except inviter
+
       socket.broadcast.emit('invitation', {
         users: data.users, roomHash: data.roomHash, roomName: data.roomName, host: socket.username,
       });
     });
+
 
 
     socket.on('chat', (data) => {
@@ -387,6 +443,7 @@ db.models.sequelize.sync().then(() => {
 
       //push all the messages sent from client to redis room key message list
       client.rpush(`${socket.room}:messages`, JSON.stringify({ [user]:message }));
+
 
 
       // Change Mitsuku's response frequency based on the number of room users
@@ -422,6 +479,7 @@ db.models.sequelize.sync().then(() => {
       io.sockets.in(socket.room).emit('chat', result)          
       })
 
+
     });
 
 
@@ -437,9 +495,9 @@ db.models.sequelize.sync().then(() => {
         dbHelpers.fetchRedisMessages(client, socket, (result)=>{
           io.sockets.in(socket.room).emit('chat', result)          
           })
-
       }
-    })
+    });
+
 
 
     socket.on('disconnect', (data) =>{
@@ -453,26 +511,25 @@ db.models.sequelize.sync().then(() => {
       }
       
 
-      client.lrem('onlineUsers', 1, socket.username, (err, replies)=>{
-        console.log("REMOVE REPLY", replies)
-      })
+      client.lrem('onlineUsers', 1, socket.username, (err, replies) => {
+        console.log('REMOVE REPLY', replies);
+      });
 
-      client.lrange('onlineUsers', 0, -1, (err, reply)=>{
-        console.log("ONLINE USERS CHECK:", reply)
-      })
+      client.lrange('onlineUsers', 0, -1, (err, reply) => {
+        console.log('ONLINE USERS CHECK:', reply);
+      });
 
 
-      socket.leave(socket.room)
-      console.log('SOCKET.ROOMS', rooms)
+      socket.leave(socket.room);
+      console.log('SOCKET.ROOMS', rooms);
 
 
       dbHelpers.fetchRedisMessages(client, socket, (result)=>{
         io.sockets.in(socket.room).emit('chat', result)          
         })
 
-      connections.splice(connections.indexOf(socket), 1)
-
-    })
+      connections.splice(connections.indexOf(socket), 1);
+    });
 
 
     socket.on('vote', (data) => {
@@ -511,6 +568,7 @@ db.models.sequelize.sync().then(() => {
       }
 
     })
+
   });
 
 

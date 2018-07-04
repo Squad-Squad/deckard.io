@@ -46,8 +46,8 @@ class ConnectedUserMenu extends React.Component {
           open={Boolean(anchorEl)}
           onClose={this.handleClose}
         >
+          <MenuItem onClick={this.props.profile}>Profile</MenuItem>
           <MenuItem onClick={this.props.logout}>Logout</MenuItem>
-          <MenuItem onClick={this.props.profile}>Your Profile</MenuItem> 
         </Menu>
       </div>
     );
