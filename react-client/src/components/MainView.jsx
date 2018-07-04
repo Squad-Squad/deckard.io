@@ -77,10 +77,10 @@ class ConnectedMainView extends React.Component {
     }, ()=>{console.log("NEW ROOM MODE:", this.state.roomMode)})
   }
 
-  decline(){
-    this.props.io.emit('decline', this.props.loggedInUsername)
+  decline(roomID){
+    this.props.io.emit('decline', {user:this.props.loggedInUsername, roomID:roomID})
     this.setState({invite: false})
-    
+
   }
 
 

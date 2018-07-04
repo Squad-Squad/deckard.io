@@ -486,12 +486,12 @@ db.models.sequelize.sync().then(() => {
     });
 
 
-    socket.on('decline', user=>{
+    socket.on('decline', data=>{
       console.log("SOCKET.ROOM in decline socket", socket.room)
-      client.lrem(`${socket.room}:membersInvited`, 0, user, (err, reply)=>{
+      client.lrem(`${data.roomID}:membersInvited`, 0, data.user, (err, reply)=>{
         console.log('decline REPLIES', reply)
       })
-      client.lrange(`${socket.room}:membersInvited`, 0, -1, (err, reply)=>{
+      client.lrange(`${data.roomID}:membersInvited`, 0, -1, (err, reply)=>{
         console.log("updatedMembersInvitedList after decline:", reply)
       })
     })
