@@ -15,6 +15,8 @@ const mapStateToProps = state => {
   return {
     username: state.username,
     loggedInUsername: state.username,
+    usersForNewRoom: state.usersForNewRoom,
+    
   };
 };
 

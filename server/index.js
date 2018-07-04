@@ -427,7 +427,13 @@ db.models.sequelize.sync().then(() => {
 
     socket.on('invite', (data) => {
 
-     
+    data.users.forEach(user=>{
+      console.log('userINvites in socket', user)
+     client.rpush(`${data.roomHash}:membersInvited`, user, (err, reply)=>{
+      console.log("replies from membersInvited", reply)
+     }) 
+    })
+
      //send invitation to all online users (whether they are invited or not is sorted on front end), except inviter
 
       socket.broadcast.emit('invitation', {
@@ -469,6 +475,7 @@ db.models.sequelize.sync().then(() => {
               dbHelpers.fetchRedisMessages(client, socket, (result)=>{
                 io.sockets.in(socket.room).emit('chat', result)          
                 })
+
     
             }, Math.random() * 5000 + 2000 + extraDelay);
           });
@@ -478,10 +485,14 @@ db.models.sequelize.sync().then(() => {
     dbHelpers.fetchRedisMessages(client, socket, (result)=>{
       io.sockets.in(socket.room).emit('chat', result)          
       })
-
-
     });
 
+
+    socket.on('decline', user=>{
+      client.lrem(`${socket.room}:membersInvited`, user, (err, reply)=>{
+        console.log('repliesss', reply)
+      })
+    })
 
 
     //handle cases in which player leaves the room without completely disconnecting from the site
@@ -553,16 +564,7 @@ db.models.sequelize.sync().then(() => {
               })
             };
       
-        // db.models.Room.findOne({ where: { uniqueid: socket.room } })
-        //   .then((room) => {
-        //     // Check if record exists in db
-        //     console.log('AND THE scores before they go IN DB:', scores);
-        //     if (room) {
-        //       room.updateAttributes({
-        //         scores: JSON.stringify(scores),
-        //       });
-        //     }
-        //   });
+
 
         io.sockets.in(socket.room).emit('scores', scores);
       }

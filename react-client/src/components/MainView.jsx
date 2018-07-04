@@ -41,6 +41,7 @@ class ConnectedMainView extends React.Component {
 
     this.freeRoomMode = this.freeRoomMode.bind(this, "free")
     this.roundRoomMode = this.roundRoomMode.bind(this, "round")
+    this.decline = this.decline.bind(this)
   }
 
   componentDidMount() {
@@ -76,6 +77,12 @@ class ConnectedMainView extends React.Component {
     }, ()=>{console.log("NEW ROOM MODE:", this.state.roomMode)})
   }
 
+  decline(){
+    console.log("decline hit")
+    this.props.io.emit('decline', this.props.loggedInUsername)
+    this.setState({open: false})
+  }
+
 
   render() {
     return (
@@ -88,6 +95,7 @@ class ConnectedMainView extends React.Component {
                 addOpen={this.state.invite}
                 host={this.state.inviteHost}
                 roomHash={this.state.roomHash}
+                decline={this.decline}
                 {...props} />,
               <CreateRoomContainer
                 searchUsers={this.props.searchUsers}
@@ -120,6 +128,7 @@ class ConnectedMainView extends React.Component {
                 handleClose={this.handleClose.bind(this)}
                 addOpen={this.state.invite}
                 host={this.state.inviteHost}
+                decline={this.decline}
                 {...props} />,
             ]
         } />
