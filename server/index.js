@@ -50,8 +50,8 @@ AWS.config.update({
 const upload = multer({});
 const s3 = new AWS.S3();
 const s3Params = {
-  bucket: 'deckard-io',
-  key: `avatars/${Date.now()}`,
+  Bucket: 'deckard-io',
+  Key: `avatars/${Date.now()}`,
 };
 
 
@@ -145,8 +145,17 @@ app.post('/api/userInfo', (req, res) => {
     });
 });
 
+app.post('/profile/save-image', upload.single('avatar'), (req, res) => {
+  s3Params.Body = req.file;
+  console.log('PARAMS', s3Params);
+  s3.upload(s3Params, (err, data) => {
+    if (err) console.log('Error uploading image to S3');
+    if (data) console.log('Successfully saved image to S3');
+  });
+});
+
 app.post('/profile/update-user', (req, res) => {
-  console.log('SOMETHINGS HAPPENING AT LEAST');
+  console.log(req.body);
 });
 
 

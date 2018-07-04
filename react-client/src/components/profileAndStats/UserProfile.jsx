@@ -70,7 +70,15 @@ class UserProfile extends Component {
   }
 
   updateProfile() {
-    axios.post('/profile/update-user');
+    const data = new FormData();
+    data.append('avatar', this.state.file);
+    console.log('DATA', data);
+    axios({
+      method: 'post',
+      url: '/profile/save-image',
+      data,
+      config: { headers: { 'Content-Type': 'multipart/form-data' } }
+    });
   }
 
   render() {
@@ -146,7 +154,8 @@ class UserProfile extends Component {
         <div className="profile-photo-upload-container">
           {currImage()}
           <div className="profile-photo-upload-middle">
-            <input id="photo-upload-input" type="file" accept="image/*"
+            <input id="photo-upload-input" type="file"
+              accept="image/*"
               onChange={this.handlePhotoChange.bind(this)}
               style={{ display: 'none' }} />
             <label id="photo-upload-input-proxy" for="photo-upload-input">Upload Photo</label>
@@ -165,7 +174,9 @@ class UserProfile extends Component {
             <textarea style={{ color: 'white', background: 'rgba(30, 30, 30, .7)' }}
               class="textarea" placeholder="Description" rows="3"></textarea>
           </div>
-          <Button variant="contained" color="secondary" aria-label="add" style={{ float: 'right' }}>
+          <Button variant="contained" color="secondary" aria-label="add"
+            style={{ float: 'right' }}
+            onClick={this.updateProfile.bind(this)}>
             Update Profile
           </Button>
         </div>

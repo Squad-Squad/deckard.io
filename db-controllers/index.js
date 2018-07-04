@@ -260,6 +260,7 @@ const getWins = (email, callback) => {
 module.exports = {
   saveMember,
   saveRoomAndMembers,
+  updateUser,
   getRoomMembers,
   addMitsuku,
   saveMessage,
