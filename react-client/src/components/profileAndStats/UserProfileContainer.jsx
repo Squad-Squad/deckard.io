@@ -63,6 +63,7 @@ class ConnectedUserProfileContainer extends React.Component {
   }
 
   handleChangeIndex(index) {
+    console.log('CHANGING');
     this.setState({ value: index });
   }
 
@@ -81,7 +82,7 @@ class ConnectedUserProfileContainer extends React.Component {
               <AppBar position="static" color="default">
                 <Tabs
                   value={this.state.value}
-                  onChange={this.handleChange}
+                  onChange={this.handleChange.bind(this)}
                   indicatorColor="primary"
                   textColor="white"
                   fullWidth
@@ -92,7 +93,7 @@ class ConnectedUserProfileContainer extends React.Component {
               </AppBar>
               <SwipeableViews
                 index={this.state.value}
-                onChangeIndex={this.handleChangeIndex}
+                onChangeIndex={this.handleChangeIndex.bind(this)}
               >
                 <UserProfile
                   username={this.state.username}

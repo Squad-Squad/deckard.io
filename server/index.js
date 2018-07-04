@@ -145,7 +145,7 @@ app.post('/api/userInfo', (req, res) => {
     });
 });
 
-app.post('/profile/update-photo', upload.single('avatar'), (req, res) => {
+app.post('/profile/update-user', (req, res) => {
   console.log('SOMETHINGS HAPPENING AT LEAST');
 });
 

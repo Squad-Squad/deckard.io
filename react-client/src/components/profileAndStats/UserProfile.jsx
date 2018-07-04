@@ -4,8 +4,10 @@ import AccountCircle from '@material-ui/icons/AccountCircle';
 import Email from '@material-ui/icons/Email';
 import Edit from '@material-ui/icons/Edit';
 import Button from '@material-ui/core/Button';
+import Divider from '@material-ui/core/Divider';
 import placeholder from './../../../dist/assets/profile-placeholder.jpg';
 import { connect } from 'react-redux';
+import axios from 'axios';
 
 function mapStateToProps(state) {
   return {
@@ -19,8 +21,11 @@ class UserProfile extends Component {
     this.state = {
       editUsername: false,
       newUsername: '',
+
       editEmail: false,
       newEmail: '',
+
+      file: null,
       imagePreviewUrl: null,
     };
   }
@@ -62,6 +67,10 @@ class UserProfile extends Component {
     this.setState({
       newEmail: e.target.value,
     });
+  }
+
+  updateProfile() {
+    axios.post('/profile/update-user');
   }
 
   render() {
@@ -151,12 +160,13 @@ class UserProfile extends Component {
           <div>
             {editEmail()}
           </div>
+          <Divider style={{ margin: '0px 0px 15px 0px' }} />
           <div>
             <textarea style={{ color: 'white', background: 'rgba(30, 30, 30, .7)' }}
               class="textarea" placeholder="Description" rows="3"></textarea>
           </div>
           <Button variant="contained" color="secondary" aria-label="add" style={{ float: 'right' }}>
-            Update
+            Update Profile
           </Button>
         </div>
       </div>
