@@ -59,7 +59,7 @@ class InviteDialogue extends React.Component {
               You've Been Invited to Play with {this.props.host}!
             </Typography>
             <Button><a href={`/rooms/${this.props.roomHash}`}>Join Room</a></Button>
-            <Button decline={()=>{this.props.decline()}}>Decline</Button>
+            <Button onClick={()=>{this.props.decline()}}>Decline</Button>
           </div>
         </Modal>
       </div>

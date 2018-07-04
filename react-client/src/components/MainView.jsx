@@ -80,7 +80,7 @@ class ConnectedMainView extends React.Component {
   decline(){
     console.log("decline hit")
     this.props.io.emit('decline', this.props.loggedInUsername)
-    this.setState({open: false})
+    this.setState({invite: false})
   }
 
 
