@@ -129,6 +129,9 @@ class ConnectedRoundLiveChat extends React.Component {
         </div>
 
         {/* BOTTOM BAR */}
+        {
+          this.props.yourTurn ?
+        
         <BottomNavigation
           onChange={this.handleChange}>
           <FormControl style={{ width: '70%' }}>
@@ -144,7 +147,13 @@ class ConnectedRoundLiveChat extends React.Component {
             onClick={this.handleClick.bind(this)}>
             <PublishIcon />
           </Button>
-        </BottomNavigation>
+        </BottomNavigation> 
+
+        : 
+
+        null
+
+      }
       </Paper>
     );
   }
