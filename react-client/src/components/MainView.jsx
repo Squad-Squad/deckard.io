@@ -33,7 +33,8 @@ class ConnectedMainView extends React.Component {
           this.setState({
             invite: true,
             inviteHost: data.host,
-            roomHash: data.roomHash
+            roomHash: data.roomHash,
+            roomMode: data.roomMode
           }, () => console.log("MAINVIEWINVITESTATE:", this.state.invite))
         }
       }
@@ -77,8 +78,8 @@ class ConnectedMainView extends React.Component {
     }, ()=>{console.log("NEW ROOM MODE:", this.state.roomMode)})
   }
 
-  decline(roomID){
-    this.props.io.emit('decline', {user:this.props.loggedInUsername, roomID:roomID})
+  decline(){
+    this.props.io.emit('decline', {user:this.props.loggedInUsername, roomID:this.state.roomHash, roomMode: this.state.roomMode})
     this.setState({invite: false})
 
   }

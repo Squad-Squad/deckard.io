@@ -463,7 +463,7 @@ db.models.sequelize.sync().then(() => {
      //send invitation to all online users (whether they are invited or not is sorted on front end), except inviter
 
       socket.broadcast.emit('invitation', {
-        users: data.users, roomHash: data.roomHash, roomName: data.roomName, host: socket.username,
+        users: data.users, roomHash: data.roomHash, roomName: data.roomName, host: socket.username, roomMode: data.roomMode
       });
     });
 
@@ -517,12 +517,47 @@ db.models.sequelize.sync().then(() => {
     //handle cases in which an invitation to a room is declined, remove from membersinvited so when compared with who has joined
     //we know when to start the room
     socket.on('decline', data=>{
+
+      console.log("SOCKET DECLINE DATA:", data)
+
+
       client.lrem(`${data.roomID}:membersInvited`, 0, data.user, (err, reply)=>{
         console.log('decline REPLIES', reply)
       })
       client.lrange(`${data.roomID}:membersInvited`, 0, -1, (err, reply)=>{
         console.log("updatedMembersInvitedList after decline:", reply)
       })
+
+      let membersInRoomDECLINE;
+      let membersInvitedtoRoomDECLINE
+      client.lrange(`${data.roomID}:membersList`, 0, -1, (err, replies)=>{
+        if(err){
+          console.log(err)
+        }else{
+          // console.log("ALL ROOM MEMBERS FROM REDIS", replies)
+        console.log("MEMBERSLIST DATA FROM REDIS:", replies)
+          membersInRoomDECLINE = replies       
+        }
+
+          client.lrange(`${data.roomID}:membersInvited`, 0, -1, (err, replies)=>{
+            if(err){
+              console.log(err)
+            }else{
+              membersInvitedtoRoomDECLINE = replies  
+              console.log("ASSIGNED IN DECLINE: MEMBERSLIST DATA FROM REDIS:", membersInRoomDECLINE)
+              console.log("ASSIGNED IN DECLINE: MEMBERSINVITED DATA FROM REDIS:", membersInvitedtoRoomDECLINE)
+                console.log("GAME MODE WORKING?", data.roomMode)
+                  if(data.roomMode === "round"){
+                    console.log("IS THIS CONDITIONAL HIT: ROUND")
+                    if(membersInRoomDECLINE.length >= membersInvitedtoRoomDECLINE.length){
+                      console.log("IS THIS CONDITIONAL HIT: EQUALITY")
+                      io.sockets.in(data.roomID).emit('roomReady', true)
+                  }
+              }
+            }
+          }) 
+      })   
+
     })
 
 

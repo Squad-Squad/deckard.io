@@ -242,7 +242,7 @@ class ConnectedCreateRoom extends React.Component {
             roomLink: roomInfo.uniqueid
           }, () => {
             this.props.history.push(`/rooms/${roomInfo.uniqueid}`)
-            this.props.io.emit('invite', { users: this.props.usersForNewRoom, roomHash: roomInfo.uniqueid, roomName: this.state.roomName })
+            this.props.io.emit('invite', { users: this.props.usersForNewRoom, roomHash: roomInfo.uniqueid, roomName: this.state.roomName, roomMode: this.props.roomModeSelection })
           });
         }
       )
