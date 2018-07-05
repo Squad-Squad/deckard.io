@@ -17,19 +17,19 @@ class UserStats extends Component {
         <div className="stats-tile">
           GAMES PLAYED
           <div className="stats-number">
-            0
+            {this.props.gamesPlayed}
           </div>
         </div>
         <div className="stats-tile">
           GAMES WON
           <div className="stats-number">
-            0
+            {this.props.gamesWon}
           </div>
         </div>
         <div className="stats-tile">
           LIFETIME SCORE
           <div className="stats-number">
-            0
+            {this.props.lifetimeScore}
           </div>
         </div>
       </div>

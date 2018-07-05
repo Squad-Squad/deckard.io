@@ -40,28 +40,24 @@ class ConnectedUserProfileContainer extends React.Component {
     this.state = {
       value: 0,
 
-      // username: '',
-      // email: '',
-      // avatarURL: '',
-      // description: '',
-      // lifetimeScore: null,
+      gamesPlayed: 0,
+      gamesWon: 0,
+      lifetimeScore: 0,
 
       profileImageURL: '',
     };
   }
 
   componentDidMount() {
-    // axios.post('/api/userInfo', { user: this.props.loggedInUser })
-    //   .then((response) => {
-    //     console.log("response on userProfile", response.data);
-    //     this.setState({
-    //       username: response.data.username,
-    //       email: response.data.email,
-    //       avatarURL: response.data.avatar,
-    //       description: response.data.description,
-    //       lifetimeScore: response.data.lifetime_score
-    //     }, () => (console.log('USER INFO', this.state)));
-    //   });
+    // Get user stats
+    axios.post('/api/userInfo', { user: this.props.loggedInUser })
+      .then((response) => {
+        this.setState({
+          gamesPlayed: response.data.games_played,
+          gamesWon: response.data.games_won,
+          lifetimeScore: response.data.lifetime_score,
+        }, () => (console.log('USER INFO', this.state)));
+      });
   }
 
   handleChange(event, value) {
@@ -100,7 +96,10 @@ class ConnectedUserProfileContainer extends React.Component {
                 index={this.state.value}
                 onChangeIndex={this.handleChangeIndex.bind(this)}>
                 <UserProfile />
-                <UserStats />
+                <UserStats
+                  gamesPlayed={this.state.gamesPlayed}
+                  gamesWon={this.state.gamesWon}
+                  lifetimeScore={this.state.lifetimeScore} />
               </SwipeableViews>
             </Paper>
           </div>
