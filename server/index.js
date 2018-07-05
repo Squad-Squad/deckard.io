@@ -453,6 +453,7 @@ db.models.sequelize.sync().then(() => {
                         let fixKey = key[0]
                         let firstTurnSocketId = shuffledOrder[0][fixKey]
                         console.log("SOCKET ID FOR FIRST PLAYER", firstTurnSocketId)
+                        console.log("SOCKET ID FOR FIRST PLAYER FOR TESTTING", socket.id)
                         io.sockets.sockets[firstTurnSocketId].emit('yourTurn', key[0]) 
                       }
 

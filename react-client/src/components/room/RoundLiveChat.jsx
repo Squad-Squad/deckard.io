@@ -37,15 +37,15 @@ class ConnectedRoundLiveChat extends React.Component {
     super(props);
     this.state = {
       msg: '',
-      yourTurn: false
+      yourTurn: this.props.yourTurn
     };
 
-    this.props.io.on('yourTurn', (data)=>{
-      console.log('YOUR TURN', data, "!!!!")
-      this.setState({
-          yourTurn: true       
-      }) 
-    })
+    // this.props.io.on('yourTurn', (data)=>{
+    //   console.log('YOUR TURN', data, "!!!!")
+    //   this.setState({
+    //       yourTurn: true       
+    //   }) 
+    // })
   }
 
   componentDidMount() {

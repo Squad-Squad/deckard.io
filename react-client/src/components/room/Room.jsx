@@ -62,7 +62,7 @@ class ConnectedRoom extends React.Component {
       });
     });
 
-    this.props.io.on('your turn', player=>{
+    this.props.io.on('yourTurn', player=>{
       console.log("your turn", player, "!!!!")
       this.setState({
         yourTurn:true,
