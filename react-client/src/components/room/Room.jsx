@@ -81,6 +81,8 @@ class ConnectedRoom extends React.Component {
 
   /// Send post request to server to fetch room info when user visits link
   componentDidMount() {
+    console.log("CURRENT ROOM MODE:", this.state.roomMode)
+    console.log("current state of waitingForRoomMembers:", this.state.waitingForRoomMembers)
     this.getRoomInfo();
   }
 
@@ -94,13 +96,14 @@ class ConnectedRoom extends React.Component {
       let aliasedMembers = [];
       let memberMap = {};
       for (var key in roomMembers) {
-        if (key !== "room") {
+        if (key !== "room" && key !== "roomMode") {
           memberMap[key] = roomMembers[key]
           aliasedMembers.push(roomMembers[key])
         }
       };
 
       this.setState({
+        roomMode: roomMembers.roomMode,
         memberMap: memberMap,
         members: aliasedMembers,
         roomName: roomMembers.room,

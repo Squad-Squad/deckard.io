@@ -50,6 +50,7 @@ class CreateRoomContainer extends React.Component {
             io={this.props.io}
             freeRoomMode={this.props.freeRoomMode}
             roundRoomMode={this.props.roundRoomMode}
+            roomModeSelection={this.props.roomModeSelection}
             >
             </CreateRoom>
           </div>

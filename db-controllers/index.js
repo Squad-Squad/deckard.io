@@ -91,7 +91,7 @@ const saveRoomAndMembers = (roomName, members, id, callback) => {
     });
 };
 
-const aliasMembers = (roomName, members, callback) => {
+const aliasMembers = (roomName, roomMode, members, callback) => {
   const aliases = ['HAL 9000',
     'Android 18',
     'AM',
@@ -117,7 +117,7 @@ const aliasMembers = (roomName, members, callback) => {
 
   // const randomAlias = Math.floor(Math.random() * aliases.length);
   const randomForAI = Math.floor(Math.random() * aliases.length);
-  const membersObj = { room: roomName, 'mitsuku@mitsuku.com': aliases[randomForAI] };
+  const membersObj = { room: roomName, roomMode: roomMode, 'mitsuku@mitsuku.com': aliases[randomForAI] };
   aliases.splice(randomForAI, 1);
   members.forEach((member) => {
     const randomAlias = Math.floor(Math.random() * aliases.length);

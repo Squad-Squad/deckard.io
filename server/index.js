@@ -213,14 +213,14 @@ app.post('/api/roomEmail', (req, res) => {
 app.post('/api/save', (req, res) => {
   console.log('NEW ROOM DATA', req.body);
 
-  const { roomName, members } = req.body;
+  const { roomName, roomMode, members } = req.body;
   const roomUnique = uniqueString().slice(0, 6);
   timerObj[roomUnique] = new Tock({
     countdown: true,
   });
 
 
-  dbHelpers.aliasMembers(roomName, members, (results) => {
+  dbHelpers.aliasMembers(roomName, roomMode, members, (results) => {
     client.hmset(`${roomUnique}:members`, results);
   });
 
@@ -407,16 +407,17 @@ db.models.sequelize.sync().then(() => {
               // console.log("ALL ROOM MEMBERS FROM REDIS", replies)
             console.log("MEMBERSINVITED DATA FROM REDIS:", replies)
               membersInvitedtoRoom = replies  
+              console.log("ASSIGNED: MEMBERSLIST DATA FROM REDIS:", membersInRoom)
+              console.log("ASSIGNED: MEMBERSINVITED DATA FROM REDIS:", membersInvitedtoRoom)
+                  if(data.roomMode === "round"){
+                    if(membersInRoom.length === membersInvitedtoRoom.length + 1){
+                      io.sockets.in(socket.room).emit('roomReady', true)
+                  }
+              }
             }
-          
-
-
-          
           }) 
       })   
 
-      console.log("ASSIGNED: MEMBERSLIST DATA FROM REDIS:", membersInRoom)
-      console.log("ASSIGNED: MEMBERSINVITED DATA FROM REDIS:", membersInvitedtoRoom)
 
 
             //need to figure out how to make it so its not the first person in the room to go first always

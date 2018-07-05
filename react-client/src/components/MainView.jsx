@@ -106,6 +106,7 @@ class ConnectedMainView extends React.Component {
                 io={this.props.io}
                 roundRoomMode={this.roundRoomMode}
                 freeRoomMode={this.freeRoomMode}
+                roomModeSelection={this.state.roomMode}
                 {...props} />
             ]
         } />

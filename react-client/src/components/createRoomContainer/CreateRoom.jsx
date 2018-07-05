@@ -234,6 +234,7 @@ class ConnectedCreateRoom extends React.Component {
         {
           roomName: this.state.roomName,
           members: this.props.usersForNewRoom,
+          roomMode: this.props.roomModeSelection
         },
         (roomInfo, status) => {
           this.sendRoomEmail(roomInfo, this.props.usersForNewRoom);
