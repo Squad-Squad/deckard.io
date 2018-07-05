@@ -6,7 +6,7 @@ const initialState = {
   isGoogleAccount: false,
   avatarURL: '',
   description: '',
-
+  friends: [],
 
   searchedUsers: [],
   usersForNewRoom: [],

@@ -36,8 +36,8 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    login: (username, email, isGoogleAccount, avatarURL, description) => {
-      return dispatch(login(username, email, isGoogleAccount, avatarURL, description));
+    login: (username, email, isGoogleAccount, avatarURL, description, friends) => {
+      return dispatch(login(username, email, isGoogleAccount, avatarURL, description, friends));
     },
     logout: () => dispatch(logout()),
     searchUsers: (users) => dispatch(searchUsers(users)),
@@ -106,7 +106,8 @@ class ConnectedApp extends React.Component {
             res.data.user.email,
             res.data.user.is_google_account,
             res.data.user.avatar,
-            res.data.user.description);
+            res.data.user.description,
+            res.data.user.friends);
           this.setState({
             loginError: false,
           });

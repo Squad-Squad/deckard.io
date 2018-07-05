@@ -89,6 +89,9 @@ const User = sequelize.define('user', {
     defaultValue: 0,
     allowNull: true,
   },
+  friends: {
+    type: Sequelize.ARRAY(Sequelize.TEXT),
+  },
 });
 
 const Room = sequelize.define('room', {
