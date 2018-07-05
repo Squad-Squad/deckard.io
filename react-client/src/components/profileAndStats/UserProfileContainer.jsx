@@ -41,6 +41,7 @@ class ConnectedUserProfileContainer extends React.Component {
 
       username: '',
       email: '',
+      avatarURL: '',
       lifetimeScore: null,
       profileImageURL: '',
     };
@@ -53,8 +54,9 @@ class ConnectedUserProfileContainer extends React.Component {
         this.setState({
           username: response.data.username,
           email: response.data.email,
+          avatarURL: response.data.avatar,
           lifetimeScore: response.data.lifetime_score
-        }, () => (console.log(this.state)));
+        }, () => (console.log('USER INFO', this.state)));
       });
   }
 
@@ -97,7 +99,8 @@ class ConnectedUserProfileContainer extends React.Component {
               >
                 <UserProfile
                   username={this.state.username}
-                  email={this.state.email} />
+                  email={this.state.email}
+                  avatarURL={this.state.avatarURL} />
                 <Typography component="div" style={{ padding: 8 * 3 }}>
                   STATS
                 </Typography>

@@ -12,7 +12,6 @@ if (process.env.DATABASE_URL) {
     logging: false,
   });
 } else {
-
   sequelize = new Sequelize(
     process.env.DB_NAME,
     process.env.DB_USER,
@@ -59,6 +58,10 @@ const User = sequelize.define('user', {
     },
   },
   password: {
+    type: Sequelize.STRING,
+    allowNull: true,
+  },
+  avatar: {
     type: Sequelize.STRING,
     allowNull: true,
   },

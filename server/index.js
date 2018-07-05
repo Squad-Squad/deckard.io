@@ -47,11 +47,13 @@ AWS.config.update({
   secretAccessKey: 'E0+dpv+KSz7xGX0ibTQzWj1yghZkzaSKYxiLVyCY',
 });
 
-const upload = multer({});
+const upload = multer({
+  storage: multer.memoryStorage(),
+});
 const s3 = new AWS.S3();
 const s3Params = {
   Bucket: 'deckard-io',
-  Key: `avatars/${Date.now()}`,
+  Key: `userAvatars/${Date.now()}`,
 };
 
 
@@ -145,17 +147,25 @@ app.post('/api/userInfo', (req, res) => {
     });
 });
 
-app.post('/profile/save-image', upload.single('avatar'), (req, res) => {
-  s3Params.Body = req.file;
-  console.log('PARAMS', s3Params);
+app.post('/profile/update-profile', upload.single('avatar'), (req, res) => {
+  console.log('BODY', req.body);
+  s3Params.Body = req.file.buffer;
   s3.upload(s3Params, (err, data) => {
-    if (err) console.log('Error uploading image to S3');
-    if (data) console.log('Successfully saved image to S3');
-  });
-});
+    if (err) console.log('Error uploading image to S3', err);
+    if (data) {
+      console.log('Successfully saved image to S3', data);
 
-app.post('/profile/update-user', (req, res) => {
-  console.log(req.body);
+      db.models.User.findOne({ where: { username: req.body.username } })
+        .then((user) => {
+          console.log(user);
+          user.update({
+            username: req.body.newusername || user.dataValues.username,
+            email: req.body.newemail || user.dataValues.email,
+            avatar: data.Location,
+          });
+        });
+    }
+  });
 });
 
 

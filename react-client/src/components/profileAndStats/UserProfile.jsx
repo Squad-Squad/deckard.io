@@ -11,7 +11,7 @@ import axios from 'axios';
 
 function mapStateToProps(state) {
   return {
-
+    loggedInUsername: state.username,
   };
 }
 
@@ -72,10 +72,12 @@ class UserProfile extends Component {
   updateProfile() {
     const data = new FormData();
     data.append('avatar', this.state.file);
-    console.log('DATA', data);
+    data.append('username', this.props.loggedInUsername);
+    data.append('newusername', this.state.newUsername);
+    data.append('newemail', this.state.newEmail);
     axios({
       method: 'post',
-      url: '/profile/save-image',
+      url: '/profile/update-profile',
       data,
       config: { headers: { 'Content-Type': 'multipart/form-data' } }
     });
@@ -88,6 +90,12 @@ class UserProfile extends Component {
         return (
           <img
             src={this.state.imagePreviewUrl}
+            alt="Avatar" className="profile-photo-upload-image" />
+        )
+      } else if (this.props.avatarURL) {
+        return (
+          <img
+            src={this.props.avatarURL}
             alt="Avatar" className="profile-photo-upload-image" />
         )
       } else {
