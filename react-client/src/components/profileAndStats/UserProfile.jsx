@@ -246,12 +246,12 @@ class UserProfile extends Component {
 
     const editDescription = () => {
       if (this.state.editDescription) {
-        return (<textarea style={{ color: 'white', background: 'rgba(30, 30, 30, .7)' }}
+        return (<textarea style={{ color: 'white', background: 'rgba(30, 30, 30, .7)', marginBottom: '10px' }}
           class="textarea" placeholder="Description" rows="3"
           onChange={this.enterDescription.bind(this)}></textarea>)
       } else {
         return (
-          <div style={{ display: 'flex', alignContent: 'center' }}>
+          <div style={{ display: 'flex', alignContent: 'center', marginBottom: '10px' }}>
             {this.props.description}
             <Edit style={{ float: 'right', cursor: 'pointer', marginLeft: 'auto' }} onClick={this.editDescription.bind(this)} />
           </div>

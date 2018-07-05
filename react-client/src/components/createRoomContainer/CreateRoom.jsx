@@ -136,9 +136,10 @@ class ConnectedCreateRoom extends React.Component {
         onClick={() => {
           if (this.props.usersForNewRoom.length <= 7) {
             props.addUserToNewRoom(suggestion);
+            console.log(this.state.query);
             this.setState({
-              query: '',
               currSuggestions: [],
+              query: '',
             });
           }
         }}>
