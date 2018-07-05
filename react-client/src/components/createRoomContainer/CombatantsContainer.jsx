@@ -57,7 +57,7 @@ function ConnectedCombatantsContainer(props) {
         props.usersForNewRoom.slice(1).map((user, i) => {
           return (
             <Chip
-              style={{ zIndex: '0' }}
+              style={{ zIndex: '1' }}
               // avatar={
               //   <Avatar>
               //     <FaceIcon />

@@ -9,6 +9,7 @@ import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import UserProfile from './UserProfile.jsx';
+import UserStats from './UserStats.jsx';
 import axios from 'axios';
 
 function mapStateToProps(state) {
@@ -39,23 +40,22 @@ class ConnectedUserProfileContainer extends React.Component {
     this.state = {
       value: 0,
 
-      username: '',
-      email: '',
-      avatarURL: '',
-      lifetimeScore: null,
+      gamesPlayed: 0,
+      gamesWon: 0,
+      lifetimeScore: 0,
+
       profileImageURL: '',
     };
   }
 
   componentDidMount() {
+    // Get user stats
     axios.post('/api/userInfo', { user: this.props.loggedInUser })
       .then((response) => {
-        console.log("response on userProfile", response.data);
         this.setState({
-          username: response.data.username,
-          email: response.data.email,
-          avatarURL: response.data.avatar,
-          lifetimeScore: response.data.lifetime_score
+          gamesPlayed: response.data.games_played,
+          gamesWon: response.data.games_won,
+          lifetimeScore: response.data.lifetime_score,
         }, () => (console.log('USER INFO', this.state)));
       });
   }
@@ -95,12 +95,11 @@ class ConnectedUserProfileContainer extends React.Component {
               <SwipeableViews
                 index={this.state.value}
                 onChangeIndex={this.handleChangeIndex.bind(this)}>
-                <UserProfile
-                  username={this.state.username}
-                  email={this.state.email} />
-                <Typography component="div" style={{ padding: 8 * 3 }}>
-                  STATS
-                </Typography>
+                <UserProfile />
+                <UserStats
+                  gamesPlayed={this.state.gamesPlayed}
+                  gamesWon={this.state.gamesWon}
+                  lifetimeScore={this.state.lifetimeScore} />
               </SwipeableViews>
             </Paper>
           </div>

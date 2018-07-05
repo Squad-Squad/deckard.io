@@ -27,6 +27,10 @@ class ConnectedUserMenu extends React.Component {
     this.setState({ anchorEl: null });
   }
 
+  handleLogout() {
+    this.props.logout();
+    this.props.homeRedirect();
+  }
 
   render() {
     const { anchorEl } = this.state;
@@ -37,7 +41,7 @@ class ConnectedUserMenu extends React.Component {
           aria-owns={anchorEl ? 'simple-menu' : null}
           aria-haspopup="true"
           onClick={this.handleClick.bind(this)}>
-          <span style={{ marginRight: '20px' }}>
+          <span style={{ marginRight: '10px' }}>
             {this.props.username}
           </span>
           <img id='navbar-avatar'
@@ -53,8 +57,9 @@ class ConnectedUserMenu extends React.Component {
           }}
           open={Boolean(anchorEl)}
           onClose={this.handleClose.bind(this)}>
-          <MenuItem onClick={this.props.profile}>Profile</MenuItem>
-          <MenuItem onClick={this.props.logout}>Logout</MenuItem>
+          <MenuItem onClick={this.props.homeRedirect}>Home</MenuItem>
+          <MenuItem onClick={this.props.profileRedirect}>Profile</MenuItem>
+          <MenuItem onClick={this.handleLogout.bind(this)}>Logout</MenuItem>
         </Menu>
       </div>
     );

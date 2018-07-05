@@ -36,7 +36,9 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    login: (username, avatarURL) => dispatch(login(username, avatarURL)),
+    login: (username, email, isGoogleAccount, avatarURL, description) => {
+      return dispatch(login(username, email, isGoogleAccount, avatarURL, description));
+    },
     logout: () => dispatch(logout()),
     searchUsers: (users) => dispatch(searchUsers(users)),
     removeAllUsersFromNewRoom: () => dispatch(removeAllUsersFromNewRoom()),
@@ -99,14 +101,17 @@ class ConnectedApp extends React.Component {
     axios.get('/checklogin')
       .then(res => {
         if (res.data.user) {
-          console.log('Logged in as:', res.data.user.avatar);
-          this.props.login(res.data.user.username, res.data.user.avatar);
+          console.log('Logged in as:', res.data.user);
+          this.props.login(res.data.user.username,
+            res.data.user.email,
+            res.data.user.is_google_account,
+            res.data.user.avatar,
+            res.data.user.description);
           this.setState({
             loginError: false,
           });
         }
       });
-
   }
 
   updateQuery(e) {
@@ -220,7 +225,7 @@ class ConnectedApp extends React.Component {
             params={{
               "particles": {
                 "number": {
-                  "value": 20,
+                  "value": 40,
                   "density": {
                     "enable": true,
                     "value_area": 800
@@ -255,7 +260,7 @@ class ConnectedApp extends React.Component {
                   }
                 },
                 "size": {
-                  "value": 4,
+                  "value": 3,
                   "random": true,
                   "anim": {
                     "enable": false,
