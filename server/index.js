@@ -389,23 +389,50 @@ db.models.sequelize.sync().then(() => {
 
 
       //if round robin room-mode is selected as soon as there are 2 people in the room one is told to speak first
-      let currentMembers;
+      let membersInRoom;
+      let membersInvitedtoRoom
       client.lrange(`${socket.room}:membersList`, 0, -1, (err, replies)=>{
         if(err){
           console.log(err)
         }else{
-          console.log("ALL ROOM MEMBERS FROM REDIS", replies)
-          currentMembers = replies       
+          // console.log("ALL ROOM MEMBERS FROM REDIS", replies)
+        console.log("MEMBERSLIST DATA FROM REDIS:", replies)
+          membersInRoom = replies       
+        }
+
+          client.lrange(`${socket.room}:membersInvited`, 0, -1, (err, replies)=>{
+            if(err){
+              console.log(err)
+            }else{
+              // console.log("ALL ROOM MEMBERS FROM REDIS", replies)
+            console.log("MEMBERSINVITED DATA FROM REDIS:", replies)
+              membersInvitedtoRoom = replies  
+            }
+          
+
+
+          
+          }) 
+      })   
+
+      console.log("ASSIGNED: MEMBERSLIST DATA FROM REDIS:", membersInRoom)
+      console.log("ASSIGNED: MEMBERSINVITED DATA FROM REDIS:", membersInvitedtoRoom)
+
 
             //need to figure out how to make it so its not the first person in the room to go first always
             //but to avoid it fall on the bot
-            if(currentMembers.length === 1 && data.roomMode === "round"){
-         
-            console.log("CURRENTMEMBERS:", JSON.parse(currentMembers))
-            io.sockets.sockets[socket.id].emit('yourTurn', true)
-            };  
-          }
-      })
+        //   if(data.roomMode === "round"){
+        //       if(membersInRoom.length === membersInvitedtoRoom.length){
+        //         io.sockets.in(socket.room).emit('roomReady', true)
+        //     }
+        // }
+
+
+
+          //   console.log("CURRENTMEMBERS:", JSON.parse(currentMembers))
+          //   io.sockets.sockets[socket.id].emit('yourTurn', true)
+          //   };  
+          // }
 
 
     //fetch all the messages from redis
@@ -536,7 +563,7 @@ db.models.sequelize.sync().then(() => {
 
 
       socket.leave(socket.room);
-      console.log('SOCKET.ROOMS', rooms);
+      // console.log('SOCKET.ROOMS', rooms);
 
 
       dbHelpers.fetchRedisMessages(client, socket, (result)=>{

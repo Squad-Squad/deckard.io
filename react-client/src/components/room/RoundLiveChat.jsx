@@ -49,6 +49,7 @@ class ConnectedRoundLiveChat extends React.Component {
 
   componentDidMount() {
     this.scrollToBottom();
+    this.props.getTimer()
   }
 
   updateMessage(e) {

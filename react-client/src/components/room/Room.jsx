@@ -42,7 +42,7 @@ class ConnectedRoom extends React.Component {
       waitingForRoomMembers: true
     };
     this.roomID = this.props.match.params.roomID;
-
+    this.getTimer = this.getTimer.bind(this)
     this.sendMessage = this.sendMessage.bind(this);
     // this.voteApprove = this.voteApprove.bind(this);
 
@@ -51,12 +51,6 @@ class ConnectedRoom extends React.Component {
       this.setState({
         messages: messages
       }, ()=>{console.log("this.state.messages in room:", this.state.messages)});
-    });
-
-    this.props.io.on('vote', roomID => {
-      if (roomID === this.roomID) {
-        console.log('Received vote');
-      }
     });
 
 
@@ -74,12 +68,20 @@ class ConnectedRoom extends React.Component {
         timer:"00:15"
       })
     })
+
+    this.props.io.on('roomReady', data=>{
+      this.setState({
+        waitingForRoomMembers: false
+      })
+    })
+
   }
+
+
 
   /// Send post request to server to fetch room info when user visits link
   componentDidMount() {
     this.getRoomInfo();
-    this.getTimer();
   }
 
 
@@ -129,7 +131,7 @@ class ConnectedRoom extends React.Component {
         },
       });
 
-      // console.log('STARTING TIMER');
+      console.log('STARTING TIMER');
       tock.start(timer.timeLeft + 1000);
     });
   }
@@ -153,6 +155,7 @@ class ConnectedRoom extends React.Component {
     const { width, height } = this.props.size;
 
     const freechatOrVote = () => {
+      // this.getTimer();
       if (this.state.timer === "00:00" && !this.state.scores) {
         return (<VotePanel members={this.state.members}
           memberMap={this.state.memberMap} io={this.props.io} />);
@@ -160,8 +163,10 @@ class ConnectedRoom extends React.Component {
         return (<FreeLiveChat
           roomName={this.state.roomName}
           messages={this.state.messages}
+          roomID={this.roomID}
           message={this.state.message}
           sendMessage={this.sendMessage}
+          getTimer={this.getTimer}
           timer={this.state.timer}
           memberMap={this.state.memberMap} />);
       } else {
@@ -185,9 +190,11 @@ class ConnectedRoom extends React.Component {
             io={this.props.io}
             whoseTurn={this.state.whoseTurn}
             roomName={this.state.roomName}
+            roomID={this.roomID}
             messages={this.state.messages}
             message={this.state.message}
             sendMessage={this.sendMessage}
+            getTimer={this.getTimer}
             timer={this.state.timer}
             memberMap={this.state.memberMap} />);
          } else {
