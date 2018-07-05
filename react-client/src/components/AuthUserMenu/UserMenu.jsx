@@ -6,7 +6,8 @@ import { connect } from 'react-redux';
 
 const mapStateToProps = state => {
   return {
-    username: state.username
+    username: state.username,
+    avatarURL: state.avatarURL,
   };
 };
 
@@ -34,7 +35,11 @@ class ConnectedUserMenu extends React.Component {
           aria-haspopup="true"
           onClick={this.handleClick}
         >
-          {this.props.username}
+          <span style={{ marginRight: '20px' }}>
+            {this.props.username}
+          </span>
+          <img id='navbar-avatar'
+            src={this.props.avatarURL} />
         </Button>
         <Menu
           id="simple-menu"

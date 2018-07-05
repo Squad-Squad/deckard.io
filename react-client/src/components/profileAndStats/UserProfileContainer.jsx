@@ -99,8 +99,7 @@ class ConnectedUserProfileContainer extends React.Component {
               >
                 <UserProfile
                   username={this.state.username}
-                  email={this.state.email}
-                  avatarURL={this.state.avatarURL} />
+                  email={this.state.email} />
                 <Typography component="div" style={{ padding: 8 * 3 }}>
                   STATS
                 </Typography>

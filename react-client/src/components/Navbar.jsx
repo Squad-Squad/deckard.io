@@ -9,8 +9,6 @@ import logo from '../../dist/assets/unicorn.png';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
-
-
 const mapStateToProps = state => {
   return {
     loggedIn: state.loggedIn,
@@ -25,28 +23,17 @@ class ConnectedNavbar extends React.Component {
     this.profileRedirect = this.profileRedirect.bind(this)
   }
 
-  profileRedirect(){
+  profileRedirect() {
     console.log("ATTEMPTING TO REDIRECT")
     this.props.history.push(`/userprofile/${this.props.loggedInUsername}`)
   }
 
   render() {
-    let badge = '';
-    if (this.props.wins >= 20) {
-      badge = '/assets/king.png'
-    } else if (this.props.wins >= 15) {
-      badge = '/assets/gold.png'
-    } else if (this.props.wins >= 10) {
-      badge = '/assets/silver.png'
-    } else if (this.props.wins >= 5) {
-      badge = '/assets/bronze.png'
-    }
-
     const authentication = this.props.loggedIn ?
       (
         <UserMenu
           logout={this.props.logout}
-          username={this.props.username} 
+          username={this.props.username}
           profile={this.profileRedirect} />
       )
       : (

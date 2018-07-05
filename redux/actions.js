@@ -1,9 +1,12 @@
 //
 // ─── AUTHENTICATION ─────────────────────────────────────────────────────────────
 //
-const login = username => ({
+const login = (username, avatarURL) => ({
   type: 'USER_LOGGED_IN',
-  payload: { username },
+  payload: {
+    username,
+    avatarURL,
+  },
 });
 
 const logout = () => ({

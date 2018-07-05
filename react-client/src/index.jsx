@@ -36,7 +36,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    login: (username) => dispatch(login(username)),
+    login: (username, avatarURL) => dispatch(login(username, avatarURL)),
     logout: () => dispatch(logout()),
     searchUsers: (users) => dispatch(searchUsers(users)),
     removeAllUsersFromNewRoom: () => dispatch(removeAllUsersFromNewRoom()),
@@ -99,8 +99,8 @@ class ConnectedApp extends React.Component {
     axios.get('/checklogin')
       .then(res => {
         if (res.data.user) {
-          console.log('Logged in as:', res.data.user.email);
-          this.props.login(res.data.user.username);
+          console.log('Logged in as:', res.data.user.avatar);
+          this.props.login(res.data.user.username, res.data.user.avatar);
           this.setState({
             loginError: false,
           });
@@ -214,6 +214,8 @@ class ConnectedApp extends React.Component {
     return (
       <BrowserRouter>
         <div>
+
+          {/* PARTICLES */}
           <Particles
             params={{
               "particles": {
@@ -333,6 +335,9 @@ class ConnectedApp extends React.Component {
               backgroundImage: 'url("../../dist/assets/deckardBG.jpg")',
               backgroundSize: 'cover',
             }} />
+
+
+          {/* MAIN */}
           <div>
             <Navbar
               login={this.login.bind(this)}

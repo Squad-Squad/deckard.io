@@ -12,6 +12,7 @@ import axios from 'axios';
 function mapStateToProps(state) {
   return {
     loggedInUsername: state.username,
+    avatarURL: state.avatarURL,
   };
 }
 
