@@ -147,24 +147,36 @@ app.post('/api/userInfo', (req, res) => {
 });
 
 app.post('/profile/update-profile', upload.single('avatar'), (req, res) => {
-  s3Params.Body = req.file.buffer;
-  s3.upload(s3Params, (err, data) => {
-    if (err) console.log('Error uploading image to S3', err);
-    if (data) {
-      console.log('Successfully saved image to S3', data);
+  if (req.file) {
+    s3Params.Body = req.file.buffer;
+    s3.upload(s3Params, (err, data) => {
+      if (err) console.log('Error uploading image to S3', err);
+      if (data) {
+        console.log('Successfully saved image to S3', data);
 
-      db.models.User.findOne({ where: { username: req.body.username } })
-        .then((user) => {
-          user.update({
-            username: req.body.newusername || user.dataValues.username,
-            email: req.body.newemail || user.dataValues.email,
-            avatar: data.Location,
+        db.models.User.findOne({ where: { username: req.body.username } })
+          .then((user) => {
+            user.update({
+              username: req.body.newusername || user.dataValues.username,
+              email: req.body.newemail || user.dataValues.email,
+              avatar: data.Location,
+            });
+
+            res.status(200).send(data.Location);
           });
-
-          res.status(200).send(data.Location);
+      }
+    });
+  } else {
+    db.models.User.findOne({ where: { username: req.body.username } })
+      .then((user) => {
+        user.update({
+          username: req.body.newusername || user.dataValues.username,
+          email: req.body.newemail || user.dataValues.email,
         });
-    }
-  });
+
+        res.status(200);
+      });
+  }
 });
 
 

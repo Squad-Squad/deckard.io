@@ -233,6 +233,21 @@ div.columns {
   overflow: auto;
 }
 
+.stats-tile {
+  height: 200px;
+  width: 300px;
+  padding: 40px 20px 20px 20px;
+  text-align: center;
+  font-size: 20px;
+  font-family: 'Titillium Web', sans-serif;
+  font-weight: 600;
+}
+
+.stats-number {
+  padding-top: 40px;
+  font-size: 50px;
+}
+
 [role='combobox'] {
   height: 40px;
 }

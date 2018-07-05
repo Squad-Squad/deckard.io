@@ -1,11 +1,12 @@
 //
 // ─── AUTHENTICATION ─────────────────────────────────────────────────────────────
 //
-const login = (username, avatarURL) => ({
+const login = (username, avatarURL, isGoogleAccount) => ({
   type: 'USER_LOGGED_IN',
   payload: {
     username,
     avatarURL,
+    isGoogleAccount,
   },
 });
 

@@ -57,12 +57,26 @@ const User = sequelize.define('user', {
       isEmail: true,
     },
   },
+  is_google_account: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false,
+  },
   password: {
     type: Sequelize.STRING,
     allowNull: true,
   },
   avatar: {
     type: Sequelize.STRING,
+    defaultValue: './assets/roboheadwhite.png',
+  },
+  games_played: {
+    type: Sequelize.INTEGER(6),
+    defaultValue: 0,
+    allowNull: true,
+  },
+  games_won: {
+    type: Sequelize.INTEGER(6),
+    defaultValue: 0,
     allowNull: true,
   },
   lifetime_score: {

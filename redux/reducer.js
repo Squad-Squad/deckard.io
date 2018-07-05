@@ -1,7 +1,10 @@
 const initialState = {
   loggedIn: false,
+
   username: '',
   avatarURL: '',
+  isGoogleAccount: false,
+
   searchedUsers: [],
   usersForNewRoom: [],
   currRoomUsers: [],

@@ -16,6 +16,7 @@ function mapStateToProps(state) {
   return {
     loggedInUsername: state.username,
     avatarURL: state.avatarURL,
+    isGoogleAccount: state.isGoogleAccount,
   };
 }
 
@@ -90,11 +91,13 @@ class UserProfile extends Component {
   }
 
   updateProfile() {
+    console.log('update profile please');
     const data = new FormData();
     data.append('avatar', this.state.file);
     data.append('username', this.props.loggedInUsername);
     data.append('newusername', this.state.newUsername);
     data.append('newemail', this.state.newEmail);
+    console.log(data);
     axios({
       method: 'post',
       url: '/profile/update-profile',
@@ -102,7 +105,10 @@ class UserProfile extends Component {
       config: { headers: { 'Content-Type': 'multipart/form-data' } }
     })
       .then(avatarURL => {
-        this.props.login(this.state.newUsername, avatarURL);
+        console.log('PLEASE LOG');
+        const updateUsername = this.state.newUsername || this.props.loggedInUsername,
+          updateAvatarURL = avatarURL || this.props.avatarURL;
+        this.props.login.bind(this, updateUsername, updateAvatarURL);
         this.setState({
           open: true,
           editUsername: false,
@@ -121,16 +127,16 @@ class UserProfile extends Component {
             src={this.state.imagePreviewUrl}
             alt="Avatar" className="profile-photo-upload-image" />
         )
-      } else if (this.props.avatarURL) {
+      } else if (this.props.avatarURL === './assets/roboheadwhite.png') {
         return (
           <img
-            src={this.props.avatarURL}
+            src={"https://www.bsn.eu/wp-content/uploads/2016/12/user-icon-image-placeholder-300-grey.jpg"}
             alt="Avatar" className="profile-photo-upload-image" />
         )
       } else {
         return (
           <img
-            src={"https://www.bsn.eu/wp-content/uploads/2016/12/user-icon-image-placeholder-300-grey.jpg"}
+            src={this.props.avatarURL}
             alt="Avatar" className="profile-photo-upload-image" />
         )
       }
@@ -174,6 +180,13 @@ class UserProfile extends Component {
               style={{ width: 'calc(100% - 40px)' }}
             />
           </span>
+        )
+      } else if (this.props.isGoogleAccount) {
+        return (
+          <span style={{ display: 'flex', alignContent: 'center' }}>
+            <Email style={{ marginRight: '10px' }} />
+            {this.props.email}
+          </span >
         )
       } else {
         return (

@@ -9,6 +9,7 @@ import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import UserProfile from './UserProfile.jsx';
+import UserStats from './UserStats.jsx';
 import axios from 'axios';
 
 function mapStateToProps(state) {
@@ -98,9 +99,7 @@ class ConnectedUserProfileContainer extends React.Component {
                 <UserProfile
                   username={this.state.username}
                   email={this.state.email} />
-                <Typography component="div" style={{ padding: 8 * 3 }}>
-                  STATS
-                </Typography>
+                <UserStats />
               </SwipeableViews>
             </Paper>
           </div>

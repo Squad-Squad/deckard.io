@@ -36,7 +36,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    login: (username, avatarURL) => dispatch(login(username, avatarURL)),
+    login: (username, avatarURL, isGoogleAccount) => dispatch(login(username, avatarURL, isGoogleAccount)),
     logout: () => dispatch(logout()),
     searchUsers: (users) => dispatch(searchUsers(users)),
     removeAllUsersFromNewRoom: () => dispatch(removeAllUsersFromNewRoom()),
@@ -99,8 +99,8 @@ class ConnectedApp extends React.Component {
     axios.get('/checklogin')
       .then(res => {
         if (res.data.user) {
-          console.log('Logged in as:', res.data.user.avatar);
-          this.props.login(res.data.user.username, res.data.user.avatar);
+          console.log('Logged in as:', res.data.user);
+          this.props.login(res.data.user.username, res.data.user.avatar, res.data.user.is_google_account);
           this.setState({
             loginError: false,
           });
