@@ -2,8 +2,11 @@ const initialState = {
   loggedIn: false,
 
   username: '',
-  avatarURL: '',
+  email: '',
   isGoogleAccount: false,
+  avatarURL: '',
+  description: '',
+
 
   searchedUsers: [],
   usersForNewRoom: [],
@@ -25,7 +28,10 @@ function reducer(state = initialState, action) {
       return Object.assign({}, state, {
         loggedIn: false,
         username: '',
+        email: '',
+        isGoogleAccount: '',
         avatarURL: '',
+        description: '',
       });
 
 

@@ -20,12 +20,16 @@ class ConnectedNavbar extends React.Component {
   constructor(props) {
     super(props);
 
-    this.profileRedirect = this.profileRedirect.bind(this)
+    this.profileRedirect = this.profileRedirect.bind(this);
+    this.homeRedirect = this.homeRedirect.bind(this);
   }
 
   profileRedirect() {
-    console.log("ATTEMPTING TO REDIRECT")
-    this.props.history.push(`/userprofile/${this.props.loggedInUsername}`)
+    this.props.history.push(`/userprofile/${this.props.loggedInUsername}`);
+  }
+
+  homeRedirect() {
+    this.props.history.push(`/`);
   }
 
   render() {
@@ -33,8 +37,8 @@ class ConnectedNavbar extends React.Component {
       (
         <UserMenu
           logout={this.props.logout}
-          username={this.props.username}
-          profile={this.profileRedirect} />
+          profileRedirect={this.profileRedirect}
+          homeRedirect={this.homeRedirect} />
       )
       : (
         <Toolbar style={{

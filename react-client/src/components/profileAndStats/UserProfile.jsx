@@ -10,19 +10,24 @@ import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
 import placeholder from './../../../dist/assets/profile-placeholder.jpg';
 import { connect } from 'react-redux';
+import { login } from '../../../../redux/actions';
 import axios from 'axios';
 
 function mapStateToProps(state) {
   return {
-    loggedInUsername: state.username,
-    avatarURL: state.avatarURL,
+    username: state.username,
+    email: state.email,
     isGoogleAccount: state.isGoogleAccount,
+    avatarURL: state.avatarURL,
+    description: state.description,
   };
 }
 
 function mapDispatchToProps(dispatch) {
   return {
-    login: (username, avatarURL, isGoogleAccount) => dispatch(login(username, avatarURL, isGoogleAccount)),
+    login: (username, email, isGoogleAccount, avatarURL, description) => {
+      return dispatch(login(username, email, isGoogleAccount, avatarURL, description));
+    },
   };
 }
 
@@ -111,7 +116,7 @@ class UserProfile extends Component {
 
     const data = new FormData();
     data.append('avatar', this.state.file);
-    data.append('username', this.props.loggedInUsername);
+    data.append('username', this.props.username);
     data.append('newusername', this.state.newUsername);
     data.append('newemail', this.state.newEmail);
     data.append('newdescription', this.state.newDescription);
@@ -123,20 +128,40 @@ class UserProfile extends Component {
       data,
       config: { headers: { 'Content-Type': 'multipart/form-data' } }
     })
-      .then(avatarURL => {
-        console.log('PLEASE LOG');
-        const updateUsername = this.state.newUsername || this.props.loggedInUsername,
-          updateAvatarURL = avatarURL || this.props.avatarURL;
-        this.props.login.bind(this, updateUsername, updateAvatarURL, this.props.isGoogleAccount);
+      .then(res => {
+        console.log('DATA', res.data);
+        const updateUsername = this.state.newUsername || this.props.username,
+          updateEmail = this.state.newEmail || this.props.email,
+          updateAvatarURL = res.data || this.props.avatarURL,
+          updateDescription = this.state.newDescription || this.props.description;
+        login.call(this,
+          updateUsername,
+          updateEmail,
+          this.props.isGoogleAccount,
+          updateAvatarURL,
+          updateDescription);
         this.setState({
           open: true,
+
+          newUsername: '',
           editUsername: false,
+
+          newEmail: '',
           editEmail: false,
+
+          newDescription: '',
           editDescription: false,
+
+          file: null,
+          imagePreviewUrl: '',
         });
       });
   }
 
+
+  //
+  // ─── RENDER ─────────────────────────────────────────────────────────────────────
+  //
   render() {
     const buttonEnabled = !(this.state.file || this.state.newUsername || this.state.newEmail || this.state.newDescription);
 

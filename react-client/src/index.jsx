@@ -36,7 +36,9 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    login: (username, avatarURL, isGoogleAccount) => dispatch(login(username, avatarURL, isGoogleAccount)),
+    login: (username, email, isGoogleAccount, avatarURL, description) => {
+      return dispatch(login(username, email, isGoogleAccount, avatarURL, description));
+    },
     logout: () => dispatch(logout()),
     searchUsers: (users) => dispatch(searchUsers(users)),
     removeAllUsersFromNewRoom: () => dispatch(removeAllUsersFromNewRoom()),
@@ -101,14 +103,15 @@ class ConnectedApp extends React.Component {
         if (res.data.user) {
           console.log('Logged in as:', res.data.user);
           this.props.login(res.data.user.username,
+            res.data.user.email,
+            res.data.user.is_google_account,
             res.data.user.avatar,
-            res.data.user.is_google_account);
+            res.data.user.description);
           this.setState({
             loginError: false,
           });
         }
       });
-
   }
 
   updateQuery(e) {
