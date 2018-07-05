@@ -486,8 +486,9 @@ db.models.sequelize.sync().then(() => {
     });
 
 
+    //handle cases in which an invitation to a room is declined, remove from membersinvited so when compared with who has joined
+    //we know when to start the room
     socket.on('decline', data=>{
-      console.log("SOCKET.ROOM in decline socket", socket.room)
       client.lrem(`${data.roomID}:membersInvited`, 0, data.user, (err, reply)=>{
         console.log('decline REPLIES', reply)
       })
@@ -525,6 +526,7 @@ db.models.sequelize.sync().then(() => {
       
 
       client.lrem('onlineUsers', 1, socket.username, (err, replies) => {
+        console.log("WAS I REMOVED FROM REDIS WHEN I DISCONNECTED:", socket.username)
         console.log('REMOVE REPLY', replies);
       });
 

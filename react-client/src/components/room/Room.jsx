@@ -8,6 +8,7 @@ import FreeLiveChat from './FreeLiveChat.jsx';
 import RoundLiveChat from './RoundLiveChat.jsx';
 import VotePanel from './VotePanel.jsx';
 import Scores from './Scores.jsx';
+import AwaitingResults from './AwaitingResults.jsx';
 import { addCurrUsersFromDB } from '../../../../redux/actions';
 import { connect } from 'react-redux';
 
@@ -16,7 +17,7 @@ const mapStateToProps = state => {
     username: state.username,
     loggedInUsername: state.username,
     usersForNewRoom: state.usersForNewRoom,
-    
+
   };
 };
 
@@ -37,7 +38,8 @@ class ConnectedRoom extends React.Component {
       roomName: '',
       timer: '',
       scores: null,
-      roomMode: this.props.roomMode
+      roomMode: this.props.roomMode,
+      waitingForRoomMembers: true
     };
     this.roomID = this.props.match.params.roomID;
 
@@ -171,27 +173,31 @@ class ConnectedRoom extends React.Component {
     }
 
    const roundchatOrVote = () => {
-     if (this.state.timer === "00:00" && !this.state.scores) {
-       return (<VotePanel members={this.state.members}
-         memberMap={this.state.memberMap} io={this.props.io} />);
-     } else if (!this.state.scores) {
-      return (<RoundLiveChat
-        alias={this.state.memberMap[this.props.loggedInUsername]}
-        io={this.props.io}
-        whoseTurn={this.state.whoseTurn}
-        roomName={this.state.roomName}
-        messages={this.state.messages}
-        message={this.state.message}
-        sendMessage={this.sendMessage}
-        timer={this.state.timer}
-        memberMap={this.state.memberMap} />);
-     } else {
-       return (
-         <Scores
-           scores={this.state.scores} memberMap={this.state.memberMap} />
-       )
-     }
-   }   
+    if(this.state.waitingForRoomMembers){
+      return(<AwaitingResults members={true}/>)
+      } else {
+         if (this.state.timer === "00:00" && !this.state.scores) {
+           return (<VotePanel members={this.state.members}
+             memberMap={this.state.memberMap} io={this.props.io} />);
+         } else if (!this.state.scores) {
+          return (<RoundLiveChat
+            alias={this.state.memberMap[this.props.loggedInUsername]}
+            io={this.props.io}
+            whoseTurn={this.state.whoseTurn}
+            roomName={this.state.roomName}
+            messages={this.state.messages}
+            message={this.state.message}
+            sendMessage={this.sendMessage}
+            timer={this.state.timer}
+            memberMap={this.state.memberMap} />);
+         } else {
+           return (
+             <Scores
+               scores={this.state.scores} memberMap={this.state.memberMap} />
+           )
+         }
+        }  
+  } 
 
     return (
       <div>
