@@ -87,16 +87,14 @@ class ConnectedUserProfileContainer extends React.Component {
                   onChange={this.handleChange.bind(this)}
                   indicatorColor="primary"
                   textColor="white"
-                  fullWidth
-                >
+                  fullWidth centered>
                   <Tab label="Profile" />
                   <Tab label="Stats" />
                 </Tabs>
               </AppBar>
               <SwipeableViews
                 index={this.state.value}
-                onChangeIndex={this.handleChangeIndex.bind(this)}
-              >
+                onChangeIndex={this.handleChangeIndex.bind(this)}>
                 <UserProfile
                   username={this.state.username}
                   email={this.state.email} />

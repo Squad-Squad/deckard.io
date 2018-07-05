@@ -12,17 +12,20 @@ const mapStateToProps = state => {
 };
 
 class ConnectedUserMenu extends React.Component {
-  state = {
-    anchorEl: null,
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      anchorEl: null,
+    };
+  }
 
-  handleClick = event => {
+  handleClick(event) {
     this.setState({ anchorEl: event.currentTarget });
-  };
+  }
 
-  handleClose = () => {
+  handleClose() {
     this.setState({ anchorEl: null });
-  };
+  }
 
 
   render() {
@@ -33,14 +36,14 @@ class ConnectedUserMenu extends React.Component {
         <Button
           aria-owns={anchorEl ? 'simple-menu' : null}
           aria-haspopup="true"
-          onClick={this.handleClick}
-        >
+          onClick={this.handleClick.bind(this)}>
           <span style={{ marginRight: '20px' }}>
             {this.props.username}
           </span>
           <img id='navbar-avatar'
             src={this.props.avatarURL} />
         </Button>
+
         <Menu
           id="simple-menu"
           anchorEl={anchorEl}
@@ -49,8 +52,7 @@ class ConnectedUserMenu extends React.Component {
             vertical: 'top',
           }}
           open={Boolean(anchorEl)}
-          onClose={this.handleClose}
-        >
+          onClose={this.handleClose.bind(this)}>
           <MenuItem onClick={this.props.profile}>Profile</MenuItem>
           <MenuItem onClick={this.props.logout}>Logout</MenuItem>
         </Menu>
