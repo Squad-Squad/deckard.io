@@ -43,7 +43,9 @@ class ConnectedUserProfileContainer extends React.Component {
       username: '',
       email: '',
       avatarURL: '',
+      description: '',
       lifetimeScore: null,
+
       profileImageURL: '',
     };
   }
@@ -56,6 +58,7 @@ class ConnectedUserProfileContainer extends React.Component {
           username: response.data.username,
           email: response.data.email,
           avatarURL: response.data.avatar,
+          description: response.data.description,
           lifetimeScore: response.data.lifetime_score
         }, () => (console.log('USER INFO', this.state)));
       });
@@ -98,7 +101,8 @@ class ConnectedUserProfileContainer extends React.Component {
                 onChangeIndex={this.handleChangeIndex.bind(this)}>
                 <UserProfile
                   username={this.state.username}
-                  email={this.state.email} />
+                  email={this.state.email}
+                  description={this.state.description} />
                 <UserStats />
               </SwipeableViews>
             </Paper>

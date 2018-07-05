@@ -100,7 +100,9 @@ class ConnectedApp extends React.Component {
       .then(res => {
         if (res.data.user) {
           console.log('Logged in as:', res.data.user);
-          this.props.login(res.data.user.username, res.data.user.avatar, res.data.user.is_google_account);
+          this.props.login(res.data.user.username,
+            res.data.user.avatar,
+            res.data.user.is_google_account);
           this.setState({
             loginError: false,
           });
@@ -220,7 +222,7 @@ class ConnectedApp extends React.Component {
             params={{
               "particles": {
                 "number": {
-                  "value": 20,
+                  "value": 40,
                   "density": {
                     "enable": true,
                     "value_area": 800
@@ -255,7 +257,7 @@ class ConnectedApp extends React.Component {
                   }
                 },
                 "size": {
-                  "value": 4,
+                  "value": 3,
                   "random": true,
                   "anim": {
                     "enable": false,

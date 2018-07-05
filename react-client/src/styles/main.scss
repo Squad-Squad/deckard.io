@@ -42,6 +42,23 @@
 }
 // -----------------------------------------------------------
 
+textarea::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+  color: white !important;
+  opacity: .7;
+}
+textarea::-moz-placeholder { /* Firefox 19+ */
+  color: white !important;
+  opacity: .7;
+}
+textarea:-ms-input-placeholder { /* IE 10+ */
+  color: white !important;
+  opacity: .7;
+}
+textarea:-moz-placeholder { /* Firefox 18- */
+  color: white !important;
+  opacity: .7;
+}
+
 #typeface-logo {
   font-family: 'Libre Barcode 39 Extended Text', cursive;
   font-size: 40px;
@@ -148,8 +165,8 @@ figure.image {
 }
 
 #navbar-avatar {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   object-fit: cover;
   border-radius: 50%;
 }
@@ -256,6 +273,8 @@ div.columns {
 .profile-photo-upload-container {
   position: relative;
   margin: 30px;
+  height: 200px;
+  width: 200px;
 }
 
 .profile-photo-upload-image {

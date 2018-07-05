@@ -69,6 +69,11 @@ const User = sequelize.define('user', {
     type: Sequelize.STRING,
     defaultValue: './assets/roboheadwhite.png',
   },
+  description: {
+    type: Sequelize.STRING,
+    allowNull: true,
+    defaultValue: 'Description...',
+  },
   games_played: {
     type: Sequelize.INTEGER(6),
     defaultValue: 0,

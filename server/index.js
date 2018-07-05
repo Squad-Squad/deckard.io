@@ -159,6 +159,7 @@ app.post('/profile/update-profile', upload.single('avatar'), (req, res) => {
             user.update({
               username: req.body.newusername || user.dataValues.username,
               email: req.body.newemail || user.dataValues.email,
+              description: req.body.newdescription || user.dataValues.description,
               avatar: data.Location,
             });
 
@@ -169,12 +170,14 @@ app.post('/profile/update-profile', upload.single('avatar'), (req, res) => {
   } else {
     db.models.User.findOne({ where: { username: req.body.username } })
       .then((user) => {
+        console.log('GETTING USER');
         user.update({
           username: req.body.newusername || user.dataValues.username,
           email: req.body.newemail || user.dataValues.email,
+          description: req.body.newdescription || user.dataValues.description,
         });
 
-        res.status(200);
+        res.status(200).send();
       });
   }
 });

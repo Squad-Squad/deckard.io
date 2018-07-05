@@ -22,7 +22,7 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    login: (username, avatarURL) => dispatch(login(username, avatarURL)),
+    login: (username, avatarURL, isGoogleAccount) => dispatch(login(username, avatarURL, isGoogleAccount)),
   };
 }
 
@@ -37,6 +37,9 @@ class UserProfile extends Component {
 
       editEmail: false,
       newEmail: '',
+
+      editDescription: false,
+      newDescription: '',
 
       file: null,
       imagePreviewUrl: null,
@@ -90,14 +93,30 @@ class UserProfile extends Component {
     });
   }
 
+  editDescription() {
+    this.setState({
+      editDescription: true,
+    });
+  }
+
+  enterDescription(e) {
+    this.setState({
+      newDescription: e.target.value,
+    });
+  }
+
   updateProfile() {
+    const login = this.props.login;
     console.log('update profile please');
+
     const data = new FormData();
     data.append('avatar', this.state.file);
     data.append('username', this.props.loggedInUsername);
     data.append('newusername', this.state.newUsername);
     data.append('newemail', this.state.newEmail);
+    data.append('newdescription', this.state.newDescription);
     console.log(data);
+
     axios({
       method: 'post',
       url: '/profile/update-profile',
@@ -108,17 +127,18 @@ class UserProfile extends Component {
         console.log('PLEASE LOG');
         const updateUsername = this.state.newUsername || this.props.loggedInUsername,
           updateAvatarURL = avatarURL || this.props.avatarURL;
-        this.props.login.bind(this, updateUsername, updateAvatarURL);
+        this.props.login.bind(this, updateUsername, updateAvatarURL, this.props.isGoogleAccount);
         this.setState({
           open: true,
           editUsername: false,
-          editEmail: false
+          editEmail: false,
+          editDescription: false,
         });
       });
   }
 
   render() {
-    const buttonEnabled = !(this.state.file || this.state.newUsername || this.state.newEmail);
+    const buttonEnabled = !(this.state.file || this.state.newUsername || this.state.newEmail || this.state.newDescription);
 
     const currImage = () => {
       if (this.state.imagePreviewUrl) {
@@ -199,8 +219,23 @@ class UserProfile extends Component {
       }
     };
 
+    const editDescription = () => {
+      if (this.state.editDescription) {
+        return (<textarea style={{ color: 'white', background: 'rgba(30, 30, 30, .7)' }}
+          class="textarea" placeholder="Description" rows="3"
+          onChange={this.enterDescription.bind(this)}></textarea>)
+      } else {
+        return (
+          <div style={{ display: 'flex', alignContent: 'center' }}>
+            {this.props.description}
+            <Edit style={{ float: 'right', cursor: 'pointer', marginLeft: 'auto' }} onClick={this.editDescription.bind(this)} />
+          </div>
+        )
+      }
+    }
+
     return (
-      <div style={{ display: 'flex', flexWrap: 'wrap-reverse', alignContent: 'flex-start' }}>
+      <div style={{ display: 'flex', alignContent: 'flex-start' }}>
         <div className="profile-photo-upload-container">
           {currImage()}
           <div className="profile-photo-upload-middle">
@@ -221,8 +256,7 @@ class UserProfile extends Component {
           </div>
           <Divider style={{ margin: '0px 0px 15px 0px' }} />
           <div>
-            <textarea style={{ color: 'white', background: 'rgba(30, 30, 30, .7)' }}
-              class="textarea" placeholder="Description" rows="3"></textarea>
+            {editDescription()}
           </div>
           <Button variant="contained" color="secondary" aria-label="add"
             disabled={buttonEnabled}
