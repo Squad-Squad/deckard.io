@@ -39,7 +39,8 @@ class ConnectedRoom extends React.Component {
       timer: '',
       scores: null,
       roomMode: this.props.roomMode,
-      waitingForRoomMembers: true
+      waitingForRoomMembers: true,
+      yourTurn: false,
     };
     this.roomID = this.props.match.params.roomID;
     this.getTimer = this.getTimer.bind(this)
@@ -61,10 +62,10 @@ class ConnectedRoom extends React.Component {
       });
     });
 
-    this.props.io.on('turn', player=>{
-      console.log("whose turn", player)
+    this.props.io.on('your turn', player=>{
+      console.log("your turn", player, "!!!!")
       this.setState({
-        whoseTurn:player,
+        yourTurn:true,
         timer:"00:15"
       })
     })
@@ -191,7 +192,7 @@ class ConnectedRoom extends React.Component {
           return (<RoundLiveChat
             alias={this.state.memberMap[this.props.loggedInUsername]}
             io={this.props.io}
-            whoseTurn={this.state.whoseTurn}
+            yourTurn={this.state.yourTurn}
             roomName={this.state.roomName}
             roomID={this.roomID}
             messages={this.state.messages}

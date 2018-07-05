@@ -438,6 +438,23 @@ db.models.sequelize.sync().then(() => {
                       console.log("SHUFFLED ORDER FOR PLAY:", shuffledOrder)
 
 
+                      if(shuffledOrder[0] === 'mitsuku@mitsuku.com'){
+                        let key = Object.keys(shuffledOrder[1])
+                        console.log("USERNAME FOR FIRST PLAYER", key[1])
+                        console.log("USERNAME FOR FIRST PLAYER in ARRAY?", key)
+                        let fixKey = key[1]
+                        let firstTurnSocketId = shuffledOrder[1][fixKey]
+                        console.log("SOCKET ID FOR FIRST PLAYER", firstTurnSocketId)
+                        io.sockets.sockets[firstTurnSocketId].emit('yourTurn', true)  
+                      }else{
+                        let key = Object.keys(shuffledOrder[0])
+                        console.log("USERNAME FOR FIRST PLAYER", key[0])
+                        console.log("USERNAME FOR FIRST PLAYER in ARRAY?", key)
+                        let fixKey = key[0]
+                        let firstTurnSocketId = shuffledOrder[0][fixKey]
+                        console.log("SOCKET ID FOR FIRST PLAYER", firstTurnSocketId)
+                        io.sockets.sockets[firstTurnSocketId].emit('yourTurn', key[0]) 
+                      }
 
 
 
