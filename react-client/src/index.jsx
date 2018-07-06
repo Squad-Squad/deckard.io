@@ -24,6 +24,7 @@ import { login, logout, searchUsers, removeAllUsersFromNewRoom } from '../../red
 import reducer from '../../redux/reducer';
 
 // redux devtools
+
 const composeEnhancers = composeWithDevTools({});
 const store = createStore(reducer, composeEnhancers());
 
@@ -129,23 +130,6 @@ class ConnectedApp extends React.Component {
       });
   }
 
-  // getUserRooms(email) {
-  //   axios.post('/api/userrooms', { username: email })
-  //     .then(res => {
-  //       this.setState({
-  //         userRooms: res.data
-  //       })
-  //     })
-  // }
-
-  // getUserWins(email) {
-  //   axios.post('/api/userwins', { username: email })
-  //     .then(res => {
-  //       this.setState({
-  //         userWins: res.data
-  //       })
-  //     })
-  // }
 
   //
   // ─── USER AUTH ──────────────────────────────────────────────────────────────────

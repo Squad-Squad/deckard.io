@@ -32,16 +32,25 @@ const styles = {
   },
 };
 
-class ConnectedLiveChat extends React.Component {
+class ConnectedRoundLiveChat extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       msg: '',
+      yourTurn: this.props.yourTurn
     };
+
+    this.props.io.on('turn over', (data)=>{
+      console.log('YOUR TURNs over', data, "!!!!")
+      this.setState({
+          yourTurn: false       
+      }) 
+    })
   }
 
   componentDidMount() {
     this.scrollToBottom();
+    this.props.getTimer()
   }
 
   updateMessage(e) {
@@ -73,6 +82,8 @@ class ConnectedLiveChat extends React.Component {
   }
 
   handleClick() {
+    console.log("THIS.STATE.MSG", this.state.msg)
+    this.props.io.emit('turn done', {user:this.props.username, message: this.state.msg})
     if (this.state.msg) this.props.sendMessage(this.state.msg);
     this.setState({
       msg: ''
@@ -93,6 +104,7 @@ class ConnectedLiveChat extends React.Component {
               <Typography variant="title" color="inherit" className={classes.flex}>
                 {this.props.roomName}
               </Typography>
+                {this.props.yourTurn ?  <Typography variant="title" color="inherit" className={classes.flex}>YOUR TURN</Typography> : null}
               <Typography variant="title" color="inherit">
                 {this.props.timer}
               </Typography>
@@ -119,6 +131,9 @@ class ConnectedLiveChat extends React.Component {
         </div>
 
         {/* BOTTOM BAR */}
+        {
+          this.props.yourTurn ?
+        
         <BottomNavigation
           onChange={this.handleChange}>
           <FormControl style={{ width: '70%' }}>
@@ -134,12 +149,18 @@ class ConnectedLiveChat extends React.Component {
             onClick={this.handleClick.bind(this)}>
             <PublishIcon />
           </Button>
-        </BottomNavigation>
+        </BottomNavigation> 
+
+        : 
+
+        null
+
+      }
       </Paper>
     );
   }
 }
 
-const LiveChat = connect(mapStateToProps)(ConnectedLiveChat);
+const RoundLiveChat = connect(mapStateToProps)(ConnectedRoundLiveChat);
 
-export default withStyles(styles)(LiveChat);
+export default withStyles(styles)(RoundLiveChat);
