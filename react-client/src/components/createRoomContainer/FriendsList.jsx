@@ -168,7 +168,7 @@ class FriendsList extends Component {
 
     return ([
       <Paper className={classes.paper}>
-        <Typography id="new-room-header" style={{ paddingBottom: '8px' }}>
+        <Typography id="new-room-header" style={{ paddingBottom: '8px', fontSize: '24px' }}>
           Friends
         </Typography>
         <Divider />
