@@ -328,7 +328,7 @@ db.models.sequelize.sync().then(() => {
       userSockets[socket.username] = socket;
     });
 
-    socket.on('join', (data) => {
+ socket.on('join', (data) => {
       socket.room = data.room;
       socket.alias = data.user;
       socket.roomMode = data.roomMode;
@@ -419,11 +419,7 @@ db.models.sequelize.sync().then(() => {
           });
         }
 
-        client.lrange(
-          `${socket.room}:membersInvited`,
-          0,
-          -1,
-          (err, replies) => {
+        client.lrange(`${socket.room}:membersInvited`, 0, -1, (err, replies) => {
             if (err) {
               console.log(err);
             } else {
@@ -459,18 +455,16 @@ db.models.sequelize.sync().then(() => {
                   console.log('MEMBERSIN ROOM BEFORE SHUFFLE:', membersInRoom);
                   let shuffledOrder = _.shuffle(membersInRoom);
                   console.log('SHUFFLED ORDER FOR PLAY:', shuffledOrder);
-
+ 
                   rooms[socket.room]['gameOrder'] = shuffledOrder;
 
-                  if (Object.keys(shuffledOrder[0]) === 'mitsuku') {
+                  if (Object.keys(shuffledOrder[0])[0] === 'mitsuku') {
                     let key = Object.keys(shuffledOrder[1]);
-                    let fixKey = key[1];
+                    let fixKey = key[0];
+                    console.log("KEY2", key, "FIXKEY2", fixKey)
                     let firstTurnSocketId = shuffledOrder[1][fixKey];
                     console.log("firstTurnSocketId:", firstTurnSocketId)
-                    io.sockets.sockets[firstTurnSocketId].emit(
-                      'yourTurn',
-                      true
-                    );
+                    io.sockets.sockets[firstTurnSocketId].emit('yourTurn',true);
                   } else {
                     let key = Object.keys(shuffledOrder[0]);
                     let fixKey = key[0];
@@ -497,41 +491,67 @@ db.models.sequelize.sync().then(() => {
     });
 
 
-    socket.on('turn done', user=>{
-      console.log("TURN DONE for Me:", user, socket.room)
+    socket.on('turn done', data=>{
+      console.log("TURN DONE for Me:", data.user, socket.room)
       console.log("I'm the room order", rooms[socket.room]['gameOrder'])
-      let gameOrderArr = rooms[socket.room]['gameOrder']
+      let gameOrderArr = rooms[socket.room].gameOrder
       let gameOrderArrOfKeys = []
       gameOrderArr.forEach(player=>{
         let username = Object.keys(player)
         gameOrderArrOfKeys.push(username[0])
       })
-      let lastTurnIndex = gameOrderArrOfKeys.indexOf(user)
-
-
+      let lastTurnIndex = gameOrderArrOfKeys.indexOf(data.user)
       let nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 1])[0]
 
+      console.log("NEXT TURN USERNAME IN TURN DONE:", nextTurnUsername)
+
       if(nextTurnUsername === "mitsuku"){
-        let nextTurnUsername2 = Object.keys(gameOrderArr[lastTurnIndex + 2])[0]
-        let nextTurnUserSocketId2 = gameOrderArr[lastTurnIndex + 2][nextTurnUsername2]
-        io.sockets.sockets[nextTurnUserSocketId2].emit('yourTurn',true);
-        
+        console.log("LAST MESSAGE that mitsuku will respond to:", data.message)
+          let extraDelay = 0;
+            mitsuku.send(data.message).then((response) => {
+              console.log('GETTING MESSAGE BACK', response);
+                if(response === undefined){
+                  mitsuku.send(data.message).then((response) => {
+                    console.log('GETTING MESSAGE BACK', response); 
+                     client.rpush(
+                       `${socket.room}:messages`,
+                       JSON.stringify({ 'mitsuku@mitsuku.com': response })
+                     );
+                });
+              }
+                if (/here\sin\sleeds/g.test(response)) {
+                  response = response.slice(0, response.indexOf('here in leeds'));
+                }
+              // Add delay based on response length
+              extraDelay = response.length * 25;
+              console.log('EXTRA DELAY', extraDelay);
 
-      }
+              setTimeout(() => {
+                // Save her message to redis
+                client.rpush(
+                  `${socket.room}:messages`,
+                  JSON.stringify({ 'mitsuku@mitsuku.com': response })
+                );
 
-      let nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 2][nextTurnUsername2]
-      console.log("NEXT TURN USER SOCEKT ID:", nextTurnUserSocketId)
+                //and retrieve all the messages immediately after
+                dbHelpers.fetchRedisMessages(client, socket, (result) => {
+                  io.sockets.in(socket.room).emit('chat', result);
+                });
+              }, Math.random() * 5000 + 2000 + extraDelay);
+            });
+          }else{
+            // let nextTurnUsername2 = Object.keys(gameOrderArr[lastTurnIndex + 1])[0]
+            let nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 1][nextTurnUsername]
+              console.log("NEXT TURN data.USER SOCEKT ID:", nextTurnUserSocketId)
+              io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn',true);
+              console.log("socket.id in next turn", socket.id)
+              io.sockets.sockets[socket.id].emit('turnOver', socket.username);
+          }
 
-      io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn',true);
-      io.sockets.sockets[socket.id].emit('turnOver', socket.username);
+        }) 
 
-      // console.log("A DIFFERENT METHOD INDEX", rooms[socket.room]['gameOrder'].indexOf({[user]:socket.id}))
+      // console.log("A DIFFERENT METHOD INDEX", rooms[socket.room]['gameOrder'].indexOf({[data.user]:socket.id}))
 
-
-
-
-
-    })
 
     socket.on('invite', (data) => {
       data.users.forEach((user) => {
