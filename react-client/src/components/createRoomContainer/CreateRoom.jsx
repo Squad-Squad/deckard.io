@@ -36,6 +36,7 @@ const mapDispatchToProps = dispatch => {
 const styles = theme => ({
   paper: {
     padding: theme.spacing.unit * 2,
+    paddingBottom: '0px',
     textAlign: 'center',
     color: theme.palette.text.secondary,
     marginTop: 30,
@@ -352,7 +353,13 @@ class ConnectedCreateRoom extends React.Component {
           color="secondary"
           className={classes.newRoomButton}
           onClick={this.createRoom}
-          style={{ marginTop: '15px' }}>
+          style={{
+            marginTop: '15px',
+            borderRadius: '0px',
+            width: 'calc(100% + 32px)',
+            marginLeft: '-16px',
+            height: '40px',
+          }}>
           Create New Room
         </Button>
       </Paper>
