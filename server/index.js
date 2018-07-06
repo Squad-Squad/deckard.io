@@ -19,6 +19,7 @@ const Mailjet = require('node-mailjet').connect(
 );
 const db = require('../database-postgresql/models/index');
 const dbHelpers = require('../db-controllers');
+const { sequelize } = require('../database-postgresql/models/index');
 
 const { Op } = db;
 
@@ -118,9 +119,7 @@ app.get('/checklogin', (req, res) => {
 app.post('/subscribe', passport.authenticate('local-signup', {
   successRedirect: '/',
   failureFlash: true,
-}), (req, res) => {
-  res.status(200).redirect('/');
-});
+}));
 
 app.post('/login', passport.authenticate('local-login', {
   successRedirect: '/',
@@ -180,6 +179,13 @@ app.post('/profile/update-profile', upload.single('avatar'), (req, res) => {
         res.status(200).send();
       });
   }
+});
+
+app.post('/profile/add-friend', (req, res) => {
+  db.models.User.update(
+    { friends: sequelize.fn('array_append', sequelize.col('friends'), req.body.friend) },
+    { where: { username: req.body.username } },
+  );
 });
 
 

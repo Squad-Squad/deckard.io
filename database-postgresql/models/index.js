@@ -91,6 +91,7 @@ const User = sequelize.define('user', {
   },
   friends: {
     type: Sequelize.ARRAY(Sequelize.TEXT),
+    defaultValue: [],
   },
 });
 

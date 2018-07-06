@@ -61,6 +61,28 @@ class FriendsList extends Component {
   }
   render() {
     const { classes } = this.props;
+
+    const list = () => {
+      if (this.props.friends) {
+        return this.props.friends.map(friend => {
+          return (
+            <ListItem button style={{ padding: '15px' }}>
+              <ListItemText primary={friend} />
+              <ListItemIcon>
+                <AdjustIcon style={{
+                  color: 'red',
+                  marginRight: '0px',
+                  opacity: '.6'
+                }} />
+              </ListItemIcon>
+            </ListItem>
+          )
+        })
+      } else {
+        return null;
+      }
+    };
+
     return (
       <Paper className={classes.paper}>
         <Typography id="new-room-header" style={{ paddingBottom: '8px' }}>
@@ -69,20 +91,7 @@ class FriendsList extends Component {
 
         <Divider />
         <List>
-          {this.props.friends.map(friend => {
-            return (
-              <ListItem button style={{ padding: '15px' }}>
-                <ListItemText primary={friend} />
-                <ListItemIcon>
-                  <AdjustIcon style={{
-                    color: 'red',
-                    marginRight: '0px',
-                    opacity: '.6'
-                  }} />
-                </ListItemIcon>
-              </ListItem>
-            )
-          })}
+          {list()}
         </List>
 
       </Paper >

@@ -159,11 +159,22 @@ class ConnectedApp extends React.Component {
       password,
     })
       .then((res) => {
-        console.log('THESE THE DATA', res.config.data);
-        const username = JSON.parse(res.config.data).username;
+        console.log('THESE THE DATA', res.config);
+        const data = JSON.parse(res.config.data);
+        data.avatarURL = './assets/roboheadwhite.png';
+        data.friends = [];
+        data.description = 'Description...';
+        data.isGoogleAccount = false;
         if (res) {
-          this.props.login(username);
-        }
+          this.props.login(
+            data.username,
+            data.email,
+            data.isGoogleAccount,
+            data.avatarURL,
+            data.description,
+            data.friends
+          );
+        };
       })
       .catch(() => {
         this.setState({
