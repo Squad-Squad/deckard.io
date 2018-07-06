@@ -506,6 +506,7 @@ db.models.sequelize.sync().then(() => {
       console.log("NEXT TURN USERNAME IN TURN DONE:", nextTurnUsername)
 
       if(nextTurnUsername === "mitsuku"){
+       io.sockets.sockets[socket.id].emit('turnOver', socket.username);
         console.log("LAST MESSAGE that mitsuku will respond to:", data.message)
           let extraDelay = 0;
             mitsuku.send(data.message).then((response) => {
@@ -537,7 +538,16 @@ db.models.sequelize.sync().then(() => {
                 dbHelpers.fetchRedisMessages(client, socket, (result) => {
                   io.sockets.in(socket.room).emit('chat', result);
                 });
+
+
+                //after mitsuku's turn onto the next one
+
+              let nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 2])[0]
+              let nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 2][nextTurnUsername]
+              io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn',true);
               }, Math.random() * 5000 + 2000 + extraDelay);
+
+
             });
           }else{
             // let nextTurnUsername2 = Object.keys(gameOrderArr[lastTurnIndex + 1])[0]
