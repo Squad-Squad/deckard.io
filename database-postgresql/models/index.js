@@ -12,7 +12,6 @@ if (process.env.DATABASE_URL) {
     logging: false,
   });
 } else {
-
   sequelize = new Sequelize(
     process.env.DB_NAME,
     process.env.DB_USER,
@@ -58,8 +57,31 @@ const User = sequelize.define('user', {
       isEmail: true,
     },
   },
+  is_google_account: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false,
+  },
   password: {
     type: Sequelize.STRING,
+    allowNull: true,
+  },
+  avatar: {
+    type: Sequelize.STRING,
+    defaultValue: './assets/roboheadwhite.png',
+  },
+  description: {
+    type: Sequelize.STRING,
+    allowNull: true,
+    defaultValue: 'Description...',
+  },
+  games_played: {
+    type: Sequelize.INTEGER(6),
+    defaultValue: 0,
+    allowNull: true,
+  },
+  games_won: {
+    type: Sequelize.INTEGER(6),
+    defaultValue: 0,
     allowNull: true,
   },
   lifetime_score: {

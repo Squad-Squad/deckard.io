@@ -37,7 +37,9 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    login: (username) => dispatch(login(username)),
+    login: (username, email, isGoogleAccount, avatarURL, description) => {
+      return dispatch(login(username, email, isGoogleAccount, avatarURL, description));
+    },
     logout: () => dispatch(logout()),
     searchUsers: (users) => dispatch(searchUsers(users)),
     removeAllUsersFromNewRoom: () => dispatch(removeAllUsersFromNewRoom()),
@@ -100,14 +102,17 @@ class ConnectedApp extends React.Component {
     axios.get('/checklogin')
       .then(res => {
         if (res.data.user) {
-          console.log('Logged in as:', res.data.user.email);
-          this.props.login(res.data.user.username);
+          console.log('Logged in as:', res.data.user);
+          this.props.login(res.data.user.username,
+            res.data.user.email,
+            res.data.user.is_google_account,
+            res.data.user.avatar,
+            res.data.user.description);
           this.setState({
             loginError: false,
           });
         }
       });
-
   }
 
   updateQuery(e) {
@@ -198,11 +203,13 @@ class ConnectedApp extends React.Component {
     return (
       <BrowserRouter>
         <div>
+
+          {/* PARTICLES */}
           <Particles
             params={{
               "particles": {
                 "number": {
-                  "value": 20,
+                  "value": 40,
                   "density": {
                     "enable": true,
                     "value_area": 800
@@ -237,7 +244,7 @@ class ConnectedApp extends React.Component {
                   }
                 },
                 "size": {
-                  "value": 4,
+                  "value": 3,
                   "random": true,
                   "anim": {
                     "enable": false,
@@ -317,6 +324,9 @@ class ConnectedApp extends React.Component {
               backgroundImage: 'url("../../dist/assets/deckardBG.jpg")',
               backgroundSize: 'cover',
             }} />
+
+
+          {/* MAIN */}
           <div>
             <Navbar
               login={this.login.bind(this)}

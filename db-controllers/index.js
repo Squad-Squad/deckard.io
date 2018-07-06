@@ -8,7 +8,7 @@ const bcrypt = require('bcrypt');
 //
 // ─── USER TABLE HELPERS ─────────────────────────────────────────────────────────
 //
-const saveMember = (username, email, password, callback) => {
+const saveMember = (username, email, password, isGoogle, callback) => {
   let hashedPW;
   if (password) {
     const salt = bcrypt.genSaltSync(3);
@@ -18,6 +18,7 @@ const saveMember = (username, email, password, callback) => {
     username,
     email,
     password: hashedPW,
+    is_google_account: isGoogle,
   })
     .then((result) => {
       callback(result);
@@ -288,6 +289,7 @@ const fetchRedisMessages = (client, socket, callback) =>{
 module.exports = {
   saveMember,
   saveRoomAndMembers,
+  updateUser,
   getRoomMembers,
   addMitsuku,
   saveMessage,

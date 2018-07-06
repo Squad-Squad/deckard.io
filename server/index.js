@@ -47,11 +47,15 @@ AWS.config.update({
   secretAccessKey: 'E0+dpv+KSz7xGX0ibTQzWj1yghZkzaSKYxiLVyCY'
 });
 
-const upload = multer({});
+const upload = multer({
+  storage: multer.memoryStorage(),
+});
 const s3 = new AWS.S3();
 const s3Params = {
-  bucket: 'deckard-io',
-  key: `avatars/${Date.now()}`
+
+  Bucket: 'deckard-io',
+  Key: `userAvatars/${Date.now()}`,
+
 };
 
 //
@@ -144,16 +148,49 @@ app.get('/logout', (req, res) => {
 // ─── USER PROFILE ENDPOINTS ─────────────────────────────────────────────────────
 //
 app.post('/api/userInfo', (req, res) => {
-  console.log('USERINFO in server', req.body);
-  db.models.User.findOne({ where: { username: req.body.user } }).then(
-    (user) => {
+
+  db.models.User.findOne({ where: { username: req.body.user } })
+    .then((user) => {
+
       res.send(JSON.parse(JSON.stringify(user)));
     }
   );
 });
 
-app.post('/profile/update-user', (req, res) => {
-  console.log('SOMETHINGS HAPPENING AT LEAST');
+app.post('/profile/update-profile', upload.single('avatar'), (req, res) => {
+  if (req.file) {
+    s3Params.Body = req.file.buffer;
+    s3.upload(s3Params, (err, data) => {
+      if (err) console.log('Error uploading image to S3', err);
+      if (data) {
+        console.log('Successfully saved image to S3', data);
+
+        db.models.User.findOne({ where: { username: req.body.username } })
+          .then((user) => {
+            user.update({
+              username: req.body.newusername || user.dataValues.username,
+              email: req.body.newemail || user.dataValues.email,
+              description: req.body.newdescription || user.dataValues.description,
+              avatar: data.Location,
+            });
+
+            res.status(200).send(data.Location);
+          });
+      }
+    });
+  } else {
+    db.models.User.findOne({ where: { username: req.body.username } })
+      .then((user) => {
+        console.log('GETTING USER');
+        user.update({
+          username: req.body.newusername || user.dataValues.username,
+          email: req.body.newemail || user.dataValues.email,
+          description: req.body.newdescription || user.dataValues.description,
+        });
+
+        res.status(200).send();
+      });
+  }
 });
 
 //
@@ -381,11 +418,11 @@ db.models.sequelize.sync().then(() => {
             //add mitsuku to the members list in redis
             client.rpush(
               `${socket.room}:membersList`,
-              'mitsuku@mitsuku.com',
+                 JSON.stringify({ mitsuku: 'mitsuku@mitsuku.com' }),
               (err, replies) => {
-                console.log('mitsuku added to redis db', replies);
-              }
-            );
+                 console.log('mitsuku added to redis db', replies);
+                }
+             );
 
             //add a message to room messages in redis notifying that mitsuku has joined
             const mitMessage = `${data.mitsuku} has joined the room`;

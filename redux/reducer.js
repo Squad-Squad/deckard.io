@@ -1,6 +1,13 @@
 const initialState = {
   loggedIn: false,
+
   username: '',
+  email: '',
+  isGoogleAccount: false,
+  avatarURL: '',
+  description: '',
+
+
   searchedUsers: [],
   usersForNewRoom: [],
   currRoomUsers: [],
@@ -12,6 +19,7 @@ function reducer(state = initialState, action) {
     // ─── AUTHENTICATION ──────────────────────────────────────────────
     //
     case 'USER_LOGGED_IN':
+      console.log('USER LOGIN PAYLOAD', action.payload);
       return Object.assign({}, state, {
         loggedIn: true,
       }, action.payload);
@@ -20,6 +28,10 @@ function reducer(state = initialState, action) {
       return Object.assign({}, state, {
         loggedIn: false,
         username: '',
+        email: '',
+        isGoogleAccount: '',
+        avatarURL: '',
+        description: '',
       });
 
 
