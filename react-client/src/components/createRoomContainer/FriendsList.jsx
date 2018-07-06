@@ -6,7 +6,7 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import AdjustIcon from '@material-ui/icons/Adjust';
+import LensIcon from '@material-ui/icons/Lens';
 import FormControl from '@material-ui/core/FormControl';
 import Input from '@material-ui/core/Input';
 import axios from 'axios';
@@ -15,7 +15,6 @@ import OtherProfileContainer from '../profileAndStats/OtherProfileContainer.jsx'
 import { addFriend } from '../../../../redux/actions';
 import { connect } from 'react-redux';
 import { withStyles } from '@material-ui/core/styles';
-import OtherProfile from '../profileAndStats/OtherProfile.jsx';
 
 function mapStateToProps(state) {
   return {
@@ -117,20 +116,22 @@ class FriendsList extends Component {
     const list = () => {
       if (this.props.friends) {
         return this.props.friends.map(friend => {
-          return (
+          return ([
             <ListItem button
-              style={{ padding: '15px' }}
+              style={{ padding: '12px' }}
               onClick={this.handleOpen.bind(this, friend)}>
               <ListItemText primary={friend} />
               <ListItemIcon>
-                <AdjustIcon style={{
+                <LensIcon style={{
                   color: 'red',
                   marginRight: '0px',
-                  opacity: '.6'
+                  opacity: '.6',
+                  fontSize: '13px',
                 }} />
               </ListItemIcon>
-            </ListItem>
-          )
+            </ListItem>,
+            <Divider />
+          ])
         })
       } else {
         return null;
@@ -156,6 +157,7 @@ class FriendsList extends Component {
             style={{
               textAlign: 'center',
               cursor: 'pointer',
+              paddingTop: '15px',
             }}
             onClick={this.handleClick.bind(this)}>
             Add Friend
