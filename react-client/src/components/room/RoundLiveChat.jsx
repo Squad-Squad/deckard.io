@@ -82,10 +82,12 @@ class ConnectedRoundLiveChat extends React.Component {
   }
 
   handleClick() {
+    console.log("MY TURN is done!")
     if (this.state.msg) this.props.sendMessage(this.state.msg);
     this.setState({
       msg: ''
     })
+    this.props.io.emit('turn done', this.props.username)
   }
 
   render() {
