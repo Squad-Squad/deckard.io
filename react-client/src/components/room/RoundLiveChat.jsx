@@ -104,7 +104,7 @@ class ConnectedRoundLiveChat extends React.Component {
               <Typography variant="title" color="inherit" className={classes.flex}>
                 {this.props.roomName}
               </Typography>
-                {this.state.yourTurn ?  <Typography variant="title" color="inherit" className={classes.flex}>YOUR TURN</Typography> : null}
+                {this.props.yourTurn ?  <Typography variant="title" color="inherit" className={classes.flex}>YOUR TURN</Typography> : null}
               <Typography variant="title" color="inherit">
                 {this.props.timer}
               </Typography>

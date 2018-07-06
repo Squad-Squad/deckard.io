@@ -496,12 +496,19 @@ db.models.sequelize.sync().then(() => {
       console.log("I'm the room order", rooms[socket.room]['gameOrder'])
       let gameOrderArr = rooms[socket.room].gameOrder
       let gameOrderArrOfKeys = []
+      let nextTurnUsername;
+      let nextTurnUserSocketId
       gameOrderArr.forEach(player=>{
         let username = Object.keys(player)
         gameOrderArrOfKeys.push(username[0])
       })
       let lastTurnIndex = gameOrderArrOfKeys.indexOf(data.user)
-      let nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 1])[0]
+
+      if(lastTurnIndex === gameOrderArr.length - 1){
+        nextTurnUsername = Object.keys(gameOrderArr[0])[0]
+      }else{
+        nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 1])[0]
+      }
 
       console.log("NEXT TURN USERNAME IN TURN DONE:", nextTurnUsername)
 
@@ -510,10 +517,10 @@ db.models.sequelize.sync().then(() => {
         console.log("LAST MESSAGE that mitsuku will respond to:", data.message)
           let extraDelay = 0;
             mitsuku.send(data.message).then((response) => {
-              console.log('GETTING MESSAGE BACK', response);
+              console.log('GETTING MESSAGE BACKFIRST', response);
                 if(response === undefined){
                   mitsuku.send(data.message).then((response) => {
-                    console.log('GETTING MESSAGE BACK', response); 
+                    console.log('GETTING MESSAGE BACKSECOND', response); 
                      client.rpush(
                        `${socket.room}:messages`,
                        JSON.stringify({ 'mitsuku@mitsuku.com': response })
@@ -539,19 +546,26 @@ db.models.sequelize.sync().then(() => {
                   io.sockets.in(socket.room).emit('chat', result);
                 });
 
-
                 //after mitsuku's turn onto the next one
 
-              let nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 2])[0]
-              let nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 2][nextTurnUsername]
-              io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn',true);
+              if(lastTurnIndex + 1 === gameOrderArr.length - 1){
+                 nextTurnUsername = Object.keys(gameOrderArr[0])[0]
+                 nextTurnUserSocketId = gameOrderArr[0][nextTurnUsername]
+              }else{
+                nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 2])[0]
+                nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 2][nextTurnUsername]
+              }
+                io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn',true);
               }, Math.random() * 5000 + 2000 + extraDelay);
-
-
             });
           }else{
-            // let nextTurnUsername2 = Object.keys(gameOrderArr[lastTurnIndex + 1])[0]
-            let nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 1][nextTurnUsername]
+          
+            if(lastTurnIndex === gameOrderArr.length - 1){
+              nextTurnUsername = Object.keys(gameOrderArr[0])[0]
+              nextTurnUserSocketId = gameOrderArr[0][nextTurnUsername] 
+            }else{
+              nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 1][nextTurnUsername]
+            }
               console.log("NEXT TURN data.USER SOCEKT ID:", nextTurnUserSocketId)
               io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn',true);
               console.log("socket.id in next turn", socket.id)
