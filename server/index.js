@@ -443,7 +443,7 @@ db.models.sequelize.sync().then(() => {
         }
       }
 
-      //if round robin room-mode is selected as soon as there are 2 people in the room one is told to speak first
+
       let membersInRoom;
       let membersInvitedtoRoom;
       client.lrange(`${socket.room}:membersList`, 0, -1, (err, replies) => {
@@ -452,7 +452,6 @@ db.models.sequelize.sync().then(() => {
         } else {
           membersInRoom = replies.map((reply) => {
             return JSON.parse(reply);
-            // membersInRoom = replies
           });
         }
 
@@ -463,7 +462,11 @@ db.models.sequelize.sync().then(() => {
               membersInvitedtoRoom = replies;
               if (data.roomMode === 'round') {
                 if (membersInRoom.length === membersInvitedtoRoom.length) {
-                  // now push mitsuku to room
+
+
+                  
+                  //PUSH MITSUKU TO ROOM'S MEMBERLIST IN REDIS
+
                   client.rpush(
                     `${socket.room}:membersList`,
                     JSON.stringify({ mitsuku: 'mitsuku@mitsuku.com' }),
@@ -472,7 +475,10 @@ db.models.sequelize.sync().then(() => {
                     }
                   );
 
-                  //add a message to room messages in redis notifying that mitsuku has joined
+
+
+                  // ADD A MESSAGE TO ROOM MESSAGES IN REDIS NOTIFYING THAT MITSUKU HAS JOINED
+
                   const mitMessage = `${data.mitsuku} has joined the room`;
                   client.rpush(
                     `${socket.room}:messages`,
@@ -482,18 +488,27 @@ db.models.sequelize.sync().then(() => {
                     }
                   );
 
+
+
+
+                  //FETCH AND EMIT ALL MESSAGES AFTER MITSUKU'S JOIN MESSAGE HAS PUSHED TO REDIS
+
                   dbHelpers.fetchRedisMessages(client, socket, (result) => {
-                    console.log('RESULTS FROM HELPER FUNCTION', result);
                     io.sockets.in(socket.room).emit('chat', result);
                   });
-
                   membersInRoom.push({mitsuku:'mitsuku@mitsuku.com'});
 
-                  console.log('MEMBERSIN ROOM BEFORE SHUFFLE:', membersInRoom);
+
+
+
+                  //RANDOMIZE THE ORDER OF TURNS FOR ROUNDROBIN MODE
+
                   let shuffledOrder = _.shuffle(membersInRoom);
                   console.log('SHUFFLED ORDER FOR PLAY:', shuffledOrder);
- 
                   rooms[socket.room]['gameOrder'] = shuffledOrder;
+
+
+                  // WHEN ITS MITSUKU'S TURN
 
                   if (Object.keys(shuffledOrder[0])[0] === 'mitsuku') {
                     let key = Object.keys(shuffledOrder[1]);
@@ -521,11 +536,16 @@ db.models.sequelize.sync().then(() => {
           }
         );
       });
-      //fetch all the messages from redis
+      
+
+      //FETCH ALL MESSAGES FROM REDIS
+
       dbHelpers.fetchRedisMessages(client, socket, (result) => {
         io.sockets.in(socket.room).emit('chat', result);
       });
     });
+
+
 
 
     socket.on('turn done', data=>{
