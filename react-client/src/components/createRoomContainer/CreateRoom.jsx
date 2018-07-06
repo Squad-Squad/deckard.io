@@ -343,7 +343,9 @@ class ConnectedCreateRoom extends React.Component {
         <Divider />
         {createRoomError()}
 
-        <RoomOptions />
+        <RoomOptions
+          freeRoomMode={this.props.freeRoomMode}
+          roundRoomMode={this.props.roundRoomMode} />
 
         <div style={{ margin: '8px' }}>
           <FormControl style={{ width: '100%' }} >

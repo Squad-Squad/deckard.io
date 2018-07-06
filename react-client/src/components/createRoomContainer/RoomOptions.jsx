@@ -45,6 +45,7 @@ class RoomOptions extends Component {
   }
 
   selectRoundRobin() {
+    this.props.roundRoomMode();
     this.setState({
       modeAnchorEl: null,
       selectedMode: 'Round Robin',
@@ -52,6 +53,7 @@ class RoomOptions extends Component {
   }
 
   selectFreeForAll() {
+    this.props.freeRoomMode();
     this.setState({
       modeAnchorEl: null,
       selectedMode: 'Free For All',
