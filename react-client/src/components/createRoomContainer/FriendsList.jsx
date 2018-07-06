@@ -10,9 +10,12 @@ import AdjustIcon from '@material-ui/icons/Adjust';
 import FormControl from '@material-ui/core/FormControl';
 import Input from '@material-ui/core/Input';
 import axios from 'axios';
+import Modal from '@material-ui/core/Modal';
+import OtherProfileContainer from '../profileAndStats/OtherProfileContainer.jsx';
 import { addFriend } from '../../../../redux/actions';
 import { connect } from 'react-redux';
 import { withStyles } from '@material-ui/core/styles';
+import OtherProfile from '../profileAndStats/OtherProfile.jsx';
 
 function mapStateToProps(state) {
   return {
@@ -40,33 +43,21 @@ const styles = theme => ({
     position: 'relative',
     height: 250,
   },
-  suggestionsContainerOpen: {
-    position: 'absolute',
-    zIndex: 1,
-    marginTop: theme.spacing.unit,
-    left: 0,
-    right: 0,
-  },
-  suggestion: {
-    display: 'block',
-  },
-  suggestionsList: {
-    margin: 0,
-    padding: 0,
-    listStyleType: 'none',
-  },
-  newRoomButton: {
-    width: '100%',
-  },
   input: {
     fontSize: '16px',
-  }
+  },
+  modal: {
+    position: 'absolute',
+    boxShadow: theme.shadows[5],
+  },
 });
 
 class FriendsList extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      open: false,
+
       addFriend: false,
       query: '',
     };
@@ -76,6 +67,14 @@ class FriendsList extends Component {
     this.setState({
       addFriend: true,
     });
+  }
+
+  handleOpen() {
+    this.setState({ open: true });
+  }
+
+  handleClose() {
+    this.setState({ open: false });
   }
 
   updateQuery(e) {
@@ -110,7 +109,9 @@ class FriendsList extends Component {
       if (this.props.friends) {
         return this.props.friends.map(friend => {
           return (
-            <ListItem button style={{ padding: '15px' }}>
+            <ListItem button
+              style={{ padding: '15px' }}
+              onClick={this.handleOpen.bind(this)}>
               <ListItemText primary={friend} />
               <ListItemIcon>
                 <AdjustIcon style={{
@@ -154,7 +155,7 @@ class FriendsList extends Component {
       }
     }
 
-    return (
+    return ([
       <Paper className={classes.paper}>
         <Typography id="new-room-header" style={{ paddingBottom: '8px' }}>
           Friends
@@ -164,8 +165,23 @@ class FriendsList extends Component {
           {list()}
         </List>
         {addFriend()}
-      </Paper >
-    );
+      </Paper >,
+      <Modal
+        style={{ alignItems: 'center', justifyContent: 'center' }}
+        open={this.state.open}
+        onClose={this.handleClose.bind(this)}
+      >
+        <div style={{
+          top: '20%',
+          margin: 'auto',
+          width: '800px',
+          backgroundColor: 'black',
+        }}
+          className={classes.modal}>
+          <OtherProfileContainer />
+        </div>
+      </Modal>
+    ]);
   }
 }
 

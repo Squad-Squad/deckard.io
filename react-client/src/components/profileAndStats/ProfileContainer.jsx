@@ -34,7 +34,7 @@ const styles = theme => ({
   },
 });
 
-class ConnectedUserProfileContainer extends React.Component {
+class ProfileContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -109,7 +109,6 @@ class ConnectedUserProfileContainer extends React.Component {
   }
 }
 
-const UserProfileContainer = connect(mapStateToProps)(ConnectedUserProfileContainer)
-
-export default withStyles(styles)(UserProfileContainer);
-
+export default connect(
+  mapStateToProps
+)(withStyles(styles)(ProfileContainer));
