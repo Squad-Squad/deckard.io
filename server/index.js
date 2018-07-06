@@ -551,6 +551,9 @@ db.models.sequelize.sync().then(() => {
               if(lastTurnIndex + 1 === gameOrderArr.length - 1){
                  nextTurnUsername = Object.keys(gameOrderArr[0])[0]
                  nextTurnUserSocketId = gameOrderArr[0][nextTurnUsername]
+              }else if (nextTurnUsername === Object.keys(gameOrderArr[0])[0]){
+                 nextTurnUsername = Object.keys(gameOrderArr[1])[0]
+                 nextTurnUserSocketId = gameOrderArr[1][nextTurnUsername]
               }else{
                 nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 2])[0]
                 nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 2][nextTurnUsername]
