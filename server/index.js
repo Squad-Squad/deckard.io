@@ -436,7 +436,6 @@ db.models.sequelize.sync().then(() => {
 
             //fetch all the messages from redis right after adding mitsuku's joined room message
             dbHelpers.fetchRedisMessages(client, socket, (result) => {
-              console.log('RESULTS FROM HELPER FUNCTION', result);
               io.sockets.in(socket.room).emit('chat', result);
             });
           }, Math.random() * 5000);
@@ -836,10 +835,7 @@ db.models.sequelize.sync().then(() => {
       rooms[socket.room][0][data.user] = data.votes;
 
       // determine if everyone has submitted there votes
-      if (
-        rooms[socket.room].length - 1 ===
-        Object.keys(rooms[socket.room][0]).length
-      ) {
+      if (rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length){
         const scores = gameLogic.calcScores(rooms[socket.room]);
 
         //add everyones scores to their lifetime scores in postgres db
