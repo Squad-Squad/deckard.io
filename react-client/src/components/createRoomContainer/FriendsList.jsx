@@ -60,6 +60,8 @@ class FriendsList extends Component {
 
       addFriend: false,
       query: '',
+
+      clickedFriend: '',
     };
   }
 
@@ -69,8 +71,15 @@ class FriendsList extends Component {
     });
   }
 
-  handleOpen() {
-    this.setState({ open: true });
+  handleOpen(friend) {
+    console.log(friend);
+    this.setState({
+      clickedFriend: friend
+    }, () => {
+      this.setState({
+        open: true,
+      });
+    });
   }
 
   handleClose() {
@@ -111,7 +120,7 @@ class FriendsList extends Component {
           return (
             <ListItem button
               style={{ padding: '15px' }}
-              onClick={this.handleOpen.bind(this)}>
+              onClick={this.handleOpen.bind(this, friend)}>
               <ListItemText primary={friend} />
               <ListItemIcon>
                 <AdjustIcon style={{
@@ -174,11 +183,11 @@ class FriendsList extends Component {
         <div style={{
           top: '20%',
           margin: 'auto',
-          width: '800px',
+          width: '700px',
           backgroundColor: 'black',
         }}
           className={classes.modal}>
-          <OtherProfileContainer />
+          <OtherProfileContainer friend={this.state.clickedFriend} />
         </div>
       </Modal>
     ]);

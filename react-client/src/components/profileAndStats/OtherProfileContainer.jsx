@@ -36,12 +36,16 @@ const styles = theme => ({
   },
 });
 
-class ProfileContainer extends React.Component {
+class OtherProfileContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       value: 0,
 
+      username: '',
+      email: '',
+      description: '',
+      avatarURL: '',
       gamesPlayed: 0,
       gamesWon: 0,
       lifetimeScore: 0,
@@ -51,10 +55,15 @@ class ProfileContainer extends React.Component {
   }
 
   componentDidMount() {
+    console.log('FRIEND', this.props.friend);
     // Get user stats
-    axios.post('/api/userInfo', { user: this.props.loggedInUser })
+    axios.post('/api/userInfo', { user: this.props.friend })
       .then((response) => {
         this.setState({
+          username: response.data.username,
+          email: response.data.email,
+          avatarURL: response.data.avatar,
+          description: response.data.description,
           gamesPlayed: response.data.games_played,
           gamesWon: response.data.games_won,
           lifetimeScore: response.data.lifetime_score,
@@ -93,7 +102,11 @@ class ProfileContainer extends React.Component {
           <SwipeableViews
             index={this.state.value}
             onChangeIndex={this.handleChangeIndex.bind(this)}>
-            <OtherProfile />
+            <OtherProfile
+              username={this.state.username}
+              email={this.state.email}
+              description={this.state.description}
+              avatarURL={this.state.avatarURL} />
             <UserStats
               gamesPlayed={this.state.gamesPlayed}
               gamesWon={this.state.gamesWon}
@@ -107,4 +120,4 @@ class ProfileContainer extends React.Component {
 
 export default connect(
   mapStateToProps
-)(withStyles(styles)(ProfileContainer));
+)(withStyles(styles)(OtherProfileContainer));

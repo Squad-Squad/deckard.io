@@ -1,37 +1,15 @@
 import React, { Component } from 'react';
-import TextField from '@material-ui/core/TextField';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import Email from '@material-ui/icons/Email';
-import Edit from '@material-ui/icons/Edit';
-import Button from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
-import Snackbar from '@material-ui/core/Snackbar';
-import IconButton from '@material-ui/core/IconButton';
-import CloseIcon from '@material-ui/icons/Close';
-import placeholder from './../../../dist/assets/profile-placeholder.jpg';
 import { connect } from 'react-redux';
-import { login } from '../../../../redux/actions';
-import axios from 'axios';
 
 function mapStateToProps(state) {
   return {
-    username: state.username,
-    email: state.email,
-    isGoogleAccount: state.isGoogleAccount,
-    avatarURL: state.avatarURL,
-    description: state.description,
   };
 }
 
-function mapDispatchToProps(dispatch) {
-  return {
-    login: (username, email, isGoogleAccount, avatarURL, description) => {
-      return dispatch(login(username, email, isGoogleAccount, avatarURL, description));
-    },
-  };
-}
-
-class UserProfile extends Component {
+class OtherProfile extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -40,12 +18,9 @@ class UserProfile extends Component {
   }
 
   handleClose(event, reason) {
-    if (reason === 'clickaway') {
-      return;
-    }
-
+    if (reason === 'clickaway') return;
     this.setState({ open: false });
-  };
+  }
 
 
   //
@@ -101,5 +76,4 @@ class UserProfile extends Component {
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
-)(UserProfile);
+)(OtherProfile);
