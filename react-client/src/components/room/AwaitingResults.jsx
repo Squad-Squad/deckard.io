@@ -14,6 +14,16 @@ function LinearIndeterminate(props) {
   const { classes } = props;
   return (
     <div className={classes.root}>
+    {props.members ?  
+      <h1 style={{
+        display: 'flex',
+        justifyContent: 'center',
+        marginBottom: '20px',
+        fontSize: '25px',
+        fontFamily: "'Titillium Web', sans-serif",
+      }}>Waiting for other users to join room...</h1>
+    
+      :
       <h1 style={{
         display: 'flex',
         justifyContent: 'center',
@@ -21,10 +31,12 @@ function LinearIndeterminate(props) {
         fontSize: '25px',
         fontFamily: "'Titillium Web', sans-serif",
       }}>Waiting for other users to vote...</h1>
+    }
       <LinearProgress />
       <br />
       <LinearProgress color="secondary" />
     </div>
+  
   );
 }
 

@@ -8,7 +8,7 @@ const bcrypt = require('bcrypt');
 //
 // ─── USER TABLE HELPERS ─────────────────────────────────────────────────────────
 //
-const saveMember = (username, email, password, callback) => {
+const saveMember = (username, email, password, isGoogle, callback) => {
   let hashedPW;
   if (password) {
     const salt = bcrypt.genSaltSync(3);
@@ -18,6 +18,7 @@ const saveMember = (username, email, password, callback) => {
     username,
     email,
     password: hashedPW,
+    is_google_account: isGoogle,
   })
     .then((result) => {
       callback(result);
@@ -91,7 +92,7 @@ const saveRoomAndMembers = (roomName, members, id, callback) => {
     });
 };
 
-const aliasMembers = (roomName, members, callback) => {
+const aliasMembers = (roomName, roomMode, members, callback) => {
   const aliases = ['HAL 9000',
     'Android 18',
     'AM',
@@ -117,7 +118,7 @@ const aliasMembers = (roomName, members, callback) => {
 
   // const randomAlias = Math.floor(Math.random() * aliases.length);
   const randomForAI = Math.floor(Math.random() * aliases.length);
-  const membersObj = { room: roomName, 'mitsuku@mitsuku.com': aliases[randomForAI] };
+  const membersObj = { room: roomName, roomMode: roomMode, 'mitsuku@mitsuku.com': aliases[randomForAI] };
   aliases.splice(randomForAI, 1);
   members.forEach((member) => {
     const randomAlias = Math.floor(Math.random() * aliases.length);
@@ -257,9 +258,38 @@ const getWins = (email, callback) => {
     });
 };
 
+
+
+const fetchRedisMessages = (client, socket, callback) =>{
+  console.log("SOCKET.ROOOM in the DBCONTROLLERS", socket.room)
+  const outputArray = [];
+  client.lrange(`${socket.room}:messages`, 0, -1, (err, replies) => {
+          if (err) {
+            console.log(err);
+          } else {
+            replies.forEach((reply) => {
+              const msgObj = {};
+              const incoming = JSON.parse(reply);
+              for (const key in incoming) {
+                msgObj.message = incoming[key];
+                msgObj.name = key;
+                msgObj.user_id = null;
+              }
+              outputArray.push(msgObj);
+            })
+            console.log("AM I GETTING A FULL ARRAY OF MESSAGES", outputArray)
+            callback(outputArray)
+            
+        }
+    });
+  // callback(outputArray)
+}
+
+
 module.exports = {
   saveMember,
   saveRoomAndMembers,
+  updateUser,
   getRoomMembers,
   addMitsuku,
   saveMessage,
@@ -267,4 +297,5 @@ module.exports = {
   getRooms,
   getWins,
   aliasMembers,
+  fetchRedisMessages,
 };

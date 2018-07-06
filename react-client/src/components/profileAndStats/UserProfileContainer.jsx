@@ -9,6 +9,7 @@ import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import UserProfile from './UserProfile.jsx';
+import UserStats from './UserStats.jsx';
 import axios from 'axios';
 
 function mapStateToProps(state) {
@@ -39,22 +40,23 @@ class ConnectedUserProfileContainer extends React.Component {
     this.state = {
       value: 0,
 
-      username: '',
-      email: '',
-      lifetimeScore: null,
+      gamesPlayed: 0,
+      gamesWon: 0,
+      lifetimeScore: 0,
+
       profileImageURL: '',
     };
   }
 
   componentDidMount() {
+    // Get user stats
     axios.post('/api/userInfo', { user: this.props.loggedInUser })
       .then((response) => {
-        console.log("response on userProfile", response.data);
         this.setState({
-          username: response.data.username,
-          email: response.data.email,
-          lifetimeScore: response.data.lifetime_score
-        }, () => (console.log(this.state)));
+          gamesPlayed: response.data.games_played,
+          gamesWon: response.data.games_won,
+          lifetimeScore: response.data.lifetime_score,
+        }, () => (console.log('USER INFO', this.state)));
       });
   }
 
@@ -85,22 +87,19 @@ class ConnectedUserProfileContainer extends React.Component {
                   onChange={this.handleChange.bind(this)}
                   indicatorColor="primary"
                   textColor="white"
-                  fullWidth
-                >
+                  fullWidth centered>
                   <Tab label="Profile" />
                   <Tab label="Stats" />
                 </Tabs>
               </AppBar>
               <SwipeableViews
                 index={this.state.value}
-                onChangeIndex={this.handleChangeIndex.bind(this)}
-              >
-                <UserProfile
-                  username={this.state.username}
-                  email={this.state.email} />
-                <Typography component="div" style={{ padding: 8 * 3 }}>
-                  STATS
-                </Typography>
+                onChangeIndex={this.handleChangeIndex.bind(this)}>
+                <UserProfile />
+                <UserStats
+                  gamesPlayed={this.state.gamesPlayed}
+                  gamesWon={this.state.gamesWon}
+                  lifetimeScore={this.state.lifetimeScore} />
               </SwipeableViews>
             </Paper>
           </div>
