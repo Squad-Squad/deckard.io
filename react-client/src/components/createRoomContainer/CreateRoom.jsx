@@ -8,13 +8,14 @@ import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import TextField from '@material-ui/core/TextField';
+import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Input from '@material-ui/core/Input';
 import CombatantsContainer from './CombatantsContainer.jsx';
 import Button from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
-import Snackbar from '@material-ui/core/Snackbar';
+import RoomOptions from './RoomOptions.jsx';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { addUserToNewRoom } from '../../../../redux/actions.js';
@@ -85,6 +86,9 @@ class ConnectedCreateRoom extends React.Component {
       suggestions: [],
       currSuggestions: [],
       value: '',
+
+      modeAnchorEl: null,
+      botAnchorEl: null,
     };
     this.handleKeyPress = this.handleKeyPress.bind(this);
     this.createRoom = this.createRoom.bind(this);
@@ -282,7 +286,10 @@ class ConnectedCreateRoom extends React.Component {
 
   render() {
     const { classes } = this.props;
+    const { anchorEl } = this.state;
+
     this.props.addUserToNewRoom(this.props.loggedInUsername);
+
     const { vertical, horizontal, open } = this.state;
 
     var uniqueURL = this.state.roomID ?
@@ -308,6 +315,9 @@ class ConnectedCreateRoom extends React.Component {
 
         <Divider />
         {createRoomError()}
+
+        <RoomOptions />
+
         <div style={{ margin: '8px' }}>
           <FormControl style={{ width: '100%' }} >
             <Input
