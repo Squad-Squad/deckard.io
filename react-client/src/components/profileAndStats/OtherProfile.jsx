@@ -36,18 +36,6 @@ class UserProfile extends Component {
     super(props);
     this.state = {
       open: false,
-
-      editUsername: false,
-      newUsername: '',
-
-      editEmail: false,
-      newEmail: '',
-
-      editDescription: false,
-      newDescription: '',
-
-      file: null,
-      imagePreviewUrl: null,
     };
   }
 
@@ -59,112 +47,11 @@ class UserProfile extends Component {
     this.setState({ open: false });
   };
 
-  handlePhotoChange(e) {
-    e.preventDefault();
-    let reader = new FileReader();
-    let file = e.target.files[0];
-
-    reader.onloadend = () => {
-      this.setState({
-        file: file,
-        imagePreviewUrl: reader.result
-      });
-    };
-
-    reader.readAsDataURL(file);
-  }
-
-  editUsername() {
-    this.setState({
-      editUsername: true,
-    });
-  }
-
-  enterUsername(e) {
-    this.setState({
-      newUsername: e.target.value,
-    });
-  }
-
-  editEmail() {
-    this.setState({
-      editEmail: true,
-    });
-  }
-
-  enterEmail(e) {
-    this.setState({
-      newEmail: e.target.value,
-    });
-  }
-
-  editDescription() {
-    this.setState({
-      editDescription: true,
-    });
-  }
-
-  enterDescription(e) {
-    this.setState({
-      newDescription: e.target.value,
-    });
-  }
-
-  updateProfile() {
-    const login = this.props.login;
-    console.log('update profile please');
-
-    const data = new FormData();
-    data.append('avatar', this.state.file);
-    data.append('username', this.props.username);
-    data.append('newusername', this.state.newUsername);
-    data.append('newemail', this.state.newEmail);
-    data.append('newdescription', this.state.newDescription);
-    console.log(data);
-
-    axios({
-      method: 'post',
-      url: '/profile/update-profile',
-      data,
-      config: { headers: { 'Content-Type': 'multipart/form-data' } }
-    })
-      .then(res => {
-        console.log('DATA', res.data);
-        const updateUsername = this.state.newUsername || this.props.username,
-          updateEmail = this.state.newEmail || this.props.email,
-          updateAvatarURL = res.data || this.props.avatarURL,
-          updateDescription = this.state.newDescription || this.props.description;
-        login.call(this,
-          updateUsername,
-          updateEmail,
-          this.props.isGoogleAccount,
-          updateAvatarURL,
-          updateDescription);
-        this.setState({
-          open: true,
-
-          newUsername: '',
-          editUsername: false,
-
-          newEmail: '',
-          editEmail: false,
-
-          newDescription: '',
-          editDescription: false,
-
-          file: null,
-          imagePreviewUrl: '',
-        });
-      });
-  }
-
 
   //
   // ─── RENDER ─────────────────────────────────────────────────────────────────────
   //
   render() {
-    const buttonEnabled = !(this.state.file || this.state.newUsername || this.state.newEmail || this.state.newDescription);
-
     const currImage = () => {
       if (this.props.avatarURL === './assets/roboheadwhite.png') {
         return (
@@ -185,13 +72,6 @@ class UserProfile extends Component {
       <div style={{ display: 'flex', alignContent: 'flex-start' }}>
         <div className="profile-photo-upload-container">
           {currImage()}
-          <div className="profile-photo-upload-middle">
-            <input id="photo-upload-input" type="file"
-              accept="image/*"
-              onChange={this.handlePhotoChange.bind(this)}
-              style={{ display: 'none' }} />
-            <label id="photo-upload-input-proxy" for="photo-upload-input">Upload Photo</label>
-          </div>
         </div>
         <div
           className="user-profile-edit-area">
@@ -199,54 +79,21 @@ class UserProfile extends Component {
             <span style={{ display: 'flex', alignContent: 'center' }}>
               <AccountCircle style={{ marginRight: '10px' }} />
               {this.props.username}
-              <Edit style={{ float: 'right', cursor: 'pointer', marginLeft: 'auto' }} onClick={this.editUsername.bind(this)} />
             </span>
           </div>
           <div>
             <span style={{ display: 'flex', alignContent: 'center' }}>
               <Email style={{ marginRight: '10px' }} />
               {this.props.email}
-              <Edit style={{ float: 'right', cursor: 'pointer', marginLeft: 'auto' }} onClick={this.editEmail.bind(this)} />
             </span >
           </div>
           <Divider style={{ margin: '0px 0px 15px 0px' }} />
           <div>
             <div style={{ display: 'flex', alignContent: 'center', marginBottom: '10px' }}>
               {this.props.description}
-              <Edit style={{ float: 'right', cursor: 'pointer', marginLeft: 'auto' }} onClick={this.editDescription.bind(this)} />
             </div>
           </div>
-          <Button variant="contained" color="secondary" aria-label="add"
-            disabled={buttonEnabled}
-            style={{ float: 'right' }}
-            onClick={this.updateProfile.bind(this)}>
-            Update Profile
-          </Button>
         </div>
-
-        {/* UPDATED ALERT */}
-        <Snackbar
-          anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'center',
-          }}
-          open={this.state.open}
-          autoHideDuration={3000}
-          onClose={this.handleClose.bind(this)}
-          ContentProps={{
-            'aria-describedby': 'message-id',
-          }}
-          message={<span id="message-id">Profile updated.</span>}
-          action={[
-            <IconButton
-              key="close"
-              aria-label="Close"
-              color="inherit"
-              onClick={this.handleClose.bind(this)}>
-              <CloseIcon />
-            </IconButton>,
-          ]}
-        />
       </div>
     );
   }
