@@ -7,12 +7,23 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import AdjustIcon from '@material-ui/icons/Adjust';
+import FormControl from '@material-ui/core/FormControl';
+import Input from '@material-ui/core/Input';
+import axios from 'axios';
+import { addFriend } from '../../../../redux/actions';
 import { connect } from 'react-redux';
 import { withStyles } from '@material-ui/core/styles';
 
 function mapStateToProps(state) {
   return {
+    username: state.username,
     friends: state.friends,
+  };
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    addFriend: (friend) => dispatch(addFriend(friend)),
   };
 }
 
@@ -56,9 +67,42 @@ class FriendsList extends Component {
   constructor(props) {
     super(props);
     this.state = {
-
+      addFriend: false,
+      query: '',
     };
   }
+
+  handleClick() {
+    this.setState({
+      addFriend: true,
+    });
+  }
+
+  updateQuery(e) {
+    this.setState({
+      query: e.target.value,
+    });
+  }
+
+  addUser(e) {
+    console.log(e.key);
+    if (e.key === 'Enter') {
+      axios.post('/profile/add-friend',
+        {
+          username: this.props.username,
+          friend: this.state.query,
+        }
+      )
+        .then(res => {
+          this.props.addFriend(this.state.query);
+          this.setState({
+            addFriend: false,
+            query: '',
+          });
+        });
+    }
+  }
+
   render() {
     const { classes } = this.props;
 
@@ -83,17 +127,43 @@ class FriendsList extends Component {
       }
     };
 
+    const addFriend = () => {
+      if (this.state.addFriend) {
+        return (
+          <FormControl style={{ width: '100%' }} >
+            <Input
+              style={{ fontSize: '16px' }}
+              value={this.state.query}
+              onChange={this.updateQuery.bind(this)}
+              placeholder="Add Friend"
+              onKeyUp={this.addUser.bind(this)}
+            />
+          </FormControl>
+        )
+      } else {
+        return (
+          <div
+            style={{
+              textAlign: 'center',
+              cursor: 'pointer',
+            }}
+            onClick={this.handleClick.bind(this)}>
+            Add Friend
+          </div>
+        )
+      }
+    }
+
     return (
       <Paper className={classes.paper}>
         <Typography id="new-room-header" style={{ paddingBottom: '8px' }}>
           Friends
         </Typography>
-
         <Divider />
         <List>
           {list()}
         </List>
-
+        {addFriend()}
       </Paper >
     );
   }
@@ -101,4 +171,5 @@ class FriendsList extends Component {
 
 export default connect(
   mapStateToProps,
+  mapDispatchToProps,
 )(withStyles(styles)(FriendsList));

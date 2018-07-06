@@ -36,6 +36,16 @@ function reducer(state = initialState, action) {
 
 
     //
+    // ─── FRIENDS ─────────────────────────────────────────────────────
+    //
+    case 'ADD_FRIEND':
+      if (!state.friends.includes(action.payload.friend)) {
+        return Object.assign({}, state, {
+          friends: state.friends.concat([action.payload.friend]),
+        });
+      } return state;
+
+    //
     // ─── ROOM CREATION ───────────────────────────────────────────────
     //
     case 'SEARCH_USERS':

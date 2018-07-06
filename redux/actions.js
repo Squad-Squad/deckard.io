@@ -19,6 +19,17 @@ const logout = () => ({
 
 
 //
+// ─── FRIENDS ────────────────────────────────────────────────────────────────────
+//
+const addFriend = friend => ({
+  type: 'ADD_FRIEND',
+  payload: {
+    friend,
+  },
+});
+
+
+//
 // ─── ROOM CREATION ──────────────────────────────────────────────────────────────
 //
 const searchUsers = searchedUsers => ({
@@ -53,6 +64,7 @@ const addCurrRoomUsersFromDB = users => ({
 module.exports = {
   login,
   logout,
+  addFriend,
   searchUsers,
   addUserToNewRoom,
   removeUserFromNewRoom,

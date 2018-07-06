@@ -185,7 +185,10 @@ app.post('/profile/add-friend', (req, res) => {
   db.models.User.update(
     { friends: sequelize.fn('array_append', sequelize.col('friends'), req.body.friend) },
     { where: { username: req.body.username } },
-  );
+  )
+    .then((results) => {
+      res.status(200).send();
+    });
 });
 
 
