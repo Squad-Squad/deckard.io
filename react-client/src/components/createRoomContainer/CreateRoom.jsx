@@ -78,11 +78,8 @@ class ConnectedCreateRoom extends React.Component {
       query: '',
       roomID: null,
       roomName: '',
-
       error: false,
-
       roomLink: '',
-
       suggestions: [],
       currSuggestions: [],
       value: '',
@@ -211,6 +208,24 @@ class ConnectedCreateRoom extends React.Component {
       currSuggestions: [],
     });
   };
+
+  // freeRoomMode(){
+  //   // console.log("ROOM MODE TARGET:", e.target.value)
+  //   console.log("ARGUENTMENS", arguments[0])
+  //   this.setState({
+  //     roomMode: arguments[0]
+  //   }, ()=>{console.log("NEW ROOM MODE:", this.state.roomMode)})
+  // }
+
+  // roundRoomMode(){
+  //   // console.log("ROOM MODE TARGET:", e.target.value)
+  //   console.log("ARGUMETS", arguments[0])
+  //   this.setState({
+  //     roomMode: arguments[0]
+  //   }, ()=>{console.log("NEW ROOM MODE:", this.state.roomMode)})
+  // }
+
+
   // ────────────────────────────────────────────────────────────────────────────────
 
 
@@ -220,12 +235,12 @@ class ConnectedCreateRoom extends React.Component {
         error: true,
       });
     } else {
-      // this.props.io.emit('invite', {users: this.props.usersForNewRoom, room:this.state.roomName})
       $.post(
         '/api/save',
         {
           roomName: this.state.roomName,
           members: this.props.usersForNewRoom,
+          roomMode: this.props.roomModeSelection
         },
         (roomInfo, status) => {
           this.sendRoomEmail(roomInfo, this.props.usersForNewRoom);
@@ -233,7 +248,7 @@ class ConnectedCreateRoom extends React.Component {
             roomLink: roomInfo.uniqueid
           }, () => {
             this.props.history.push(`/rooms/${roomInfo.uniqueid}`)
-            this.props.io.emit('invite', { users: this.props.usersForNewRoom, roomHash: roomInfo.uniqueid, roomName: this.state.roomName })
+            this.props.io.emit('invite', { users: this.props.usersForNewRoom, roomHash: roomInfo.uniqueid, roomName: this.state.roomName, roomMode: this.props.roomModeSelection })
           });
         }
       )
@@ -312,6 +327,18 @@ class ConnectedCreateRoom extends React.Component {
         <Typography id="new-room-header" style={{ paddingBottom: '8px' }}>
           New Room
         </Typography>
+        {/* <Button variant="contained"
+          onClick={this.props.freeRoomMode}
+          color="secondary"
+          style={{ marginTop: '15px' }}>
+          Free for All
+        </Button>
+        <Button variant="contained"
+          onClick={this.props.roundRoomMode}
+          color="secondary"
+          style={{ marginTop: '15px' }}>
+          Round Robin
+          </Button> */}
 
         <Divider />
         {createRoomError()}
