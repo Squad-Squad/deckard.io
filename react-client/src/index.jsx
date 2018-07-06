@@ -37,8 +37,8 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    login: (username, email, isGoogleAccount, avatarURL, description) => {
-      return dispatch(login(username, email, isGoogleAccount, avatarURL, description));
+    login: (username, email, isGoogleAccount, avatarURL, description, friends) => {
+      return dispatch(login(username, email, isGoogleAccount, avatarURL, description, friends));
     },
     logout: () => dispatch(logout()),
     searchUsers: (users) => dispatch(searchUsers(users)),
@@ -107,7 +107,8 @@ class ConnectedApp extends React.Component {
             res.data.user.email,
             res.data.user.is_google_account,
             res.data.user.avatar,
-            res.data.user.description);
+            res.data.user.description,
+            res.data.user.friends);
           this.setState({
             loginError: false,
           });
@@ -142,11 +143,22 @@ class ConnectedApp extends React.Component {
       password,
     })
       .then((res) => {
-        console.log('THESE THE DATA', res.config.data);
-        const username = JSON.parse(res.config.data).username;
+        console.log('THESE THE DATA', res.config);
+        const data = JSON.parse(res.config.data);
+        data.avatarURL = './assets/roboheadwhite.png';
+        data.friends = [];
+        data.description = 'Description...';
+        data.isGoogleAccount = false;
         if (res) {
-          this.props.login(username);
-        }
+          this.props.login(
+            data.username,
+            data.email,
+            data.isGoogleAccount,
+            data.avatarURL,
+            data.description,
+            data.friends
+          );
+        };
       })
       .catch(() => {
         this.setState({
@@ -321,7 +333,9 @@ class ConnectedApp extends React.Component {
               left: '0px',
               top: '0px',
               zIndex: '-1',
-              backgroundImage: 'url("../../dist/assets/deckardBG.jpg")',
+              background: '#000000', /* fallback for old browsers */
+              background: '-webkit-linear-gradient(to top, #202020, black 10%',  /* Chrome 10-25, Safari 5.1-6 */
+              background: 'linear-gradient(to top, #202020, black 10%)', /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
               backgroundSize: 'cover',
             }} />
 
