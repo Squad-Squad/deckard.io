@@ -508,13 +508,22 @@ db.models.sequelize.sync().then(() => {
       })
       let lastTurnIndex = gameOrderArrOfKeys.indexOf(user)
 
+
       let nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 1])[0]
 
+      if(nextTurnUsername === "mitsuku"){
+        let nextTurnUsername2 = Object.keys(gameOrderArr[lastTurnIndex + 2])[0]
+        let nextTurnUserSocketId2 = gameOrderArr[lastTurnIndex + 2][nextTurnUsername2]
+        io.sockets.sockets[nextTurnUserSocketId2].emit('yourTurn',true);
+        
 
+      }
 
-      let nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 1][nextTurnUsername]
-
+      let nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 2][nextTurnUsername2]
       console.log("NEXT TURN USER SOCEKT ID:", nextTurnUserSocketId)
+
+      io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn',true);
+      io.sockets.sockets[socket.id].emit('turnOver', socket.username);
 
       // console.log("A DIFFERENT METHOD INDEX", rooms[socket.room]['gameOrder'].indexOf({[user]:socket.id}))
 

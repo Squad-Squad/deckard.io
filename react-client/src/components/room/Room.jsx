@@ -70,6 +70,13 @@ class ConnectedRoom extends React.Component {
       })
     })
 
+    this.props.io.on('turnOver', player=>{
+      console.log("your turn's over", player, "!!!!")
+      this.setState({
+        yourTurn:false,
+      })
+    })
+
     this.props.io.on('roomReady', data=>{
       this.setState({
         waitingForRoomMembers: false
