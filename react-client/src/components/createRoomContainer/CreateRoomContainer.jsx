@@ -22,6 +22,7 @@ class CreateRoomContainer extends React.Component {
   }
 
   componentDidMount() {
+    // Get online users
     axios.post('/searchUsers')
       .then(res => {
         this.setState({

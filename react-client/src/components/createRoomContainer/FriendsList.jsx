@@ -60,8 +60,26 @@ class FriendsList extends Component {
       addFriend: false,
       query: '',
 
+      userAvatarMap: [],
+
       clickedFriend: '',
     };
+  }
+
+  componentDidMount() {
+    // Add avatars to users who have set them
+    if (this.props.friends) {
+      Promise.all(this.props.friends.map(friend => {
+        return axios.post('/api/userInfo', { user: friend });
+      }))
+        .then(res => {
+          const avatars = res.map(data => data.data.avatar);
+          const map = this.props.friends.map((friend, i) => {
+            return [friend, avatars[i]];
+          });
+          this.setState({ userAvatarMap: map });
+        });
+    }
   }
 
   handleClick() {
@@ -114,22 +132,24 @@ class FriendsList extends Component {
     const { classes } = this.props;
 
     const list = () => {
-      if (this.props.friends) {
-        return this.props.friends.map(friend => {
-          if (!this.props.onlineUsers.includes(friend)) {
+      if (this.state.userAvatarMap) {
+        return this.state.userAvatarMap.map(friendAvatar => {
+          if (!this.props.onlineUsers.includes(friendAvatar[0])) {
             return ([
               <ListItem button
-                style={{ padding: '12px' }}
-                onClick={this.handleOpen.bind(this, friend)}>
-                <ListItemText primary={friend} />
-                <ListItemIcon>
-                  <LensIcon style={{
-                    color: 'red',
-                    marginRight: '0px',
-                    opacity: '.6',
-                    fontSize: '13px',
-                  }} />
-                </ListItemIcon>
+                style={{ padding: '12px', opacity: '.4' }}
+                onClick={this.handleOpen.bind(this, friendAvatar[0])}>
+                {(() => (friendAvatar[1] !== './assets/roboheadwhite.png') ?
+                  <img
+                    src={friendAvatar[1]}
+                    style={{
+                      objectFit: 'cover',
+                      borderRadius: '50%',
+                      height: '32px',
+                      width: '32px',
+                      marginRight: '-5px',
+                    }} /> : null)()}
+                <ListItemText primary={friendAvatar[0]} />
               </ListItem>,
               <Divider />
             ])
@@ -137,16 +157,18 @@ class FriendsList extends Component {
             return ([
               <ListItem button
                 style={{ padding: '12px' }}
-                onClick={this.handleOpen.bind(this, friend)}>
-                <ListItemText primary={friend} />
-                <ListItemIcon>
-                  <LensIcon style={{
-                    color: 'green',
-                    marginRight: '0px',
-                    opacity: '.6',
-                    fontSize: '13px',
-                  }} />
-                </ListItemIcon>
+                onClick={this.handleOpen.bind(this, friendAvatar[0])}>
+                {(() => (friendAvatar[1] !== './assets/roboheadwhite.png') ?
+                  <img
+                    src={friendAvatar[1]}
+                    style={{
+                      objectFit: 'cover',
+                      borderRadius: '50%',
+                      height: '32px',
+                      width: '32px',
+                      marginRight: '-5px',
+                    }} /> : null)()}
+                <ListItemText primary={friendAvatar[0]} />
               </ListItem>,
               <Divider />
             ])
