@@ -268,7 +268,7 @@ app.post('/api/save', (req, res) => {
   });
 
   // CHANGE THE ROOM TIMER LENGTH HERE
-  timerObj[roomUnique].start(100000);
+  timerObj[roomUnique].start(5000);
 
   dbHelpers.saveRoomAndMembers(
     roomName,
@@ -410,7 +410,6 @@ db.models.sequelize.sync().then(() => {
         `${socket.room}:messages`,
         JSON.stringify({ matrixOverLords: message }),
       );
-
 
 
       dbHelpers.getRoomReady(io, client, socket, data, rooms);
@@ -613,36 +612,36 @@ db.models.sequelize.sync().then(() => {
         console.log('updatedMembersInvitedList after decline:', reply);
       });
 
-      dbHelpers.getRoomReady(io, client, socket, data, rooms);
+      // dbHelpers.getRoomReady(io, client, socket, data, rooms);
 
-      // let membersInRoomDECLINE;
-      // let membersInvitedtoRoomDECLINE;
-      // client.lrange(`${data.roomID}:membersList`, 0, -1, (err, replies) => {
-      //   if (err) {
-      //     console.log(err);
-      //   } else {
-      //     membersInRoomDECLINE = replies;
-      //   }
+      let membersInRoomDECLINE;
+      let membersInvitedtoRoomDECLINE;
+      client.lrange(`${data.roomID}:membersList`, 0, -1, (err, replies) => {
+        if (err) {
+          console.log(err);
+        } else {
+          membersInRoomDECLINE = replies;
+        }
 
-      //   client.lrange(
-      //     `${data.roomID}:membersInvited`, 0, -1,
-      //     (err, replies) => {
-      //       if (err) {
-      //         console.log(err);
-      //       } else {
-      //         membersInvitedtoRoomDECLINE = replies;
-      //         if (data.roomMode === 'round') {
-      //           if (
-      //             membersInRoomDECLINE.length >=
-      //             membersInvitedtoRoomDECLINE.length
-      //           ) {
-      //             io.sockets.in(data.roomID).emit('roomReady', true);
-      //           }
-      //         }
-      //       }
-      //     },
-      //   );
-      // });
+        client.lrange(
+          `${data.roomID}:membersInvited`, 0, -1,
+          (err, replies) => {
+            if (err) {
+              console.log(err);
+            } else {
+              membersInvitedtoRoomDECLINE = replies;
+              if (data.roomMode === 'round') {
+                if (
+                  membersInRoomDECLINE.length >=
+                  membersInvitedtoRoomDECLINE.length
+                ) {
+                  io.sockets.in(data.roomID).emit('roomReady', true);
+                }
+              }
+            }
+          },
+        );
+      });
     });
 
     // handle cases in which player leaves the room without completely disconnecting from the site
@@ -706,10 +705,53 @@ db.models.sequelize.sync().then(() => {
 
     socket.on('vote', (data) => {
       console.log('SOCKET.ROOM in vote socket:', socket.room, 'and the rooms object:', rooms, 'and data.roomID', data.roomID);
-      rooms[data.roomID][0][data.user] = data.votes;
+      let userVotes = data.user
+      let roomMembers;
+      let roomScores;
+      rooms[data.roomID][0][userVotes] = data.votes;
+
+      client.rpush(`${data.roomID}:votes`,JSON.stringify({[userVotes]: data.votes}), (err, replies)=>{
+        console.log('added users votes to redis', replies)
+      })
+
+      client.lrange(`${data.roomID}:votes`, 0, -1, (err, replies)=>{
+        if(err){
+          console.error(err)
+        }else{
+          let retrieveBucket = []
+          for(reply of replies){
+            retrieveBucket.push(JSON.parse(reply))
+          }
+        console.log("retrieveBucket after parse loop:", retrieveBucket)
+        roomScores = retrieveBucket
+
+          client.lrange(`${data.roomID}:membersList`, 0, -1, (err,replies)=>{
+            if(err){
+              console.error(err)
+            }else{
+              console.log("membersList RETRIEVE", replies)
+              roomMembers = replies
+
+              console.log("ROOMMEMBERS.length", roomMembers.length, "roomScore.length", roomScores.length)
+
+              if(roomMembers - 1 <= roomScores.length){
+                console.log("THIS CONDITION IS ALSO MET")
+                const scores = gameLogic.calcScores(rooms[socket.room]);
+                console.log("THESE THE SCORES IN MY NEW REDIS RETRIEVAL:", scores)
+              }
+
+            }
+          })
+
+        }
+      })
+
+
+      // console.log("PREVIOUS FORM OF VOTES BEFORE GOING INTO SCORE CALCULATOR:", rooms[data.roomID][0])
 
       // determine if everyone has submitted there votes
       if (rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length) {
+
         const scores = gameLogic.calcScores(rooms[socket.room]);
 
         // add everyones scores to their lifetime scores in postgres db
