@@ -301,7 +301,9 @@ app.post('/api/startTimer', (req, res)=>{
 
   const { roomID } = req.body
 
-  console.log("ROOOM ID IN START TIME API CALLL:", roomID)
+
+  console.log("ROOOM ID IN START TIME API CALLL:", roomID, "other version", req.body.roomID, 
+    "and just req.body", req.body)
 
   timerObj[roomID] = new Tock({
     countdown: true,
