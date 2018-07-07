@@ -66,7 +66,7 @@ class ConnectedRoom extends React.Component {
       console.log("your turn", player, "!!!!")
       this.setState({
         yourTurn: true,
-        timer: "00:15"
+        // timer: "00:15"
       })
     })
 
@@ -97,7 +97,6 @@ class ConnectedRoom extends React.Component {
 
   getRoomInfo() {
     $.get(`/api/rooms/${this.roomID}`).then(roomMembers => {
-      // console.log(`Got roommembers: ${JSON.stringify(roomMembers)} from ${this.roomID}`);
       console.log("GET ROOM INFO RECEIVING OBJ:", roomMembers);
 
 
@@ -170,6 +169,7 @@ class ConnectedRoom extends React.Component {
       // this.getTimer();
       if (this.state.timer === "00:00" && !this.state.scores) {
         return (<VotePanel members={this.state.members}
+          roomID={this.roomID} 
           memberMap={this.state.memberMap} io={this.props.io} />);
       } else if (!this.state.scores) {
         return (<FreeLiveChat
@@ -195,6 +195,7 @@ class ConnectedRoom extends React.Component {
       } else {
         if (this.state.timer === "00:00" && !this.state.scores) {
           return (<VotePanel members={this.state.members}
+            roomID={this.roomID} 
             memberMap={this.state.memberMap} io={this.props.io} />);
         } else if (!this.state.scores) {
           return (<RoundLiveChat

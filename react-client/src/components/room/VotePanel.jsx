@@ -68,10 +68,10 @@ class VotePanel extends Component {
   submitVotes() {
     const submitObj = {
       user: this.props.loggedInUser,
-      votes: this.state.membersVoteMap
+      votes: this.state.membersVoteMap,
+      roomID: this.props.roomID
     };
-    // this.props.history.push(`/rooms/${this.props.roomId}/awaiting-results`);
-    // axios.post('/api/saveVotes', submitObj)
+ 
     this.setState({
       submitted: true,
     });

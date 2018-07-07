@@ -734,9 +734,7 @@ db.models.sequelize.sync().then(() => {
         }
 
         client.lrange(
-          `${data.roomID}:membersInvited`,
-          0,
-          -1,
+          `${data.roomID}:membersInvited`, 0, -1,
           (err, replies) => {
             if (err) {
               console.log(err);
@@ -816,7 +814,8 @@ db.models.sequelize.sync().then(() => {
     });
 
     socket.on('vote', (data) => {
-      rooms[socket.room][0][data.user] = data.votes;
+      console.log("SOCKET.ROOM in vote socket:", socket.room, "and the rooms object:", rooms, "and data.roomID", data.roomID)
+      rooms[data.roomID][0][data.user] = data.votes;
 
       // determine if everyone has submitted there votes
       if (rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length) {
