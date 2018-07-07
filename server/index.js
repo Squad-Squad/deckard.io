@@ -663,13 +663,16 @@ db.models.sequelize.sync().then(() => {
       if (socket.room) {
         rooms[socket.room].splice(
           rooms[socket.room].indexOf(socket.username),
-          1,
+          1
         );
 
         client.rpush(
           `${socket.room}:messages`,
           JSON.stringify({ matrixOverLords: `${socket.alias} left the room` }),
         );
+
+        dbHelpers.removeFromMembersList(client, socket)
+
 
         dbHelpers.fetchRedisMessages(client, socket, (result) => {
           io.sockets.in(socket.room).emit('chat', result);
@@ -710,27 +713,29 @@ db.models.sequelize.sync().then(() => {
         console.error(err)
       })
 
-      let user = socket.username
-      console.log("WHO I'mTRYING TO REMOVE", JSON.stringify({[user]: socket.id}))
-      client.lremAsync(`${socket.room}:membersList`, 1, JSON.stringify({[user]: socket.id}))
-      .then((replies) => {
-      console.log('REMOVE FROM MEMBERSLIST REPLY', replies);
-      client.lrangeAsync(`${socket.room}:membersList`, 0, -1)
-        .then((reply) => {
-          console.log(`ROOM MEMmbers of ${socket.room} CHECK AFTER REM:`, reply);
+      dbHelpers.removeFromMembersList(client, socket)
+
+      // let user = socket.username
+      // console.log("WHO I'mTRYING TO REMOVE", JSON.stringify({[user]: socket.id}))
+      // client.lremAsync(`${socket.room}:membersList`, 1, JSON.stringify({[user]: socket.id}))
+      // .then((replies) => {
+      // console.log('REMOVE FROM MEMBERSLIST REPLY', replies);
+      // client.lrangeAsync(`${socket.room}:membersList`, 0, -1)
+      //   .then((reply) => {
+      //     console.log(`ROOM MEMmbers of ${socket.room} CHECK AFTER REM:`, reply);
 
 
-          //LEAVE ROOM ASYNCHRONOUSLY HERE
-          socket.leave(socket.room);
+      //     //LEAVE ROOM ASYNCHRONOUSLY HERE
+      //     socket.leave(socket.room);
 
-        })
-        .catch(err=>{
-          console.error(err)
-        })
-      })
-      .catch(err=>{
-        console.error(err)
-      })
+      //   })
+      //   .catch(err=>{
+      //     console.error(err)
+      //   })
+      // })
+      // .catch(err=>{
+      //   console.error(err)
+      // })
 
       // socket.leave(socket.room);
       // console.log('SOCKET.ROOMS', rooms);
@@ -759,28 +764,22 @@ db.models.sequelize.sync().then(() => {
         for(reply of replies){
           retrieveBucket.push(JSON.parse(reply))
         }
-        console.log("retrieveBucket after parse loop:", retrieveBucket)
         roomScores = retrieveBucket
 
         client.lrangeAsync(`${data.roomID}:membersList`, 0, -1)
         .then((replies)=>{
         
-            console.log("membersList RETRIEVE", replies)
             roomMembers = replies
-
-            console.log("ROOMMEMBERS.length", roomMembers.length, "roomScore.length", roomScores.length)
 
             // DETERMINE IF EVERYONE HAS SUBMITTED THER VOTES
 
             if(roomMembers.length - 1 <= roomScores.length){
               const scores = gameLogic.calcScores(rooms[socket.room]);
-              console.log("THESE THE SCORES IN MY NEW REDIS RETRIEVAL:", scores)
 
                 for (var user in scores) {
                   db.models.User.findOne({ where: { username: user } })
                   .then((instance) => {
                     const oldScore = instance.get('lifetime_score');
-                    console.log('OLD LIFETIME SCORE:', oldScore);
                     if(!isNaN(scores[user])){
                       instance.updateAttributes({
                         lifetime_score: oldScore + scores[user],
