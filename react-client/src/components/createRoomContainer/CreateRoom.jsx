@@ -24,6 +24,9 @@ const mapStateToProps = state => {
     loggedIn: state.loggedIn,
     loggedInUsername: state.username,
     usersForNewRoom: state.usersForNewRoom,
+    roomMode: state.roomMode,
+    roomBot: state.roomBot,
+    roomLength: state.roomLength,
   };
 };
 
@@ -95,6 +98,19 @@ class ConnectedCreateRoom extends React.Component {
 
   componentDidMount() {
     this.props.addUserToNewRoom(this.props.loggedInUsername);
+  }
+
+  componentWillReceiveProps(newProps) {
+    if (newProps.roomMode && newProps.roomBot && newProps.roomLength) {
+      this.setState({
+        optionsError: '',
+      })
+    }
+    if (newProps.roomName) {
+      this.setState({
+        nameError: false,
+      })
+    }
   }
 
   //
@@ -203,12 +219,27 @@ class ConnectedCreateRoom extends React.Component {
   };
   // ────────────────────────────────────────────────────────────────────────────────
 
+  generateOptionsError() {
+    const err = [];
+    if (!this.props.roomMode) err.push('a mode');
+    if (!this.props.roomBot) err.push('a bot');
+    if (!this.props.roomLength) err.push('a duration');
+    if (err.length === 3) {
+      return 'Please choose a mode, a bot, and a duration';
+    } else if (err.length === 2) {
+      return `Please choose ${err[0]} and ${err[1]}`;
+    } else if (err.length === 1) {
+      return `Please choose ${err[0]}`;
+    }
+    return null;
+  }
+
   createRoom() {
-    if (this.state.roomName.length === 0) {
-      this.setState({
-        nameError: true,
-      });
+    const optionsError = this.generateOptionsError();
+    if (optionsError) {
+      this.setState({ optionsError })
     } else if (this.state.roomName.length === 0) {
+      console.log('SETSTASTE');
       this.setState({
         nameError: true,
       });
@@ -290,13 +321,24 @@ class ConnectedCreateRoom extends React.Component {
 
     // Error creating room
     const createRoomError = () => {
-      return this.state.error ? (
-        <section className="section login-error" style={{ color: 'white' }}>
-          <p>
-            Your room must have a name.
+      console.log(this.state.optionsError.length);
+      if (this.state.optionsError) {
+        return (
+          <section className="section login-error" style={{ color: 'white' }}>
+            <p>
+              {this.state.optionsError}
+            </p>
+          </section>
+        )
+      } else {
+        return this.state.nameError ? (
+          <section className="section login-error" style={{ color: 'white' }}>
+            <p>
+              Your room must have a name.
           </p>
-        </section>
-      ) : null;
+          </section>
+        ) : null;
+      }
     };
 
     return (

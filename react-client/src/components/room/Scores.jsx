@@ -13,8 +13,11 @@ function mapStateToProps(state) {
 }
 
 class Scores extends Component {
+  state = {
+    winner: '',
+  }
 
-  componentDidMount(){
+  componentDidMount() {
     console.log("MEMBERMAP in SCORES", this.props.memberMap, "and scoresObj", this.props.scores)
     // this.props.scores.map((user)=>{
     //   user.alias = this.props.memberMap[]
@@ -22,6 +25,9 @@ class Scores extends Component {
 
   }
 
+  getWinner() {
+
+  }
 
   // memberMap: {mitsuku@mitsuku.com: "Robocop", adonesky@gmail.com: "Data", dance1@gmail.com: "Dolores"}
 
@@ -44,7 +50,12 @@ class Scores extends Component {
         </div>
 
         {Object.keys(this.props.scores).map((user, i) =>
-          <ScoresItem key={i} user={user} score={this.props.scores[user]} alias={this.props.memberMap[user]}/>
+          <ScoresItem
+            key={i}
+            user={user}
+            score={this.props.scores[user]}
+            winner={this.getWinner()}
+            alias={this.props.memberMap[user]} />
         )}
       </Paper>
     );
