@@ -341,12 +341,10 @@ const getRoomReady = (io, client, socket, data, rooms) => {
 
   let membersInRoom;
   let membersInvitedtoRoom;
-  client.lrange(`${data.roomID}:membersList`, 0, -1, (err, replies) => {
-    if (err) {
-      console.log(err);
-    } else {
+  client.lrangeAsync(`${data.roomID}:membersList`, 0, -1)
+  .then((replies) => {
+   
       membersInRoom = replies.map(reply => JSON.parse(reply));
-    }
 
     client.lrange(`${data.roomID}:membersInvited`, 0, -1, (err, replies) => {
       if (err) {
@@ -419,8 +417,11 @@ const getRoomReady = (io, client, socket, data, rooms) => {
         }
       }
     });
+
   });
-};
+
+}
+
 
 
 module.exports = {

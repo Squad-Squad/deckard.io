@@ -14,6 +14,7 @@ const Tock = require('tocktimer');
 const mitsuku = require('../lib/mitsukuHelper')();
 const gameLogic = require('../lib/gameLogic');
 const _ = require('underscore');
+const bluebird = require('bluebird')
 const Mailjet = require('node-mailjet').connect(
   process.env.MAILJET_API_KEY,
   process.env.MAILJET_API_SECRET,
@@ -27,9 +28,12 @@ const { Op } = db;
 //
 // ─── REDIS ──────────────────────────────────────────────────────────────────────
 //
-const redis = require('redis');
 
-let client;
+
+const redis = require('redis');
+bluebird.promisifyAll(redis.RedisClient.prototype);
+
+
 if (process.env.REDIS_URL) {
   client = redis.createClient(process.env.REDIS_URL);
 } else {
@@ -130,7 +134,7 @@ app.post(
 );
 
 app.get('/logout', (req, res) => {
-  client.lrem('onlineUsers', 0, req.user, (err, reply) => {
+  client.lremAsync('onlineUsers', 0, req.user, (err, reply) => {
     console.log('removed before adding');
   });
   req.logout();
@@ -198,7 +202,7 @@ app.post('/profile/add-friend', (req, res) => {
 // ─── USER SEARCH AND INVITE ─────────────────────────────────────────────────────
 //
 app.post('/searchUsers', (req, res) => {
-  client.lrange('onlineUsers', 0, -1, (err, users) => {
+  client.lrange('onlineUsers', 0, -1, (err, users)=>{
     console.log('DESE DA ONLINE USERS', users);
     res.status(200).send(users);
   });
@@ -264,7 +268,14 @@ app.post('/api/save', (req, res) => {
   });
 
   dbHelpers.aliasMembers(roomName, roomMode, members, (results) => {
-    client.hmset(`${roomUnique}:members`, results);
+    console.log("AM I HAPPENING", results)
+    client.hmset(`${roomUnique}:members`, results, (err, reply)=>{
+      if(err){
+        console.error(err)
+      }else{
+        console.log("reply setting members", reply)
+      }
+    })
   });
 
   // CHANGE THE ROOM TIMER LENGTH HERE
@@ -289,14 +300,12 @@ app.post('/api/save', (req, res) => {
 app.get('/api/rooms/:roomID', (req, res) => {
   const { roomID } = req.params;
 
-  client.hgetall(`${roomID}:members`, (err, replies) => {
-    if (err) {
-      console.log(err);
-    } else {
+  client.hgetallAsync(`${roomID}:members`)
+  .then(replies => { 
+    console.log('REPLIES', replies)
       res.send(replies);
-    }
+    })
   });
-});
 
 app.get('/api/timer/:roomID', (req, res) => {
   const { roomID } = req.params;
@@ -353,14 +362,21 @@ db.models.sequelize.sync().then(() => {
       socket.username = data;
       console.log('USERNAME CONNECT:', data);
 
-      client.lrem('onlineUsers', 0, socket.username, (err, reply) => {
-        console.log(socket.username, 'removed before adding');
+      client.lremAsync('onlineUsers', 0, socket.username)
+      .then((reply) => {
+        console.log(socket.username, 'removed before adding', reply);
+      })
+      .catch(err=>{
+      console.error(err)
       });
 
-      client.rpush('onlineUsers', socket.username, (err, reply) => {
-        console.log('ONLINE USERS ADD:', reply);
+      client.rpushAsync('onlineUsers', socket.username)
+      .then((reply) => {
+        console.log("userAdded to onlineUsers", reply);
+      })
+      .catch(err=>{
+      console.error(err)
       });
-
       userSockets[socket.username] = socket;
     });
 
@@ -389,17 +405,15 @@ db.models.sequelize.sync().then(() => {
       // const user = socket.username;
 
       const user = socket.username;
-      client.rpush(
+      client.rpushAsync(
         `${socket.room}:membersList`,
-        JSON.stringify({ [user]: socket.id }),
-        (err, replies) => {
-          if (err) {
-            console.log(err);
-          } else {
-            console.log('addToRoomMembers in redis', replies);
-          }
-        },
-      );
+        JSON.stringify({ [user]: socket.id }))
+        .then(reply=>{
+          console.log("user pushed to room in redis", reply)
+        })
+        .catch(err=>{
+          console.error(err)
+        });
 
       // notify everyone when someone has joined the room
       const user_id = socket.username;
