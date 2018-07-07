@@ -671,6 +671,8 @@ db.models.sequelize.sync().then(() => {
           JSON.stringify({ matrixOverLords: `${socket.alias} left the room` }),
         );
 
+        io.sockets.sockets[socket.id].emit('return option', socket.room)
+
         dbHelpers.removeFromMembersList(client, socket)
 
 
@@ -714,31 +716,6 @@ db.models.sequelize.sync().then(() => {
       })
 
       dbHelpers.removeFromMembersList(client, socket)
-
-      // let user = socket.username
-      // console.log("WHO I'mTRYING TO REMOVE", JSON.stringify({[user]: socket.id}))
-      // client.lremAsync(`${socket.room}:membersList`, 1, JSON.stringify({[user]: socket.id}))
-      // .then((replies) => {
-      // console.log('REMOVE FROM MEMBERSLIST REPLY', replies);
-      // client.lrangeAsync(`${socket.room}:membersList`, 0, -1)
-      //   .then((reply) => {
-      //     console.log(`ROOM MEMmbers of ${socket.room} CHECK AFTER REM:`, reply);
-
-
-      //     //LEAVE ROOM ASYNCHRONOUSLY HERE
-      //     socket.leave(socket.room);
-
-      //   })
-      //   .catch(err=>{
-      //     console.error(err)
-      //   })
-      // })
-      // .catch(err=>{
-      //   console.error(err)
-      // })
-
-      // socket.leave(socket.room);
-      // console.log('SOCKET.ROOMS', rooms);
 
       dbHelpers.fetchRedisMessages(client, socket, (result) => {
         io.sockets.in(socket.room).emit('chat', result);
