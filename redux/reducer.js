@@ -78,7 +78,7 @@ function reducer(state = initialState, action) {
     case 'CHOOSE_ROOM_MODE':
       return Object.assign({}, state, action.payload);
 
-    case 'CHOOSE_ROOM_BOAT':
+    case 'CHOOSE_ROOM_BOT':
       return Object.assign({}, state, action.payload);
 
     case 'CHOOSE_ROOM_LENGTH':
