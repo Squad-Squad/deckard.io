@@ -9,6 +9,7 @@ import RoundLiveChat from './RoundLiveChat.jsx';
 import VotePanel from './VotePanel.jsx';
 import Scores from './Scores.jsx';
 import AwaitingResults from './AwaitingResults.jsx';
+import axios from 'axios'
 import { addCurrUsersFromDB } from '../../../../redux/actions';
 import { connect } from 'react-redux';
 
@@ -93,6 +94,8 @@ class ConnectedRoom extends React.Component {
     console.log("current state of waitingForRoomMembers:", this.state.waitingForRoomMembers)
     this.getRoomInfo();
     if(this.state.roomMode === "free"){
+      axios.post('/api/startTimer', {roomID: this.props.roomID})
+      console.log("I'm HIT IN ROOM componentDidMount")
       this.getTimer()
     }
   }
