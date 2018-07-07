@@ -279,7 +279,7 @@ app.post('/api/save', (req, res) => {
   });
 
   // CHANGE THE ROOM TIMER LENGTH HERE
-  timerObj[roomUnique].start(5000);
+  timerObj[roomUnique].start(15000);
 
   dbHelpers.saveRoomAndMembers(
     roomName,
@@ -695,19 +695,44 @@ db.models.sequelize.sync().then(() => {
         );
       }
 
-      client.lrem('onlineUsers', 1, socket.username, (err, replies) => {
-        console.log(
-          'WAS I REMOVED FROM REDIS WHEN I DISCONNECTED:',
-          socket.username,
-        );
-        console.log('REMOVE REPLY', replies);
-      });
+      client.lremAsync('onlineUsers', 1, socket.username)
+      .then((replies) => {
+        console.log('REMOVE FROM ONLINE USERS REPLY', replies);
+        client.lrangeAsync('onlineUsers', 0, -1)
+        .then((reply) => {
+          console.log('ONLINE USERS CHECK AFTER REM:', reply);
+        })
+        .catch(err=>{
+          console.error(err)
+        })
+      })
+      .catch(err=>{
+        console.error(err)
+      })
 
-      client.lrange('onlineUsers', 0, -1, (err, reply) => {
-        console.log('ONLINE USERS CHECK:', reply);
-      });
+      let user = socket.username
+      console.log("WHO I'mTRYING TO REMOVE", JSON.stringify({[user]: socket.id}))
+      client.lremAsync(`${socket.room}:membersList`, 1, JSON.stringify({[user]: socket.id}))
+      .then((replies) => {
+      console.log('REMOVE FROM MEMBERSLIST REPLY', replies);
+      client.lrangeAsync(`${socket.room}:membersList`, 0, -1)
+        .then((reply) => {
+          console.log(`ROOM MEMmbers of ${socket.room} CHECK AFTER REM:`, reply);
 
-      socket.leave(socket.room);
+
+          //LEAVE ROOM ASYNCHRONOUSLY HERE
+          socket.leave(socket.room);
+
+        })
+        .catch(err=>{
+          console.error(err)
+        })
+      })
+      .catch(err=>{
+        console.error(err)
+      })
+
+      // socket.leave(socket.room);
       // console.log('SOCKET.ROOMS', rooms);
 
       dbHelpers.fetchRedisMessages(client, socket, (result) => {
@@ -728,36 +753,38 @@ db.models.sequelize.sync().then(() => {
         console.log('added users votes to redis', replies)
       })
 
-      client.lrange(`${data.roomID}:votes`, 0, -1, (err, replies)=>{
-        if(err){
-          console.error(err)
-        }else{
-          let retrieveBucket = []
-          for(reply of replies){
-            retrieveBucket.push(JSON.parse(reply))
-          }
+      client.lrangeAsync(`${data.roomID}:votes`, 0, -1)
+      .then((replies)=>{
+        let retrieveBucket = []
+        for(reply of replies){
+          retrieveBucket.push(JSON.parse(reply))
+        }
         console.log("retrieveBucket after parse loop:", retrieveBucket)
         roomScores = retrieveBucket
 
-          client.lrange(`${data.roomID}:membersList`, 0, -1, (err,replies)=>{
-            if(err){
-              console.error(err)
-            }else{
-              console.log("membersList RETRIEVE", replies)
-              roomMembers = replies
+        client.lrangeAsync(`${data.roomID}:membersList`, 0, -1)
+        .then((replies)=>{
+        
+            console.log("membersList RETRIEVE", replies)
+            roomMembers = replies
 
-              console.log("ROOMMEMBERS.length", roomMembers.length, "roomScore.length", roomScores.length)
+            console.log("ROOMMEMBERS.length", roomMembers.length, "roomScore.length", roomScores.length)
 
-              if(roomMembers - 1 <= roomScores.length){
-                console.log("THIS CONDITION IS ALSO MET")
-                const scores = gameLogic.calcScores(rooms[socket.room]);
-                console.log("THESE THE SCORES IN MY NEW REDIS RETRIEVAL:", scores)
-              }
-
+            if(roomMembers - 1 <= roomScores.length){
+              console.log("THIS CONDITION IS ALSO MET")
+              const scores = gameLogic.calcScores(rooms[socket.room]);
+              console.log("THESE THE SCORES IN MY NEW REDIS RETRIEVAL:", scores)
             }
-          })
 
-        }
+          
+        })
+        .catch(err=>{
+          console.error(err)
+        })
+        
+      })
+      .catch(err=>{
+        console.error(err)
       })
 
 

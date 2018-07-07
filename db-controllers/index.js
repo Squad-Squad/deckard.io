@@ -284,29 +284,6 @@ const fetchRedisMessages = (client, socket, callback) => {
 
 
 const getRoomReady = (io, client, socket, data, rooms) => {
-  // const user = socket.username;
-  // client.rpush(
-  //   `${socket.room}:membersList`,
-  //   JSON.stringify({ [user]: socket.id }),
-  //   (err, replies) => {
-  //     if (err) {
-  //       console.log(err);
-  //     } else {
-  //       console.log('addToRoomMembers in redis', replies);
-  //     }
-  //   },
-  // );
-
-  // // notify everyone when someone has joined the room
-  // const user_id = socket.username;
-  // const name = socket.username;
-  // const message = `${data.user} has joined the room!`;
-
-  // client.rpush(
-  //   `${socket.room}:messages`,
-  //   JSON.stringify({ matrixOverLords: message }),
-  // );
-
   // notify everyone when mitsuku's joined the room (but only with her alias)
   if (socket.roomMode === 'free') {
     if (rooms[socket.room].length === 2) {
@@ -343,82 +320,82 @@ const getRoomReady = (io, client, socket, data, rooms) => {
   let membersInvitedtoRoom;
   client.lrangeAsync(`${data.roomID}:membersList`, 0, -1)
   .then((replies) => {
-   
       membersInRoom = replies.map(reply => JSON.parse(reply));
 
-    client.lrange(`${data.roomID}:membersInvited`, 0, -1, (err, replies) => {
-      if (err) {
-        console.log(err);
-      } else {
-        membersInvitedtoRoom = replies;
-        if (data.roomMode === 'round') {
-          if (membersInRoom.length === membersInvitedtoRoom.length) {
-            // PUSH MITSUKU TO ROOM'S MEMBERLIST IN REDIS
+  client.lrangeAsync(`${data.roomID}:membersInvited`, 0, -1)
+  .then((replies) => {
+      membersInvitedtoRoom = replies;
 
-            client.rpush(
-              `${data.roomID}:membersList`,
-              JSON.stringify({ mitsuku: 'mitsuku@mitsuku.com' }),
-              (err, replies) => {
-                console.log('mitsuku added to redis db', replies);
-              },
+      if (data.roomMode === 'round') {
+        if (membersInRoom.length === membersInvitedtoRoom.length) {
+          // PUSH MITSUKU TO ROOM'S MEMBERLIST IN REDIS
+
+          client.rpush(
+            `${data.roomID}:membersList`,
+            JSON.stringify({ mitsuku: 'mitsuku@mitsuku.com' }),
+            (err, replies) => {
+              console.log('mitsuku added to redis db', replies);
+            },
+          );
+
+
+          // ADD A MESSAGE TO ROOM MESSAGES IN REDIS NOTIFYING THAT MITSUKU HAS JOINED
+
+          const mitMessage = `${data.mitsuku} has joined the room`;
+          client.rpush(
+            `${data.roomID}:messages`,
+            JSON.stringify({ matrixOverLords: mitMessage }),
+            (err, reply) => {
+              console.log("I've pushed to redis:", reply);
+            },
+          );
+
+
+          // FETCH AND EMIT ALL MESSAGES AFTER MITSUKU'S JOIN MESSAGE HAS PUSHED TO REDIS
+
+          fetchRedisMessages(client, socket, (result) => {
+            io.sockets.in(data.roomID).emit('chat', result);
+          });
+          membersInRoom.push({ mitsuku: 'mitsuku@mitsuku.com' });
+
+
+          // RANDOMIZE THE ORDER OF TURNS FOR ROUNDROBIN MODE
+
+          const shuffledOrder = _.shuffle(membersInRoom);
+          console.log('SHUFFLED ORDER FOR PLAY:', shuffledOrder);
+          rooms[data.roomID].gameOrder = shuffledOrder;
+
+
+          // WHEN ITS MITSUKU'S TURN
+
+          if (Object.keys(shuffledOrder[0])[0] === 'mitsuku') {
+            const key = Object.keys(shuffledOrder[1]);
+            const fixKey = key[0];
+            const firstTurnSocketId = shuffledOrder[1][fixKey];
+            io.sockets.sockets[firstTurnSocketId].emit('yourTurn', true);
+          } else {
+            const key = Object.keys(shuffledOrder[0]);
+            const fixKey = key[0];
+            const firstTurnSocketId = shuffledOrder[0][fixKey];
+            io.sockets.sockets[firstTurnSocketId].emit(
+              'yourTurn',
+              key[0],
             );
-
-
-            // ADD A MESSAGE TO ROOM MESSAGES IN REDIS NOTIFYING THAT MITSUKU HAS JOINED
-
-            const mitMessage = `${data.mitsuku} has joined the room`;
-            client.rpush(
-              `${data.roomID}:messages`,
-              JSON.stringify({ matrixOverLords: mitMessage }),
-              (err, reply) => {
-                console.log("I've pushed to redis:", reply);
-              },
-            );
-
-
-            // FETCH AND EMIT ALL MESSAGES AFTER MITSUKU'S JOIN MESSAGE HAS PUSHED TO REDIS
-
-            fetchRedisMessages(client, socket, (result) => {
-              io.sockets.in(data.roomID).emit('chat', result);
-            });
-            membersInRoom.push({ mitsuku: 'mitsuku@mitsuku.com' });
-
-
-            // RANDOMIZE THE ORDER OF TURNS FOR ROUNDROBIN MODE
-
-            const shuffledOrder = _.shuffle(membersInRoom);
-            console.log('SHUFFLED ORDER FOR PLAY:', shuffledOrder);
-            rooms[data.roomID].gameOrder = shuffledOrder;
-
-
-            // WHEN ITS MITSUKU'S TURN
-
-            if (Object.keys(shuffledOrder[0])[0] === 'mitsuku') {
-              const key = Object.keys(shuffledOrder[1]);
-              const fixKey = key[0];
-              console.log('KEY2', key, 'FIXKEY2', fixKey);
-              const firstTurnSocketId = shuffledOrder[1][fixKey];
-              console.log('firstTurnSocketId:', firstTurnSocketId);
-              io.sockets.sockets[firstTurnSocketId].emit('yourTurn', true);
-            } else {
-              const key = Object.keys(shuffledOrder[0]);
-              const fixKey = key[0];
-              console.log('KEY', key, 'FIXKEY', fixKey);
-              const firstTurnSocketId = shuffledOrder[0][fixKey];
-              console.log('firstTurnSocketId:', firstTurnSocketId);
-              io.sockets.sockets[firstTurnSocketId].emit(
-                'yourTurn',
-                key[0],
-              );
-            }
-
-            io.sockets.in(data.roomID).emit('roomReady', true);
           }
+
+          io.sockets.in(data.roomID).emit('roomReady', true);
         }
       }
-    });
+      
+  })
+  .catch(err=>{
+    console.error(err)
+  })
 
-  });
+  })
+  .catch(err=>{
+    console.error(err)
+  })
 
 }
 
