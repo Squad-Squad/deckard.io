@@ -3,7 +3,7 @@ import CreateRoomContainer from './createRoomContainer/CreateRoomContainer.jsx';
 import Room from './room/Room.jsx';
 import InviteDialogueModal from './inviteDialogueModal/InviteDialogueModal.jsx'
 import { Route } from 'react-router-dom';
-import UserProfileContainer from './profileAndStats/UserProfileContainer.jsx';
+import ProfileContainer from './profileAndStats/ProfileContainer.jsx';
 import { connect } from 'react-redux';
 
 
@@ -112,7 +112,7 @@ class ConnectedMainView extends React.Component {
             ]
         } />
         <Route path="/userprofile/:username" render={
-          () => <UserProfileContainer />} />
+          () => <ProfileContainer />} />
 
         <Route path="/rooms/:roomID" render={
           (props) =>

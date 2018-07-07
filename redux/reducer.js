@@ -6,7 +6,7 @@ const initialState = {
   isGoogleAccount: false,
   avatarURL: '',
   description: '',
-
+  friends: [],
 
   searchedUsers: [],
   usersForNewRoom: [],
@@ -34,6 +34,16 @@ function reducer(state = initialState, action) {
         description: '',
       });
 
+
+    //
+    // ─── FRIENDS ─────────────────────────────────────────────────────
+    //
+    case 'ADD_FRIEND':
+      if (!state.friends.includes(action.payload.friend)) {
+        return Object.assign({}, state, {
+          friends: state.friends.concat([action.payload.friend]),
+        });
+      } return state;
 
     //
     // ─── ROOM CREATION ───────────────────────────────────────────────

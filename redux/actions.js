@@ -1,7 +1,7 @@
 //
 // ─── AUTHENTICATION ─────────────────────────────────────────────────────────────
 //
-const login = (username, email, isGoogleAccount, avatarURL, description) => ({
+const login = (username, email, isGoogleAccount, avatarURL, description, friends) => ({
   type: 'USER_LOGGED_IN',
   payload: {
     username,
@@ -9,11 +9,23 @@ const login = (username, email, isGoogleAccount, avatarURL, description) => ({
     isGoogleAccount,
     avatarURL,
     description,
+    friends,
   },
 });
 
 const logout = () => ({
   type: 'USER_LOGGING_OUT',
+});
+
+
+//
+// ─── FRIENDS ────────────────────────────────────────────────────────────────────
+//
+const addFriend = friend => ({
+  type: 'ADD_FRIEND',
+  payload: {
+    friend,
+  },
 });
 
 
@@ -52,6 +64,7 @@ const addCurrRoomUsersFromDB = users => ({
 module.exports = {
   login,
   logout,
+  addFriend,
   searchUsers,
   addUserToNewRoom,
   removeUserFromNewRoom,

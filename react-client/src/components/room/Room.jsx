@@ -51,7 +51,7 @@ class ConnectedRoom extends React.Component {
       console.log("MESSAGE IN CHAT :", messages)
       this.setState({
         messages: messages
-      }, ()=>{console.log("this.state.messages in room:", this.state.messages)});
+      }, () => { console.log("this.state.messages in room:", this.state.messages) });
     });
 
 
@@ -62,22 +62,22 @@ class ConnectedRoom extends React.Component {
       });
     });
 
-    this.props.io.on('yourTurn', player=>{
+    this.props.io.on('yourTurn', player => {
       console.log("your turn", player, "!!!!")
       this.setState({
-        yourTurn:true,
-        timer:"00:15"
+        yourTurn: true,
+        timer: "00:15"
       })
     })
 
-    this.props.io.on('turnOver', player=>{
+    this.props.io.on('turnOver', player => {
       console.log("your turn's over", player, "!!!!")
       this.setState({
-        yourTurn:false,
+        yourTurn: false,
       })
     })
 
-    this.props.io.on('roomReady', data=>{
+    this.props.io.on('roomReady', data => {
       this.setState({
         waitingForRoomMembers: false
       })
@@ -118,7 +118,7 @@ class ConnectedRoom extends React.Component {
       });
     })
       .then(() => {
-        this.props.io.emit('join', { room: this.roomID, user: this.state.memberMap[this.props.loggedInUsername], mitsuku:this.state.memberMap['mitsuku@mitsuku.com'], roomMode: this.state.roomMode});
+        this.props.io.emit('join', { room: this.roomID, user: this.state.memberMap[this.props.loggedInUsername], mitsuku: this.state.memberMap['mitsuku@mitsuku.com'], roomMode: this.state.roomMode });
       });
 
 
@@ -157,7 +157,7 @@ class ConnectedRoom extends React.Component {
       },
       roomID: this.roomID,
     };
-      this.props.io.emit('chat', messageObj);
+    this.props.io.emit('chat', messageObj);
   }
 
   // Update from text boxes in the live chat
@@ -189,14 +189,14 @@ class ConnectedRoom extends React.Component {
       }
     }
 
-   const roundchatOrVote = () => {
-    if(this.state.waitingForRoomMembers){
-      return(<AwaitingResults members={true}/>)
+    const roundchatOrVote = () => {
+      if (this.state.waitingForRoomMembers) {
+        return (<AwaitingResults members={true} />)
       } else {
-         if (this.state.timer === "00:00" && !this.state.scores) {
-           return (<VotePanel members={this.state.members}
-             memberMap={this.state.memberMap} io={this.props.io} />);
-         } else if (!this.state.scores) {
+        if (this.state.timer === "00:00" && !this.state.scores) {
+          return (<VotePanel members={this.state.members}
+            memberMap={this.state.memberMap} io={this.props.io} />);
+        } else if (!this.state.scores) {
           return (<RoundLiveChat
             alias={this.state.memberMap[this.props.loggedInUsername]}
             io={this.props.io}
@@ -209,30 +209,30 @@ class ConnectedRoom extends React.Component {
             getTimer={this.getTimer}
             timer={this.state.timer}
             memberMap={this.state.memberMap} />);
-         } else {
-           return (
-             <Scores
-               scores={this.state.scores} memberMap={this.state.memberMap} />
-           )
-         }
-        }  
-  } 
+        } else {
+          return (
+            <Scores
+              scores={this.state.scores} memberMap={this.state.memberMap} />
+          )
+        }
+      }
+    }
 
     return (
       <div>
         <div className="columns">
           <div className="column is-2 hide-if-small"></div>
-          <div className="column is-8"> 
+          <div className="column is-8">
             {(() => {
-                switch(this.state.roomMode) {
-                  case "round": 
+              switch (this.state.roomMode) {
+                case "round":
                   return roundchatOrVote()
                   break;
-                  case "free": 
+                case "free":
                   return freechatOrVote()
                   break;
-                }
-            })()}  
+              }
+            })()}
           </div>
         </div>
       </div>
