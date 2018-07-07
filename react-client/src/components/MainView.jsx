@@ -40,6 +40,10 @@ class ConnectedMainView extends React.Component {
       }
     })
 
+    this.props.io.on('return option', (data)=>{
+      console.log("RETURN OPTION", data)
+    })
+
     this.freeRoomMode = this.freeRoomMode.bind(this, "free")
     this.roundRoomMode = this.roundRoomMode.bind(this, "round")
     this.decline = this.decline.bind(this)

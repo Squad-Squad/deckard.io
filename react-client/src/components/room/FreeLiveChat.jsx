@@ -9,6 +9,7 @@ import Button from '@material-ui/core/Button';
 import PublishIcon from '@material-ui/icons/Publish';
 import FormControl from '@material-ui/core/FormControl';
 import Input from '@material-ui/core/Input';
+import axios from 'axios'
 import { withStyles } from '@material-ui/core/styles';
 import { connect } from 'react-redux';
 
@@ -43,7 +44,9 @@ class ConnectedFreeLiveChat extends React.Component {
   componentDidMount() {
     console.log("AM I MOUNTING", this.props.roomID)
     this.scrollToBottom();
+    axios.post('/api/startTimer', {roomID: this.props.roomID})
     this.props.getTimer()
+
   }
 
   updateMessage(e) {

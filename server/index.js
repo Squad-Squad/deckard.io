@@ -263,9 +263,9 @@ app.post('/api/save', (req, res) => {
 
   const { roomName, roomMode, members } = req.body;
   const roomUnique = uniqueString().slice(0, 6);
-  timerObj[roomUnique] = new Tock({
-    countdown: true,
-  });
+  // timerObj[roomUnique] = new Tock({
+  //   countdown: true,
+  // });
 
   dbHelpers.aliasMembers(roomName, roomMode, members, (results) => {
     console.log("AM I HAPPENING", results)
@@ -279,7 +279,7 @@ app.post('/api/save', (req, res) => {
   });
 
   // CHANGE THE ROOM TIMER LENGTH HERE
-  timerObj[roomUnique].start(15000);
+  // timerObj[roomUnique].start(30000);
 
   dbHelpers.saveRoomAndMembers(
     roomName,
@@ -295,6 +295,21 @@ app.post('/api/save', (req, res) => {
     },
   );
 });
+
+
+app.post('/api/startTimer', (req, res)=>{
+
+  const { roomID } = req.body
+
+  console.log("ROOOM ID IN START TIME API CALLL:", roomID)
+
+  timerObj[roomID] = new Tock({
+    countdown: true,
+  });
+
+  timerObj[roomID].start(30000);
+
+})
 
 // Get room members here
 app.get('/api/rooms/:roomID', (req, res) => {
@@ -671,7 +686,10 @@ db.models.sequelize.sync().then(() => {
           JSON.stringify({ matrixOverLords: `${socket.alias} left the room` }),
         );
 
-        io.sockets.sockets[socket.id].emit('return option', socket.room)
+        console.log("SOCKET ID WHEN LEAVE:", socket.id)
+        io.sockets.sockets[socket.id].emit('return option', socket.room, (err, response)=>{
+          console.log("DID I HAPPEN")
+        })
 
         dbHelpers.removeFromMembersList(client, socket)
 
@@ -688,15 +706,11 @@ db.models.sequelize.sync().then(() => {
       if (rooms[socket.room]) {
         users.splice(users.indexOf(socket.username), 1);
         rooms[socket.room].splice(thisRoom.indexOf(socket.username), 1);
-        console.log(
-          'this users has disconnected:',
-          socket.username,
-          'AND ROOMS[SOCKET.ROOM] AFTER DISCONNECT:',
-          rooms[socket.room],
+        console.log('this users has disconnected:', socket.username, 'AND ROOMS[SOCKET.ROOM] AFTER DISCONNECT:',rooms[socket.room],
         );
         client.rpush(
           `${socket.room}:messages`,
-          JSON.stringify({ matrixOverLords: `${socket.alias} left the room` }),
+          JSON.stringify({ matrixOverLords:`${socket.alias} left the room`}),
         );
       }
 
