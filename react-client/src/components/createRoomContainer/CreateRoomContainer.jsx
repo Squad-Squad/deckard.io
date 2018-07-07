@@ -3,6 +3,7 @@ import axios from 'axios';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import CreateRoom from './CreateRoom.jsx';
+import FriendsList from './FriendsList.jsx';
 import UserRooms from './UserRooms.jsx';
 
 const styles = theme => ({
@@ -44,13 +45,16 @@ class CreateRoomContainer extends React.Component {
     return (
       <div>
         <div className="columns">
-          <div className="column is-2 hide-if-small"></div>
-          <div className="column is-8">
-            <CreateRoom 
-            io={this.props.io}
-            freeRoomMode={this.props.freeRoomMode}
-            roundRoomMode={this.props.roundRoomMode}
-            roomModeSelection={this.props.roomModeSelection}
+          <div className="column is-1 hide-if-small"></div>
+          <div className="column is-4">
+            <FriendsList />
+          </div>
+          <div className="column is-6">
+            <CreateRoom
+              io={this.props.io}
+              freeRoomMode={this.props.freeRoomMode}
+              roundRoomMode={this.props.roundRoomMode}
+              roomModeSelection={this.props.roomModeSelection}
             >
             </CreateRoom>
           </div>

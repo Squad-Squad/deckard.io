@@ -11,7 +11,8 @@ import { removeUserFromNewRoom } from '../../../../redux/actions.js';
 const mapStateToProps = state => {
   return {
     loggedInUser: state.username,
-    usersForNewRoom: state.usersForNewRoom
+    usersForNewRoom: state.usersForNewRoom,
+    avatarURL: state.avatarURL,
   };
 };
 
@@ -43,11 +44,17 @@ function ConnectedCombatantsContainer(props) {
       {/* logged in user's chip */}
       <Chip
         style={{ zIndex: '0' }}
-        // avatar={
-        //   <Avatar>
-        //     <FaceIcon />
-        //   </Avatar>
-        // }
+        avatar={
+          <Avatar>
+            <img src={props.avatarURL}
+              style={{
+                objectFit: 'cover',
+                borderRadius: '50%',
+                height: '32px',
+                width: '32px',
+              }} />
+          </Avatar>
+        }
         label={props.loggedInUser}
         className={classes.chip}
       />
@@ -57,12 +64,11 @@ function ConnectedCombatantsContainer(props) {
         props.usersForNewRoom.slice(1).map((user, i) => {
           return (
             <Chip
-              style={{ zIndex: '1' }}
-              // avatar={
-              //   <Avatar>
-              //     <FaceIcon />
-              //   </Avatar>
-              // }
+              avatar={
+                <Avatar>
+                  <FaceIcon />
+                </Avatar>
+              }
               key={i}
               label={user}
               onDelete={props.removeUserFromNewRoom.bind(this, user)}

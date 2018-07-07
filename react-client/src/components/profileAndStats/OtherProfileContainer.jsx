@@ -10,6 +10,8 @@ import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import UserProfile from './UserProfile.jsx';
 import UserStats from './UserStats.jsx';
+import OtherProfile from './OtherProfile.jsx';
+import OtherStats from './OtherStats.jsx';
 import axios from 'axios';
 
 function mapStateToProps(state) {
@@ -34,12 +36,16 @@ const styles = theme => ({
   },
 });
 
-class ConnectedUserProfileContainer extends React.Component {
+class OtherProfileContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       value: 0,
 
+      username: '',
+      email: '',
+      description: '',
+      avatarURL: '',
       gamesPlayed: 0,
       gamesWon: 0,
       lifetimeScore: 0,
@@ -49,10 +55,15 @@ class ConnectedUserProfileContainer extends React.Component {
   }
 
   componentDidMount() {
+    console.log('FRIEND', this.props.friend);
     // Get user stats
-    axios.post('/api/userInfo', { user: this.props.loggedInUser })
+    axios.post('/api/userInfo', { user: this.props.friend })
       .then((response) => {
         this.setState({
+          username: response.data.username,
+          email: response.data.email,
+          avatarURL: response.data.avatar,
+          description: response.data.description,
           gamesPlayed: response.data.games_played,
           gamesWon: response.data.games_won,
           lifetimeScore: response.data.lifetime_score,
@@ -74,42 +85,39 @@ class ConnectedUserProfileContainer extends React.Component {
 
     return (
       <div>
-        <div className="columns">
-          <div className="column is-1 hide-if-small">
-          </div>
-          <div className="column is-10">
-            <Paper style={{
-              backgroundColor: 'rgba(255,255,255,.1)'
-            }}>
-              <AppBar position="static" color="default">
-                <Tabs
-                  value={this.state.value}
-                  onChange={this.handleChange.bind(this)}
-                  indicatorColor="primary"
-                  textColor="white"
-                  fullWidth centered>
-                  <Tab label="Profile" />
-                  <Tab label="Stats" />
-                </Tabs>
-              </AppBar>
-              <SwipeableViews
-                index={this.state.value}
-                onChangeIndex={this.handleChangeIndex.bind(this)}>
-                <UserProfile />
-                <UserStats
-                  gamesPlayed={this.state.gamesPlayed}
-                  gamesWon={this.state.gamesWon}
-                  lifetimeScore={this.state.lifetimeScore} />
-              </SwipeableViews>
-            </Paper>
-          </div>
-        </div>
+        <Paper style={{
+          backgroundColor: 'rgba(255,255,255,.1)'
+        }}>
+          <AppBar position="static" color="default">
+            <Tabs
+              value={this.state.value}
+              onChange={this.handleChange.bind(this)}
+              indicatorColor="primary"
+              textColor="white"
+              fullWidth centered>
+              <Tab label="Profile" />
+              <Tab label="Stats" />
+            </Tabs>
+          </AppBar>
+          <SwipeableViews
+            index={this.state.value}
+            onChangeIndex={this.handleChangeIndex.bind(this)}>
+            <OtherProfile
+              username={this.state.username}
+              email={this.state.email}
+              description={this.state.description}
+              avatarURL={this.state.avatarURL} />
+            <UserStats
+              gamesPlayed={this.state.gamesPlayed}
+              gamesWon={this.state.gamesWon}
+              lifetimeScore={this.state.lifetimeScore} />
+          </SwipeableViews>
+        </Paper>
       </div>
     );
   }
 }
 
-const UserProfileContainer = connect(mapStateToProps)(ConnectedUserProfileContainer)
-
-export default withStyles(styles)(UserProfileContainer);
-
+export default connect(
+  mapStateToProps
+)(withStyles(styles)(OtherProfileContainer));

@@ -92,6 +92,19 @@ svg[class^="MuiSvgIcon-"] {
   z-index: 0;
 }
 
+div[class^="MuiChip-"] {
+  font-size: 16px;
+  background-color: rgba(30, 30, 30, .8);
+}
+
+div[class^="MuiBackdrop-"] {
+  background-color: rgba(0, 0, 0, .2);
+}
+
+ul[class^="MuiList-"] {
+  padding: 0px;
+}
+
 #site-body p.title {
   margin-bottom: 10px;
 }
