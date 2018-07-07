@@ -4,6 +4,7 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import ScoresItem from './ScoresItem.jsx';
+import Divider from '@material-ui/core/Divider';
 import { connect } from 'react-redux';
 
 function mapStateToProps(state) {
@@ -15,6 +16,7 @@ function mapStateToProps(state) {
 class Scores extends Component {
   state = {
     winner: '',
+    botAlias: '',
   }
 
   componentDidMount() {
@@ -26,6 +28,20 @@ class Scores extends Component {
   }
 
   getWinner() {
+    let winScore = 0, winner = '';
+    for (let user in this.props.scores) {
+      if (this.props.scores[user] > winScore) {
+        winScore = this.props.scores[user];
+        winner = user;
+      }
+    }
+
+    this.setState({
+      winner: this.props.memberMap[winner],
+    })
+  }
+
+  getBotAlias() {
 
   }
 
@@ -49,6 +65,21 @@ class Scores extends Component {
           </AppBar>
         </div>
 
+        {/* BOT REVEAL */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          paddingLeft: '15px',
+          paddingRight: '15px',
+          paddingTop: '15px',
+          paddingBottom: '10px',
+          fontSize: '20px',
+        }}>
+          DIS DA BOT
+        </div>
+        <Divider />
+
+        {/* USER RESULTS */}
         {Object.keys(this.props.scores).map((user, i) =>
           <ScoresItem
             key={i}
