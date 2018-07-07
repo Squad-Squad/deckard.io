@@ -1,6 +1,5 @@
 import React from 'react';
 import $ from 'jquery';
-import axios from 'axios';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -25,6 +24,9 @@ const mapStateToProps = state => {
     loggedIn: state.loggedIn,
     loggedInUsername: state.username,
     usersForNewRoom: state.usersForNewRoom,
+    roomMode: state.roomMode,
+    roomBot: state.roomBot,
+    roomLength: state.roomLength,
   };
 };
 
@@ -78,11 +80,12 @@ class ConnectedCreateRoom extends React.Component {
       query: '',
       roomID: null,
       roomName: '',
-      error: false,
       roomLink: '',
-      suggestions: [],
       currSuggestions: [],
       value: '',
+
+      nameError: false,
+      optionsError: '',
 
       modeAnchorEl: null,
       botAnchorEl: null,
@@ -94,14 +97,20 @@ class ConnectedCreateRoom extends React.Component {
   }
 
   componentDidMount() {
-    axios.post('/searchUsers')
-      .then(res => {
-        console.log('USERS', res.data);
-        this.setState({
-          suggestions: res.data
-            .filter(user => (user !== this.props.loggedInUsername)),
-        });
-      });
+    this.props.addUserToNewRoom(this.props.loggedInUsername);
+  }
+
+  componentWillReceiveProps(newProps) {
+    if (newProps.roomMode && newProps.roomBot && newProps.roomLength) {
+      this.setState({
+        optionsError: '',
+      })
+    }
+    if (newProps.roomName) {
+      this.setState({
+        nameError: false,
+      })
+    }
   }
 
   //
@@ -185,7 +194,7 @@ class ConnectedCreateRoom extends React.Component {
 
     return inputLength === 0
       ? []
-      : this.state.suggestions.filter(suggestion => {
+      : this.props.onlineUsers.filter(suggestion => {
         const keep =
           count < 5 && suggestion.toLowerCase().slice(0, inputLength) === inputValue;
 
@@ -208,31 +217,31 @@ class ConnectedCreateRoom extends React.Component {
       currSuggestions: [],
     });
   };
-
-  // freeRoomMode(){
-  //   // console.log("ROOM MODE TARGET:", e.target.value)
-  //   console.log("ARGUENTMENS", arguments[0])
-  //   this.setState({
-  //     roomMode: arguments[0]
-  //   }, ()=>{console.log("NEW ROOM MODE:", this.state.roomMode)})
-  // }
-
-  // roundRoomMode(){
-  //   // console.log("ROOM MODE TARGET:", e.target.value)
-  //   console.log("ARGUMETS", arguments[0])
-  //   this.setState({
-  //     roomMode: arguments[0]
-  //   }, ()=>{console.log("NEW ROOM MODE:", this.state.roomMode)})
-  // }
-
-
   // ────────────────────────────────────────────────────────────────────────────────
 
+  generateOptionsError() {
+    const err = [];
+    if (!this.props.roomMode) err.push('a mode');
+    if (!this.props.roomBot) err.push('a bot');
+    if (!this.props.roomLength) err.push('a duration');
+    if (err.length === 3) {
+      return 'Please choose a mode, a bot, and a duration';
+    } else if (err.length === 2) {
+      return `Please choose ${err[0]} and ${err[1]}`;
+    } else if (err.length === 1) {
+      return `Please choose ${err[0]}`;
+    }
+    return null;
+  }
 
   createRoom() {
-    if (this.state.roomName.length === 0) {
+    const optionsError = this.generateOptionsError();
+    if (optionsError) {
+      this.setState({ optionsError })
+    } else if (this.state.roomName.length === 0) {
+      console.log('SETSTASTE');
       this.setState({
-        error: true,
+        nameError: true,
       });
     } else {
       $.post(
@@ -282,6 +291,7 @@ class ConnectedCreateRoom extends React.Component {
 
   handleAutoSuggestKeyPress(event) {
     if (event.key == 'Enter') {
+      console.log('IS IT ENTER');
       if (this.state.query.length &&
         this.props.usersForNewRoom.length <= 7) {
         this.props.addUserToNewRoom(this.state.currSuggestions[0]);
@@ -303,8 +313,6 @@ class ConnectedCreateRoom extends React.Component {
     const { classes } = this.props;
     const { anchorEl } = this.state;
 
-    this.props.addUserToNewRoom(this.props.loggedInUsername);
-
     const { vertical, horizontal, open } = this.state;
 
     var uniqueURL = this.state.roomID ?
@@ -313,13 +321,24 @@ class ConnectedCreateRoom extends React.Component {
 
     // Error creating room
     const createRoomError = () => {
-      return this.state.error ? (
-        <section className="section login-error" style={{ color: 'white' }}>
-          <p>
-            Your room must have a name.
+      console.log(this.state.optionsError.length);
+      if (this.state.optionsError) {
+        return (
+          <section className="section login-error" style={{ color: 'white' }}>
+            <p>
+              {this.state.optionsError}
+            </p>
+          </section>
+        )
+      } else {
+        return this.state.nameError ? (
+          <section className="section login-error" style={{ color: 'white' }}>
+            <p>
+              Your room must have a name.
           </p>
-        </section>
-      ) : null;
+          </section>
+        ) : null;
+      }
     };
 
     return (

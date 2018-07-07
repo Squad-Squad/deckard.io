@@ -98,22 +98,20 @@ class ConnectedApp extends React.Component {
     this.socket = io();
   }
 
-  componentDidMount() {
-    axios.get('/checklogin')
-      .then(res => {
-        if (res.data.user) {
-          console.log('Logged in as:', res.data.user);
-          this.props.login(res.data.user.username,
-            res.data.user.email,
-            res.data.user.is_google_account,
-            res.data.user.avatar,
-            res.data.user.description,
-            res.data.user.friends);
-          this.setState({
-            loginError: false,
-          });
-        }
+  async componentDidMount() {
+    const res = await axios.get('/checklogin')
+    if (res.data.user) {
+      console.log('Logged in as:', res.data.user);
+      this.props.login(res.data.user.username,
+        res.data.user.email,
+        res.data.user.is_google_account,
+        res.data.user.avatar,
+        res.data.user.description,
+        res.data.user.friends);
+      this.setState({
+        loginError: false,
       });
+    }
   }
 
   updateQuery(e) {
@@ -122,13 +120,11 @@ class ConnectedApp extends React.Component {
     });
   }
 
-  searchUsers(query) {
+  async searchUsers(query) {
     console.log('SEARCHING FOR', query);
-    axios.post('/searchUsers', { query })
-      .then(res => {
-        console.log('RESULTS', res);
-        this.props.searchUsers(res.data);
-      });
+    const res = await axios.post('/searchUsers', { query })
+    console.log('RESULTS', res);
+    this.props.searchUsers(res.data);
   }
 
 
@@ -167,39 +163,30 @@ class ConnectedApp extends React.Component {
       });
   }
 
-  login(usernameOrEmail, password) {
-    axios.post('/login', {
+  async login(usernameOrEmail, password) {
+    const res = await axios.post('/login', {
       username: usernameOrEmail,
       email: usernameOrEmail,
       password
     })
-      .then(res => {
-        if (res.config.data) {
-          console.log('Logged in as:', JSON.parse(res.config.data).username);
-          this.props.login(JSON.parse(res.config.data).username);
-        }
-      })
-      .catch(
-        (error => {
-          console.log(this);
-          this.setState({
-            loginError: true
-          });
-        })()
-      );
+
+    if (res.config.data) {
+      console.log('Logged in as:', JSON.parse(res.config.data).username);
+      this.props.login(JSON.parse(res.config.data).username);
+    }
   }
 
-  logout() {
+  async logout() {
 
-    axios.get('/logout')
-      .then(res => {
-        console.log('Logging out');
-        this.props.logout();
-        this.props.removeAllUsersFromNewRoom();
-        this.setState({
-          loginError: false
-        });
-      })
+    await axios.get('/logout')
+
+    console.log('Logging out');
+    this.props.logout();
+    this.props.removeAllUsersFromNewRoom();
+    this.setState({
+      loginError: false
+    });
+
     this.socket.emit('leaveRoom', this.props.loggedInUsername)
   }
 
