@@ -756,7 +756,6 @@ db.models.sequelize.sync().then(() => {
           retrieveBucket.push(JSON.parse(reply))
         }
         roomScores = retrieveBucket
-
         client.lrangeAsync(`${data.roomID}:membersList`, 0, -1)
         .then((replies)=>{
         
@@ -764,7 +763,11 @@ db.models.sequelize.sync().then(() => {
 
             // DETERMINE IF EVERYONE HAS SUBMITTED THER VOTES
 
+            console.log("NEW VOTES STRUCTURE:", roomScores)
+            console.log("OLD VOTES STRUCTURE:", rooms[socket.room])
+
             if(roomMembers.length - 1 <= roomScores.length){
+              // const scores = gameLogic.calcScores(roomScores);
               const scores = gameLogic.calcScores(rooms[socket.room]);
 
                 for (var user in scores) {
