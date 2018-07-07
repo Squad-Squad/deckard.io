@@ -51,14 +51,14 @@ class ConnectedCombatantsContainer extends React.Component {
     }
   }
 
-  componentWillReceiveProps() {
-    if (this.props.usersForNewRoom.slice(1)) {
-      Promise.all(this.props.usersForNewRoom.slice(1).map(friend => {
+  componentWillReceiveProps(newProps) {
+    if (newProps.usersForNewRoom) {
+      Promise.all(newProps.usersForNewRoom.slice(1).map(friend => {
         return axios.post('/api/userInfo', { user: friend });
       }))
         .then(res => {
           const avatars = res.map(data => data.data.avatar);
-          const map = this.props.usersForNewRoom.slice(1).map((friend, i) => {
+          const map = newProps.usersForNewRoom.slice(1).map((friend, i) => {
             return [friend, avatars[i]];
           });
           this.setState({ userAvatarMap: map });
