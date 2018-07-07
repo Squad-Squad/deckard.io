@@ -60,9 +60,10 @@ function reducer(state = initialState, action) {
 
     case 'REMOVE_USER_FROM_NEW_ROOM':
       // THIS CONSOLE LOG IS NECESSARY, DON'T REMOVE
-      console.log('UPDATED ARRAY', state.usersForNewRoom.splice(state.usersForNewRoom.indexOf(action.payload.username), 1));
+      const copy = state.usersForNewRoom.slice(0);
+      copy.splice(copy.indexOf(action.payload.username), 1);
       return Object.assign({}, state, {
-        usersForNewRoom: state.usersForNewRoom.splice(state.usersForNewRoom.indexOf(action.payload.username), 1),
+        usersForNewRoom: copy,
       });
 
     case 'REMOVE_ALL_USERS_FROM_NEW_ROOM':

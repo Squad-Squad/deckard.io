@@ -94,9 +94,10 @@ class ConnectedCreateRoom extends React.Component {
   }
 
   componentDidMount() {
+    this.props.addUserToNewRoom(this.props.loggedInUsername);
+
     axios.post('/searchUsers')
       .then(res => {
-        console.log('USERS', res.data);
         this.setState({
           suggestions: res.data
             .filter(user => (user !== this.props.loggedInUsername)),
@@ -282,6 +283,7 @@ class ConnectedCreateRoom extends React.Component {
 
   handleAutoSuggestKeyPress(event) {
     if (event.key == 'Enter') {
+      console.log('IS IT ENTER');
       if (this.state.query.length &&
         this.props.usersForNewRoom.length <= 7) {
         this.props.addUserToNewRoom(this.state.currSuggestions[0]);
@@ -302,8 +304,6 @@ class ConnectedCreateRoom extends React.Component {
   render() {
     const { classes } = this.props;
     const { anchorEl } = this.state;
-
-    this.props.addUserToNewRoom(this.props.loggedInUsername);
 
     const { vertical, horizontal, open } = this.state;
 
