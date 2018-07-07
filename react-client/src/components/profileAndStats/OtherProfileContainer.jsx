@@ -54,21 +54,19 @@ class OtherProfileContainer extends React.Component {
     };
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     console.log('FRIEND', this.props.friend);
     // Get user stats
-    axios.post('/api/userInfo', { user: this.props.friend })
-      .then((response) => {
-        this.setState({
-          username: response.data.username,
-          email: response.data.email,
-          avatarURL: response.data.avatar,
-          description: response.data.description,
-          gamesPlayed: response.data.games_played,
-          gamesWon: response.data.games_won,
-          lifetimeScore: response.data.lifetime_score,
-        }, () => (console.log('USER INFO', this.state)));
-      });
+    const response = await axios.post('/api/userInfo', { user: this.props.friend })
+    this.setState({
+      username: response.data.username,
+      email: response.data.email,
+      avatarURL: response.data.avatar,
+      description: response.data.description,
+      gamesPlayed: response.data.games_played,
+      gamesWon: response.data.games_won,
+      lifetimeScore: response.data.lifetime_score,
+    }, () => (console.log('USER INFO', this.state)));
   }
 
   handleChange(event, value) {

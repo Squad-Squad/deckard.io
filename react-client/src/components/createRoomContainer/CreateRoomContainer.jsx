@@ -21,15 +21,13 @@ class CreateRoomContainer extends React.Component {
     };
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     // Get online users
-    axios.post('/searchUsers')
-      .then(res => {
-        this.setState({
-          onlineUsers: res.data
-            .filter(user => (user !== this.props.loggedInUsername)),
-        });
-      });
+    const res = await axios.post('/searchUsers');
+    this.setState({
+      onlineUsers: res.data
+        .filter(user => (user !== this.props.loggedInUsername)),
+    });
   }
 
   componentWillReceiveProps(newProps) {
@@ -45,9 +43,9 @@ class CreateRoomContainer extends React.Component {
 
   addCombatant(email) {
     if (!this.state.combatants.includes(email)) {
-      this.setState({
-        combatants: [...this.state.combatants, email]
-      });
+      this.setState(prevState => ({
+        combatants: [...prevState.combatants, email],
+      }));
     }
   }
 

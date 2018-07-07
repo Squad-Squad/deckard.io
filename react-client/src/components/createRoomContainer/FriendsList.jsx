@@ -109,22 +109,20 @@ class FriendsList extends Component {
     });
   }
 
-  addUser(e) {
+  async addUser(e) {
     console.log(e.key);
     if (e.key === 'Enter') {
-      axios.post('/profile/add-friend',
+      await axios.post('/profile/add-friend',
         {
           username: this.props.username,
           friend: this.state.query,
         }
-      )
-        .then(res => {
-          this.props.addFriend(this.state.query);
-          this.setState({
-            addFriend: false,
-            query: '',
-          });
-        });
+      );
+      this.props.addFriend(this.state.query);
+      this.setState({
+        addFriend: false,
+        query: '',
+      });
     }
   }
 
