@@ -770,12 +770,28 @@ db.models.sequelize.sync().then(() => {
 
             console.log("ROOMMEMBERS.length", roomMembers.length, "roomScore.length", roomScores.length)
 
-            if(roomMembers - 1 <= roomScores.length){
-              console.log("THIS CONDITION IS ALSO MET")
+            // DETERMINE IF EVERYONE HAS SUBMITTED THER VOTES
+
+            if(roomMembers.length - 1 <= roomScores.length){
               const scores = gameLogic.calcScores(rooms[socket.room]);
               console.log("THESE THE SCORES IN MY NEW REDIS RETRIEVAL:", scores)
-            }
 
+                for (var user in scores) {
+                  db.models.User.findOne({ where: { username: user } })
+                  .then((instance) => {
+                    const oldScore = instance.get('lifetime_score');
+                    console.log('OLD LIFETIME SCORE:', oldScore);
+                    if(!isNaN(scores[user])){
+                      instance.updateAttributes({
+                        lifetime_score: oldScore + scores[user],
+                      });
+                    }
+                  });
+                }
+
+                io.sockets.in(socket.room).emit('scores', scores);
+
+            }
           
         })
         .catch(err=>{
@@ -787,32 +803,8 @@ db.models.sequelize.sync().then(() => {
         console.error(err)
       })
 
-
-      // console.log("PREVIOUS FORM OF VOTES BEFORE GOING INTO SCORE CALCULATOR:", rooms[data.roomID][0])
-
-      // determine if everyone has submitted there votes
-      if (rooms[socket.room].length - 1 === Object.keys(rooms[socket.room][0]).length) {
-
-        const scores = gameLogic.calcScores(rooms[socket.room]);
-
-        // add everyones scores to their lifetime scores in postgres db
-        for (var user in scores) {
-          db.models.User.findOne({ where: { username: user } }).then((instance) => {
-            console.log('user in db', user);
-            const oldScore = instance.get('lifetime_score');
-            // console.log('OLD LIFETIME SCORE:', oldScore);
-            console.log();
-            instance.updateAttributes({
-              lifetime_score: oldScore + scores[user],
-            });
-          });
-        }
-
-        io.sockets.in(socket.room).emit('scores', scores);
-      }
     });
   });
 });
 
 let timerObj = {};
-const nominateTimerObj = {};
