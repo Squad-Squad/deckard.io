@@ -77,10 +77,12 @@ class ConnectedCreateRoom extends React.Component {
       query: '',
       roomID: null,
       roomName: '',
-      error: false,
       roomLink: '',
       currSuggestions: [],
       value: '',
+
+      nameError: false,
+      optionsError: '',
 
       modeAnchorEl: null,
       botAnchorEl: null,
@@ -199,31 +201,16 @@ class ConnectedCreateRoom extends React.Component {
       currSuggestions: [],
     });
   };
-
-  // freeRoomMode(){
-  //   // console.log("ROOM MODE TARGET:", e.target.value)
-  //   console.log("ARGUENTMENS", arguments[0])
-  //   this.setState({
-  //     roomMode: arguments[0]
-  //   }, ()=>{console.log("NEW ROOM MODE:", this.state.roomMode)})
-  // }
-
-  // roundRoomMode(){
-  //   // console.log("ROOM MODE TARGET:", e.target.value)
-  //   console.log("ARGUMETS", arguments[0])
-  //   this.setState({
-  //     roomMode: arguments[0]
-  //   }, ()=>{console.log("NEW ROOM MODE:", this.state.roomMode)})
-  // }
-
-
   // ────────────────────────────────────────────────────────────────────────────────
-
 
   createRoom() {
     if (this.state.roomName.length === 0) {
       this.setState({
-        error: true,
+        nameError: true,
+      });
+    } else if (this.state.roomName.length === 0) {
+      this.setState({
+        nameError: true,
       });
     } else {
       $.post(

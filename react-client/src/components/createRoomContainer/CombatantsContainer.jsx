@@ -95,59 +95,61 @@ class ConnectedCombatantsContainer extends React.Component {
         <Typography id="users-for-new-room-header">
           Users &ensp;<span style={{ flex: "right" }}>{this.props.usersForNewRoom.length}/7</span>
         </Typography>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          {/* logged in user's chip */}
+          <Chip
+            style={{ zIndex: '0' }}
+            avatar={
+              <Avatar>
+                <img src={this.props.avatarURL}
+                  style={{
+                    objectFit: 'cover',
+                    borderRadius: '50%',
+                    height: '32px',
+                    width: '32px',
+                  }} />
+              </Avatar>
+            }
+            label={this.props.loggedInUser}
+            className={classes.chip}
+          />
 
-        {/* logged in user's chip */}
-        <Chip
-          style={{ zIndex: '0' }}
-          avatar={
-            <Avatar>
-              <img src={this.props.avatarURL}
-                style={{
-                  objectFit: 'cover',
-                  borderRadius: '50%',
-                  height: '32px',
-                  width: '32px',
-                }} />
-            </Avatar>
-          }
-          label={this.props.loggedInUser}
-          className={classes.chip}
-        />
-
-        {/* invited users' chips */}
-        {this.state.userAvatarMap.map(userAvatar => {
-          console.log('USERAVATAR', userAvatar)
-          if (userAvatar[1] &&
-            userAvatar[1] !== './assets/roboheadwhite.png') {
-            return (
-              <Chip
-                style={{ zIndex: '0' }}
-                avatar={
-                  <Avatar>
-                    <img src={userAvatar[1]}
-                      style={{
-                        objectFit: 'cover',
-                        borderRadius: '50%',
-                        height: '32px',
-                        width: '32px',
-                      }} />
-                  </Avatar>
-                }
-                label={userAvatar[0]}
-                className={classes.chip}
-              />
-            )
-          } else {
-            return (
-              <Chip
-                style={{ zIndex: '0' }}
-                label={userAvatar[0]}
-                className={classes.chip}
-              />
-            )
-          }
-        })}
-
+          {/* invited users' chips */}
+          {this.state.userAvatarMap.map(userAvatar => {
+            console.log('USERAVATAR', userAvatar)
+            if (userAvatar[1] &&
+              userAvatar[1] !== './assets/roboheadwhite.png') {
+              return (
+                <Chip
+                  style={{ zIndex: '0' }}
+                  avatar={
+                    <Avatar>
+                      <img src={userAvatar[1]}
+                        style={{
+                          objectFit: 'cover',
+                          borderRadius: '50%',
+                          height: '32px',
+                          width: '32px',
+                        }} />
+                    </Avatar>
+                  }
+                  label={userAvatar[0]}
+                  className={classes.chip}
+                  onDelete={this.props.removeUserFromNewRoom.bind(this, userAvatar[0])}
+                />
+              )
+            } else {
+              return (
+                <Chip
+                  style={{ zIndex: '0' }}
+                  label={userAvatar[0]}
+                  className={classes.chip}
+                  onDelete={this.props.removeUserFromNewRoom.bind(this, userAvatar[0])}
+                />
+              )
+            }
+          })}
+        </div>
 
       </div>,
       <Modal

@@ -51,6 +51,21 @@ const removeAllUsersFromNewRoom = () => ({
   type: 'REMOVE_ALL_USERS_FROM_NEW_ROOM',
 });
 
+const chooseRoomMode = roomMode => ({
+  type: 'CHOOSE_ROOM_MODE',
+  payload: { roomMode },
+});
+
+const chooseRoomBot = roomBot => ({
+  type: 'CHOOSE_ROOM_BOT',
+  payload: { roomBot },
+});
+
+const chooseRoomLength = roomLength => ({
+  type: 'CHOOSE_ROOM_LENGTH',
+  payload: { roomLength },
+});
+
 
 //
 // ─── ROOM LOGIC ─────────────────────────────────────────────────────────────────
@@ -69,5 +84,8 @@ module.exports = {
   addUserToNewRoom,
   removeUserFromNewRoom,
   removeAllUsersFromNewRoom,
+  chooseRoomMode,
+  chooseRoomBot,
+  chooseRoomLength,
   addCurrRoomUsersFromDB,
 };

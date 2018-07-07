@@ -10,6 +10,10 @@ const initialState = {
 
   searchedUsers: [],
   usersForNewRoom: [],
+  roomMode: '',
+  roomBot: '',
+  roomLength: '',
+
   currRoomUsers: [],
 };
 
@@ -45,6 +49,7 @@ function reducer(state = initialState, action) {
         });
       } return state;
 
+
     //
     // ─── ROOM CREATION ───────────────────────────────────────────────
     //
@@ -59,7 +64,6 @@ function reducer(state = initialState, action) {
       } return state;
 
     case 'REMOVE_USER_FROM_NEW_ROOM':
-      // THIS CONSOLE LOG IS NECESSARY, DON'T REMOVE
       const copy = state.usersForNewRoom.slice(0);
       copy.splice(copy.indexOf(action.payload.username), 1);
       return Object.assign({}, state, {
@@ -67,10 +71,18 @@ function reducer(state = initialState, action) {
       });
 
     case 'REMOVE_ALL_USERS_FROM_NEW_ROOM':
-      // THIS CONSOLE LOG IS NECESSARY, DON'T REMOVE
       return Object.assign({}, state, {
         usersForNewRoom: [],
       });
+
+    case 'CHOOSE_ROOM_MODE':
+      return Object.assign({}, state, action.payload);
+
+    case 'CHOOSE_ROOM_BOAT':
+      return Object.assign({}, state, action.payload);
+
+    case 'CHOOSE_ROOM_LENGTH':
+      return Object.assign({}, state, action.payload);
 
 
     //

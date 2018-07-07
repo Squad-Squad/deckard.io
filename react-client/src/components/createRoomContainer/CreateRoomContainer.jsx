@@ -1,7 +1,6 @@
 import React from 'react';
 import axios from 'axios';
 import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
 import CreateRoom from './CreateRoom.jsx';
 import FriendsList from './FriendsList.jsx';
 import UserRooms from './UserRooms.jsx';
@@ -28,6 +27,14 @@ class CreateRoomContainer extends React.Component {
       onlineUsers: res.data
         .filter(user => (user !== this.props.loggedInUsername)),
     });
+
+    axios.post('/searchUsers')
+      .then(res => {
+        this.setState({
+          onlineUsers: res.data
+            .filter(user => (user !== this.props.loggedInUsername)),
+        });
+      });
   }
 
   componentWillReceiveProps(newProps) {
@@ -54,7 +61,7 @@ class CreateRoomContainer extends React.Component {
 
     return (
       <div>
-        <div className="columns">
+        <div className="columns" style={{ display: 'flex', flexWrap: 'wrap-reverse' }}>
           <div className="column is-1 hide-if-small"></div>
           <div className="column is-4">
             <FriendsList
