@@ -16,8 +16,19 @@ class CreateRoomContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      combatants: Array(0)
+      combatants: Array(0),
+      onlineUsers: [],
     };
+  }
+
+  componentDidMount() {
+    axios.post('/searchUsers')
+      .then(res => {
+        this.setState({
+          onlineUsers: res.data
+            .filter(user => (user !== this.props.loggedInUsername)),
+        });
+      });
   }
 
   componentWillReceiveProps(newProps) {
@@ -47,11 +58,13 @@ class CreateRoomContainer extends React.Component {
         <div className="columns">
           <div className="column is-1 hide-if-small"></div>
           <div className="column is-4">
-            <FriendsList />
+            <FriendsList
+              onlineUsers={this.state.onlineUsers} />
           </div>
           <div className="column is-6">
             <CreateRoom
               io={this.props.io}
+              onlineUsers={this.state.onlineUsers}
               freeRoomMode={this.props.freeRoomMode}
               roundRoomMode={this.props.roundRoomMode}
               roomModeSelection={this.props.roomModeSelection}

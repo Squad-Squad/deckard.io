@@ -116,22 +116,41 @@ class FriendsList extends Component {
     const list = () => {
       if (this.props.friends) {
         return this.props.friends.map(friend => {
-          return ([
-            <ListItem button
-              style={{ padding: '12px' }}
-              onClick={this.handleOpen.bind(this, friend)}>
-              <ListItemText primary={friend} />
-              <ListItemIcon>
-                <LensIcon style={{
-                  color: 'red',
-                  marginRight: '0px',
-                  opacity: '.6',
-                  fontSize: '13px',
-                }} />
-              </ListItemIcon>
-            </ListItem>,
-            <Divider />
-          ])
+          if (!this.props.onlineUsers.includes(friend)) {
+            return ([
+              <ListItem button
+                style={{ padding: '12px' }}
+                onClick={this.handleOpen.bind(this, friend)}>
+                <ListItemText primary={friend} />
+                <ListItemIcon>
+                  <LensIcon style={{
+                    color: 'red',
+                    marginRight: '0px',
+                    opacity: '.6',
+                    fontSize: '13px',
+                  }} />
+                </ListItemIcon>
+              </ListItem>,
+              <Divider />
+            ])
+          } else {
+            return ([
+              <ListItem button
+                style={{ padding: '12px' }}
+                onClick={this.handleOpen.bind(this, friend)}>
+                <ListItemText primary={friend} />
+                <ListItemIcon>
+                  <LensIcon style={{
+                    color: 'green',
+                    marginRight: '0px',
+                    opacity: '.6',
+                    fontSize: '13px',
+                  }} />
+                </ListItemIcon>
+              </ListItem>,
+              <Divider />
+            ])
+          }
         })
       } else {
         return null;

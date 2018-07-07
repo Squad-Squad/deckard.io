@@ -80,7 +80,6 @@ class ConnectedCreateRoom extends React.Component {
       roomName: '',
       error: false,
       roomLink: '',
-      suggestions: [],
       currSuggestions: [],
       value: '',
 
@@ -95,14 +94,6 @@ class ConnectedCreateRoom extends React.Component {
 
   componentDidMount() {
     this.props.addUserToNewRoom(this.props.loggedInUsername);
-
-    axios.post('/searchUsers')
-      .then(res => {
-        this.setState({
-          suggestions: res.data
-            .filter(user => (user !== this.props.loggedInUsername)),
-        });
-      });
   }
 
   //
@@ -186,7 +177,7 @@ class ConnectedCreateRoom extends React.Component {
 
     return inputLength === 0
       ? []
-      : this.state.suggestions.filter(suggestion => {
+      : this.props.onlineUsers.filter(suggestion => {
         const keep =
           count < 5 && suggestion.toLowerCase().slice(0, inputLength) === inputValue;
 
