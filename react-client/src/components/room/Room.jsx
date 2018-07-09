@@ -42,6 +42,7 @@ class ConnectedRoom extends React.Component {
       roomMode: this.props.roomMode,
       waitingForRoomMembers: true,
       yourTurn: false,
+      // whoseTurn: null
     };
     this.roomID = this.props.match.params.roomID;
     this.getTimer = this.getTimer.bind(this)
@@ -83,6 +84,13 @@ class ConnectedRoom extends React.Component {
         waitingForRoomMembers: false
       })
     })
+
+    // this.props.io.on('whose turn', (data)=>{
+    //   console.log('username of turn', data, "!!!!", "and alias:", this.props.memberMap[data])
+    //   this.setState({
+    //     whoseTurn: this.state.memberMap[data]
+    //   })
+    // })
 
   }
 
@@ -207,6 +215,7 @@ class ConnectedRoom extends React.Component {
             alias={this.state.memberMap[this.props.loggedInUsername]}
             io={this.props.io}
             yourTurn={this.state.yourTurn}
+            // whoseTurn={this.state.whoseTurn}
             roomName={this.state.roomName}
             roomID={this.roomID}
             messages={this.state.messages}

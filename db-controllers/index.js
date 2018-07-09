@@ -364,7 +364,7 @@ const getRoomReady = (io, client, socket, data, rooms) => {
           const shuffledOrder = _.shuffle(membersInRoom);
           console.log('SHUFFLED ORDER FOR PLAY:', shuffledOrder);
           rooms[data.roomID].gameOrder = shuffledOrder;
-
+          var fixedKey;
 
           // WHEN ITS MITSUKU'S TURN
 
@@ -372,18 +372,16 @@ const getRoomReady = (io, client, socket, data, rooms) => {
             const key = Object.keys(shuffledOrder[1]);
             const fixKey = key[0];
             const firstTurnSocketId = shuffledOrder[1][fixKey];
-            io.sockets.sockets[firstTurnSocketId].emit('yourTurn', true);
+            console.log("WHOSE TURN IN DBCONTROLLERS", fixKey)
             io.sockets.emit('whose turn', fixKey)
-            // io.sockets.emit('whose turn', 'mitsuku')
+            io.sockets.sockets[firstTurnSocketId].emit('yourTurn', true);
           } else {
             const key = Object.keys(shuffledOrder[0]);
             const fixKey = key[0];
             const firstTurnSocketId = shuffledOrder[0][fixKey];
-            io.sockets.sockets[firstTurnSocketId].emit(
-              'yourTurn',
-              key[0],
-            );
+            console.log("WHOSE TURN IN DBCONTROLLERS2", fixKey)
             io.sockets.emit('whose turn', fixKey)
+            io.sockets.sockets[firstTurnSocketId].emit('yourTurn', key[0]);
 
           }
 

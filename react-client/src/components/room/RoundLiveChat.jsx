@@ -59,7 +59,8 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
     super(props);
     this.state = {
       msg: '',
-      yourTurn: this.props.yourTurn
+      yourTurn: this.props.yourTurn,
+      whoseTurn: null
 
     };
 
@@ -69,7 +70,7 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
           yourTurn: false       
       }) 
     }) 
-    
+
     this.props.io.on('whose turn', (data)=>{
       console.log('username of turn', data, "!!!!", "and alias:", this.props.memberMap[data])
       this.setState({
@@ -81,8 +82,10 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
   componentDidMount() {
     console.log("WHEN AM I HAPPENING ROUND LIVE CHAT INITIALIZE")
     this.scrollToBottom();
-    axios.post('/api/startTimer', {roomID: this.props.roomID})
-    // this.props.getTimer()
+    if(this.props.timer !== "00:00"){
+      axios.post('/api/startTimer', {roomID: this.props.roomID}) 
+      this.props.getTimer()
+    }
   }
 
   updateMessage(e) {
@@ -150,7 +153,7 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
             Current Turn:
           </div>
           <div color="inherit" className={classes.currentTurnText}>
-            {this.props.yourTurn ? 'You' : null}
+            {this.props.yourTurn ? 'You' : this.state.whoseTurn}
           </div>
         </div>
 
