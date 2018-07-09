@@ -297,6 +297,47 @@ app.post('/api/save', (req, res) => {
 });
 
 
+
+app.post('/api/saveFreeMode', (req, res) => {
+  console.log('NEW ROOM DATA', req.body);
+
+  const { roomName, roomMode, members } = req.body;
+  const roomUnique = uniqueString().slice(0, 6);
+  timerObj[roomUnique] = new Tock({
+    countdown: true,
+  });
+
+  dbHelpers.aliasMembers(roomName, roomMode, members, (results) => {
+    console.log("AM I HAPPENING", results)
+    client.hmset(`${roomUnique}:members`, results, (err, reply)=>{
+      if(err){
+        console.error(err)
+      }else{
+        console.log("reply setting members", reply)
+      }
+    })
+  });
+
+  // CHANGE THE ROOM TIMER LENGTH HERE
+  timerObj[roomUnique].start(30000);
+
+  dbHelpers.saveRoomAndMembers(
+    roomName,
+    members,
+    roomUnique,
+    (err, room, users) => {
+      if (err) {
+        console.log('Error saving room and members', err);
+      } else {
+        console.log(`Saved room: ${roomName}`);
+        res.send(room[0].dataValues);
+      }
+    },
+  );
+});
+
+
+
 app.post('/api/startTimer', (req, res)=>{
 
   const { roomID } = req.body

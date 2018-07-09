@@ -235,23 +235,43 @@ class ConnectedCreateRoom extends React.Component {
         error: true,
       });
     } else {
-      $.post(
-        '/api/save',
-        {
-          roomName: this.state.roomName,
-          members: this.props.usersForNewRoom,
-          roomMode: this.props.roomModeSelection
-        },
-        (roomInfo, status) => {
-          this.sendRoomEmail(roomInfo, this.props.usersForNewRoom);
-          this.setState({
-            roomLink: roomInfo.uniqueid
-          }, () => {
-            this.props.history.push(`/rooms/${roomInfo.uniqueid}`)
-            this.props.io.emit('invite', { users: this.props.usersForNewRoom, roomHash: roomInfo.uniqueid, roomName: this.state.roomName, roomMode: this.props.roomModeSelection })
-          });
-        }
-      )
+      if(this.props.roomMode === "round"){
+        $.post(
+          '/api/save',
+          {
+            roomName: this.state.roomName,
+            members: this.props.usersForNewRoom,
+            roomMode: this.props.roomModeSelection
+          },
+          (roomInfo, status) => {
+            this.sendRoomEmail(roomInfo, this.props.usersForNewRoom);
+            this.setState({
+              roomLink: roomInfo.uniqueid
+            }, () => {
+              this.props.history.push(`/rooms/${roomInfo.uniqueid}`)
+              this.props.io.emit('invite', { users: this.props.usersForNewRoom, roomHash: roomInfo.uniqueid, roomName: this.state.roomName, roomMode: this.props.roomModeSelection })
+            });
+          }
+        )        
+      }else{
+         $.post(
+          '/api/saveFreeMode',
+          {
+            roomName: this.state.roomName,
+            members: this.props.usersForNewRoom,
+            roomMode: this.props.roomModeSelection
+          },
+          (roomInfo, status) => {
+            this.sendRoomEmail(roomInfo, this.props.usersForNewRoom);
+            this.setState({
+              roomLink: roomInfo.uniqueid
+            }, () => {
+              this.props.history.push(`/rooms/${roomInfo.uniqueid}`)
+              this.props.io.emit('invite', { users: this.props.usersForNewRoom, roomHash: roomInfo.uniqueid, roomName: this.state.roomName, roomMode: this.props.roomModeSelection })
+            });
+          }
+        ) 
+      }
     }
   }
 
