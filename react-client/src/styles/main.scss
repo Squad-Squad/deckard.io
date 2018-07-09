@@ -15,10 +15,11 @@
 // -------MEDIA QUERIES---------------------------------------
 //
 @media screen and (min-width: 0px) and (max-width: 700px) {
-  #image-logo { display: block; }
+  #image-logo { display: block; padding-left: 10px; }
   #typeface-logo { display: none; }
   #login-prompt { width: auto; }
   .hide-if-small { display: none }
+  #navbar-wrapper { padding-top: 10px; }
 }
 
 @media screen and (min-width: 701px) {

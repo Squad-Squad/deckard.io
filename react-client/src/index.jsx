@@ -341,7 +341,7 @@ class ConnectedApp extends React.Component {
 
 
           {/* MAIN */}
-          <div>
+          <div id="navbar-wrapper">
             <Navbar
               login={this.login.bind(this)}
               logout={this.logout.bind(this)}
