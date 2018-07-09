@@ -8,10 +8,19 @@ import Select from '@material-ui/core/Select';
 import InputLabel from '@material-ui/core/InputLabel';
 import { connect } from 'react-redux';
 import { withStyles } from '@material-ui/core/styles';
+import { chooseRoomMode, chooseRoomBot, chooseRoomLength } from '../../../../redux/actions';
 
 function mapStateToProps(state) {
   return {
 
+  };
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    chooseRoomMode: mode => dispatch(chooseRoomMode(mode)),
+    chooseRoomBot: bot => dispatch(chooseRoomBot(bot)),
+    chooseRoomLength: length => dispatch(chooseRoomLength(length)),
   };
 }
 
@@ -46,6 +55,7 @@ class RoomOptions extends Component {
 
   selectRoundRobin() {
     this.props.roundRoomMode();
+    this.props.chooseRoomMode('Round Robin');
     this.setState({
       modeAnchorEl: null,
       selectedMode: 'Round Robin',
@@ -54,6 +64,7 @@ class RoomOptions extends Component {
 
   selectFreeForAll() {
     this.props.freeRoomMode();
+    this.props.chooseRoomMode('Free For All');
     this.setState({
       modeAnchorEl: null,
       selectedMode: 'Free For All',
@@ -69,6 +80,7 @@ class RoomOptions extends Component {
   }
 
   selectMitsuku() {
+    this.props.chooseRoomBot('Mitsuku');
     this.setState({
       botAnchorEl: null,
       selectedBot: 'Mitsuku',
@@ -84,16 +96,18 @@ class RoomOptions extends Component {
   }
 
   select4Mins() {
+    this.props.chooseRoomLength('4');
     this.setState({
       timeAnchorEl: null,
-      selectedTime: 4,
+      selectedTime: '4',
     });
   }
 
   select8Mins() {
+    this.props.chooseRoomLength('8');
     this.setState({
       timeAnchorEl: null,
-      selectedTime: 8,
+      selectedTime: '8',
     });
   }
 
@@ -246,4 +260,5 @@ class RoomOptions extends Component {
 
 export default connect(
   mapStateToProps,
+  mapDispatchToProps,
 )(withStyles(styles)(RoomOptions));

@@ -110,7 +110,7 @@ class UserProfile extends Component {
     });
   }
 
-  updateProfile() {
+  async updateProfile() {
     const login = this.props.login;
     console.log('update profile please');
 
@@ -122,40 +122,39 @@ class UserProfile extends Component {
     data.append('newdescription', this.state.newDescription);
     console.log(data);
 
-    axios({
+    const res = await axios({
       method: 'post',
       url: '/profile/update-profile',
       data,
       config: { headers: { 'Content-Type': 'multipart/form-data' } }
     })
-      .then(res => {
-        console.log('DATA', res.data);
-        const updateUsername = this.state.newUsername || this.props.username,
-          updateEmail = this.state.newEmail || this.props.email,
-          updateAvatarURL = res.data || this.props.avatarURL,
-          updateDescription = this.state.newDescription || this.props.description;
-        login.call(this,
-          updateUsername,
-          updateEmail,
-          this.props.isGoogleAccount,
-          updateAvatarURL,
-          updateDescription);
-        this.setState({
-          open: true,
 
-          newUsername: '',
-          editUsername: false,
+    console.log('DATA', res.data);
+    const updateUsername = this.state.newUsername || this.props.username,
+      updateEmail = this.state.newEmail || this.props.email,
+      updateAvatarURL = res.data || this.props.avatarURL,
+      updateDescription = this.state.newDescription || this.props.description;
+    login.call(this,
+      updateUsername,
+      updateEmail,
+      this.props.isGoogleAccount,
+      updateAvatarURL,
+      updateDescription);
+    this.setState({
+      open: true,
 
-          newEmail: '',
-          editEmail: false,
+      newUsername: '',
+      editUsername: false,
 
-          newDescription: '',
-          editDescription: false,
+      newEmail: '',
+      editEmail: false,
 
-          file: null,
-          imagePreviewUrl: '',
-        });
-      });
+      newDescription: '',
+      editDescription: false,
+
+      file: null,
+      imagePreviewUrl: '',
+    });
   }
 
 

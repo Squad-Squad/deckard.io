@@ -318,15 +318,6 @@ app.post('/api/userrooms', (req, res) => {
   });
 });
 
-app.post('/api/userInfo', (req, res) => {
-  console.log('USERINFO in server', req.body);
-  db.models.User.findOne({ where: { email: req.body.user } }).then((instance) => {
-    console.log('USERINFO FROM DATABaSE', instance);
-    const lifeTimeScore = instance.get('lifetime_score');
-    res.send(JSON.stringify(lifeTimeScore));
-  });
-});
-
 // ────────────────────────────────────────────────────────────────────────────────
 
 // Sets up default case so that any URL not handled by the Express Router

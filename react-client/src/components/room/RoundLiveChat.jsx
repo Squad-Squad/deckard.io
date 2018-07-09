@@ -40,11 +40,11 @@ class ConnectedRoundLiveChat extends React.Component {
       yourTurn: this.props.yourTurn
     };
 
-    this.props.io.on('turn over', (data)=>{
+    this.props.io.on('turn over', (data) => {
       console.log('YOUR TURNs over', data, "!!!!")
       this.setState({
-          yourTurn: false       
-      }) 
+        yourTurn: false
+      })
     })
   }
 
@@ -74,7 +74,7 @@ class ConnectedRoundLiveChat extends React.Component {
 
   handleKeyPress(event) {
     if (event.key == 'Enter') {
-      this.props.io.emit('turn done', {user:this.props.username, message: this.state.msg})
+      this.props.io.emit('turn done', { user: this.props.username, message: this.state.msg })
       if (this.state.msg) this.props.sendMessage(this.state.msg);
       this.setState({
         msg: ''
@@ -84,7 +84,7 @@ class ConnectedRoundLiveChat extends React.Component {
 
   handleClick() {
     console.log("THIS.STATE.MSG", this.state.msg)
-    this.props.io.emit('turn done', {user:this.props.username, message: this.state.msg})
+    this.props.io.emit('turn done', { user: this.props.username, message: this.state.msg })
     if (this.state.msg) this.props.sendMessage(this.state.msg);
     this.setState({
       msg: ''
@@ -105,7 +105,7 @@ class ConnectedRoundLiveChat extends React.Component {
               <Typography variant="title" color="inherit" className={classes.flex}>
                 {this.props.roomName}
               </Typography>
-                {this.props.yourTurn ?  <Typography variant="title" color="inherit" className={classes.flex}>YOUR TURN</Typography> : null}
+              {this.props.yourTurn ? <Typography variant="title" color="inherit" className={classes.flex}>YOUR TURN</Typography> : null}
               <Typography variant="title" color="inherit">
                 {this.props.timer}
               </Typography>
@@ -134,29 +134,29 @@ class ConnectedRoundLiveChat extends React.Component {
         {/* BOTTOM BAR */}
         {
           this.props.yourTurn ?
-        
-        <BottomNavigation
-          onChange={this.handleChange}>
-          <FormControl style={{ width: '70%' }}>
-            <Input
-              style={{ marginTop: '10px' }}
-              fullWidth
-              value={this.state.msg}
-              onChange={this.updateMessage.bind(this)}
-              onKeyPress={this.handleKeyPress.bind(this)}
-            />
-          </FormControl>
-          <Button variant="fab" color="primary" aria-label="add" className={classes.button}
-            onClick={this.handleClick.bind(this)}>
-            <PublishIcon />
-          </Button>
-        </BottomNavigation> 
 
-        : 
+            <BottomNavigation
+              onChange={this.handleChange}>
+              <FormControl style={{ width: '70%' }}>
+                <Input
+                  style={{ marginTop: '10px' }}
+                  fullWidth
+                  value={this.state.msg}
+                  onChange={this.updateMessage.bind(this)}
+                  onKeyPress={this.handleKeyPress.bind(this)}
+                />
+              </FormControl>
+              <Button variant="fab" color="primary" aria-label="add" className={classes.button}
+                onClick={this.handleClick.bind(this)}>
+                <PublishIcon />
+              </Button>
+            </BottomNavigation>
 
-        null
+            :
 
-      }
+            null
+
+        }
       </Paper>
     );
   }

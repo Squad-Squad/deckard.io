@@ -48,16 +48,14 @@ class ProfileContainer extends React.Component {
     };
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     // Get user stats
-    axios.post('/api/userInfo', { user: this.props.loggedInUser })
-      .then((response) => {
-        this.setState({
-          gamesPlayed: response.data.games_played,
-          gamesWon: response.data.games_won,
-          lifetimeScore: response.data.lifetime_score,
-        }, () => (console.log('USER INFO', this.state)));
-      });
+    const responses = await axios.post('/api/userInfo', { user: this.props.loggedInUser })
+    this.setState({
+      gamesPlayed: response.data.games_played,
+      gamesWon: response.data.games_won,
+      lifetimeScore: response.data.lifetime_score,
+    }, () => (console.log('USER INFO', this.state)));
   }
 
   handleChange(event, value) {
