@@ -50,6 +50,7 @@ class ConnectedRoundLiveChat extends React.Component {
   }
 
   componentDidMount() {
+    console.log("WHEN AM I HAPPENING ROUND LIVE CHAT INITIALIZE")
     this.scrollToBottom();
     axios.post('/api/startTimer', {roomID: this.props.roomID})
     // this.props.getTimer()
