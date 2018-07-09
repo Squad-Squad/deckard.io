@@ -319,7 +319,7 @@ app.post('/api/saveFreeMode', (req, res) => {
   });
 
   // CHANGE THE ROOM TIMER LENGTH HERE
-  timerObj[roomUnique].start(30000);
+  timerObj[roomUnique].start(10000);
 
   dbHelpers.saveRoomAndMembers(
     roomName,
@@ -339,15 +339,11 @@ app.post('/api/saveFreeMode', (req, res) => {
 
 
 app.post('/api/startTimer', (req, res)=>{
-
   const { roomID } = req.body
-
   console.log("ROOOM ID IN START TIME API CALLL:", roomID)
-
   timerObj[roomID] = new Tock({
     countdown: true,
   });
-
   timerObj[roomID].start(10000);
 
 })
@@ -799,26 +795,52 @@ db.models.sequelize.sync().then(() => {
 
             // DETERMINE IF EVERYONE HAS SUBMITTED THER VOTES
 
-            console.log("NEW VOTES STRUCTURE:", roomScores)
-            console.log("OLD VOTES STRUCTURE:", rooms[socket.room])
-
             if(roomMembers.length - 1 <= roomScores.length){
-              const scores = gameLogic.calcScores(roomScores);
-              // const scores = gameLogic.calcScores(rooms[socket.room]);
+              gameLogic.calcScores(roomScores)
+              .then(scoresArr=>{
+                console.log("SCOREARR IN SERVER:", scoresArr)
+                var [scores, winners] = scoresArr
+         
+              console.log("OUR RETURNED GOODSSSS", scores, winners)
+              
+
+              if(winners.length > 1){
+                for (var user of winners){
+                  db.models.User.findOne({ where: { username: user } })
+                  .then((instance) => {
+                    var prevGamesWon = instance.get('games_won');
+                      instance.updateAttributes({
+                        games_won: prevGamesWon += 1,
+                      });
+                    });
+                }              
+              }else{
+                db.models.User.findOne({ where: { username: winners[0]} })
+                  .then((instance) => {
+                    var prevGamesWon = instance.get('games_won');
+                      instance.updateAttributes({
+                        games_won: prevGamesWon += 1,
+                      });
+                    });
+              }
 
                 for (var user in scores) {
                   db.models.User.findOne({ where: { username: user } })
                   .then((instance) => {
-                    const oldScore = instance.get('lifetime_score');
+                    var oldScore = instance.get('lifetime_score');
+                    var prevGamesPlayed = instance.get('games_played');
                     if(!isNaN(scores[user])){
                       instance.updateAttributes({
                         lifetime_score: oldScore + scores[user],
+                        games_played: prevGamesPlayed += 1,
                       });
                     }
                   });
                 }
 
                 io.sockets.in(socket.room).emit('scores', scores);
+
+              });
 
             }
           

@@ -83,14 +83,9 @@ class ConnectedRoom extends React.Component {
       this.setState({
         waitingForRoomMembers: false
       })
-    })
+      this.getTimer()
 
-    // this.props.io.on('whose turn', (data)=>{
-    //   console.log('username of turn', data, "!!!!", "and alias:", this.props.memberMap[data])
-    //   this.setState({
-    //     whoseTurn: this.state.memberMap[data]
-    //   })
-    // })
+    })
 
   }
 
@@ -103,7 +98,7 @@ class ConnectedRoom extends React.Component {
     this.getRoomInfo();
     // if(this.state.roomMode === "free"){
     // axios.post('/api/startTimer', {roomID: this.props.roomID}) 
-    this.getTimer()
+    // this.getTimer()
     // }
   }
 
@@ -154,7 +149,7 @@ class ConnectedRoom extends React.Component {
         },
       });
 
-      console.log('STARTING TIMER');
+      // console.log('STARTING TIMER');
       tock.start(timer.timeLeft + 1000);
     });
   }
