@@ -115,7 +115,6 @@ class ConnectedApp extends React.Component {
   async componentDidMount() {
     const res = await axios.get('/checklogin')
     if (res.data.user) {
-      console.log('Logged in as:', res.data.user);
       this.props.login(res.data.user.username,
         res.data.user.email,
         res.data.user.is_google_account,
@@ -135,9 +134,7 @@ class ConnectedApp extends React.Component {
   }
 
   async searchUsers(query) {
-    console.log('SEARCHING FOR', query);
     const res = await axios.post('/searchUsers', { query })
-    console.log('RESULTS', res);
     this.props.searchUsers(res.data);
   }
 
@@ -146,14 +143,12 @@ class ConnectedApp extends React.Component {
   // ─── USER AUTH ──────────────────────────────────────────────────────────────────
   //
   subscribe(username, email, password, zip) {
-    console.log(`Subscribe with ${email} and ${password}`);
     axios.post('/subscribe', {
       username,
       email,
       password,
     })
       .then((res) => {
-        console.log('THESE THE DATA', res.config);
         const data = JSON.parse(res.config.data);
         data.avatarURL = './assets/roboheadwhite.png';
         data.friends = [];
@@ -185,7 +180,6 @@ class ConnectedApp extends React.Component {
     })
 
     if (res.config.data) {
-      console.log('Logged in as:', JSON.parse(res.config.data).username);
       this.props.login(JSON.parse(res.config.data).username);
     }
   }
@@ -193,7 +187,6 @@ class ConnectedApp extends React.Component {
   async logout() {
     await axios.get('/logout')
 
-    console.log('Logging out');
     this.props.logout();
     this.props.removeAllUsersFromNewRoom();
     this.setState({

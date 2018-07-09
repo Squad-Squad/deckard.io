@@ -84,7 +84,7 @@ class VotePanelItem extends Component {
 
     return (
       [<div style={{ display: 'flex', justifyContent: 'space-between' }}
-        key={this.props.key}>
+        key={this.props.thisKey}>
         <div>
           <p style={{
             paddingLeft: '15px',
@@ -97,7 +97,7 @@ class VotePanelItem extends Component {
         </div>
         {buttons()}
       </div>,
-      <Divider />]
+      <Divider key={1000} />]
     );
   }
 }

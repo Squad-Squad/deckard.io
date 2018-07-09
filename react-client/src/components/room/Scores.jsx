@@ -19,7 +19,6 @@ class Scores extends Component {
   }
 
   componentDidMount() {
-    console.log("MEMBERMAP in SCORES", this.props.memberMap, "and scoresObj", this.props.scores)
     // this.props.scores.map((user)=>{
     //   user.alias = this.props.memberMap[]
     // })

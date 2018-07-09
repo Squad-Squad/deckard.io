@@ -55,7 +55,6 @@ class OtherProfileContainer extends React.Component {
   }
 
   async componentDidMount() {
-    console.log('FRIEND', this.props.friend);
     // Get user stats
     const response = await axios.post('/api/userInfo', { user: this.props.friend })
     this.setState({
@@ -66,7 +65,7 @@ class OtherProfileContainer extends React.Component {
       gamesPlayed: response.data.games_played,
       gamesWon: response.data.games_won,
       lifetimeScore: response.data.lifetime_score,
-    }, () => (console.log('USER INFO', this.state)));
+    });
   }
 
   handleChange(event, value) {

@@ -84,7 +84,6 @@ class FriendsList extends Component {
   }
 
   handleOpen(friend) {
-    console.log(friend);
     this.setState({
       clickedFriend: friend
     }, () => {
@@ -105,7 +104,6 @@ class FriendsList extends Component {
   }
 
   async addUser(e) {
-    console.log(e.key);
     if (e.key === 'Enter') {
       await axios.post('/profile/add-friend',
         {
@@ -129,7 +127,7 @@ class FriendsList extends Component {
         return this.state.userAvatarMap.map(friendAvatar => {
           if (!this.props.onlineUsers.includes(friendAvatar[0])) {
             return ([
-              <ListItem button
+              <ListItem button key={1}
                 style={{ padding: '12px', opacity: '.4' }}
                 onClick={this.handleOpen.bind(this, friendAvatar[0])}>
                 {(() => (friendAvatar[1] !== './assets/roboheadwhite.png') ?
@@ -144,11 +142,11 @@ class FriendsList extends Component {
                     }} /> : null)()}
                 <ListItemText primary={friendAvatar[0]} />
               </ListItem>,
-              <Divider />
+              <Divider key={2} />
             ])
           } else {
             return ([
-              <ListItem button
+              <ListItem button key={1}
                 style={{ padding: '12px' }}
                 onClick={this.handleOpen.bind(this, friendAvatar[0])}>
                 {(() => (friendAvatar[1] !== './assets/roboheadwhite.png') ?
@@ -163,7 +161,7 @@ class FriendsList extends Component {
                     }} /> : null)()}
                 <ListItemText primary={friendAvatar[0]} />
               </ListItem>,
-              <Divider />
+              <Divider key={2} />
             ])
           }
         })
@@ -201,7 +199,7 @@ class FriendsList extends Component {
     }
 
     return ([
-      <Paper className={classes.paper}>
+      <Paper className={classes.paper} key={1}>
         <Typography id="new-room-header" style={{ paddingBottom: '8px', fontSize: '24px' }}>
           Friends
         </Typography>
@@ -216,7 +214,7 @@ class FriendsList extends Component {
         </List>
         {addFriend()}
       </Paper >,
-      <Modal
+      <Modal key={2}
         style={{ alignItems: 'center', justifyContent: 'center' }}
         open={this.state.open}
         onClose={this.handleClose.bind(this)}

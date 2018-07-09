@@ -23,7 +23,6 @@ function reducer(state = initialState, action) {
     // ─── AUTHENTICATION ──────────────────────────────────────────────
     //
     case 'USER_LOGGED_IN':
-      console.log('USER LOGIN PAYLOAD', action.payload);
       return Object.assign({}, state, {
         loggedIn: true,
       }, action.payload);

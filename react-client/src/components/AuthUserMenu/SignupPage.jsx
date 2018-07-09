@@ -44,7 +44,6 @@ class SignupPage extends React.Component {
   }
 
   handleSubscribe() {
-    console.log(this.props.subscribe);
     this.props.subscribe(
       this.state.email,
       this.state.password);
@@ -57,7 +56,6 @@ class SignupPage extends React.Component {
   }
 
   render() {
-    console.log('L:KSJDF');
     // Validate email field
     let isEmailValid1 = this.state.emailValid ? (
       { className: 'input is-success' }
