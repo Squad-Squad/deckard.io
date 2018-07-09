@@ -33,7 +33,7 @@ let client;
 if (process.env.REDIS_URL) {
   client = redis.createClient(process.env.REDIS_URL);
 } else {
-  client = redis.createClient(process.env.REDIS_URL);
+  client = redis.createClient();
 }
 const multi = client.multi();
 
