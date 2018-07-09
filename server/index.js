@@ -514,6 +514,8 @@ db.models.sequelize.sync().then(() => {
 
       if (nextTurnUsername === 'mitsuku') {
         io.sockets.sockets[socket.id].emit('turnOver', socket.username);
+        io.sockets.emit('whose turn', 'mitsuku@mitsuku.com')
+
         console.log('LAST MESSAGE that mitsuku will respond to:', data.message);
         let extraDelay = 0;
         mitsuku.send(data.message).then((response) => {
@@ -559,6 +561,7 @@ db.models.sequelize.sync().then(() => {
               nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 2][nextTurnUsername];
             }
             io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
+            io.sockets.emit('whose turn', nextTurnUsername)
           }, Math.random() * 5000 + 2000 + extraDelay);
         });
       } else {
@@ -572,6 +575,7 @@ db.models.sequelize.sync().then(() => {
         io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
         console.log('socket.id in next turn', socket.id);
         io.sockets.sockets[socket.id].emit('turnOver', socket.username);
+        io.sockets.emit('whose turn', nextTurnUsername)
       }
     });
 

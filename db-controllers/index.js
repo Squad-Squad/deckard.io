@@ -373,6 +373,7 @@ const getRoomReady = (io, client, socket, data, rooms) => {
             const fixKey = key[0];
             const firstTurnSocketId = shuffledOrder[1][fixKey];
             io.sockets.sockets[firstTurnSocketId].emit('yourTurn', true);
+            io.sockets.emit('whose turn', 'mitsuku')
           } else {
             const key = Object.keys(shuffledOrder[0]);
             const fixKey = key[0];
@@ -381,6 +382,8 @@ const getRoomReady = (io, client, socket, data, rooms) => {
               'yourTurn',
               key[0],
             );
+            io.sockets.emit('whose turn', fixKey)
+
           }
 
           io.sockets.in(data.roomID).emit('roomReady', true);

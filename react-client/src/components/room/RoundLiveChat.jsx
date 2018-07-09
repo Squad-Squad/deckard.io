@@ -39,6 +39,7 @@ class ConnectedRoundLiveChat extends React.Component {
     this.state = {
       msg: '',
       yourTurn: this.props.yourTurn
+
     };
 
     this.props.io.on('turn over', (data)=>{
@@ -46,6 +47,12 @@ class ConnectedRoundLiveChat extends React.Component {
       this.setState({
           yourTurn: false       
       }) 
+    }) 
+    this.props.io.on('whose turn', (data)=>{
+      console.log('username of turn', data, "!!!!", "and alias:", this.props.memberMap[data])
+      this.setState({
+        whoseTurn: this.props.memberMap[data]
+      })
     })
   }
 
