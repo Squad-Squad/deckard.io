@@ -42,8 +42,7 @@ const styles = theme => ({
     paddingBottom: '0px',
     textAlign: 'center',
     color: theme.palette.text.secondary,
-    marginTop: 30,
-    backgroundColor: 'rgba(33, 33, 33, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   container: {
     flexGrow: 1,

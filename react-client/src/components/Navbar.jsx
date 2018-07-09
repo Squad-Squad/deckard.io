@@ -54,7 +54,7 @@ class ConnectedNavbar extends React.Component {
     // <a className="bd-tw-button button" data-social-network="Twitter" data-social-action="tweet" data-social-target="http://localhost:4000" target="_blank" href="https://twitter.com/intent/tweet?text=Let's get ready to Food Fight!">
     return (
       <AppBar position="static" color="default"
-        style={{ backgroundColor: "rgba(33,33,33,.3)" }}>
+        style={{ backgroundColor: "rgba(0,0,0,.3)" }}>
         <Toolbar>
           <div style={{ width: "100%" }}>
             <Typography

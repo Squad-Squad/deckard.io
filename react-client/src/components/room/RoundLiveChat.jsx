@@ -31,16 +31,18 @@ const styles = {
     marginRight: 20,
   },
   currentTurnBar: {
-    height: '30px',
+    height: '40px',
     fontSize: '20px',
+    fontWeight: 600,
     display: 'flex',
-    justifyContent: 'space-between',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     alignItems: 'center',
     backgroundColor: '#424242',
-    padding: '0px 40px'
+    padding: '0px 60px'
   },
   currentTurnText: {
-    fontSize: '20px',
+    fontSize: '18px',
   },
 
 };
@@ -123,8 +125,7 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
               <Typography variant="title" color="inherit" className={classes.flex}>
                 {this.props.roomName}
               </Typography>
-              {this.props.yourTurn ? <Typography variant="title" color="inherit" className={classes.flex}>YOUR TURN</Typography> : null}
-              <Typography color="inherit">
+              <Typography variant="title" color="inherit">
                 {this.props.timer}
               </Typography>
             </Toolbar>
@@ -132,12 +133,12 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
         </div>
 
         <AppBar position="static" className={classes.currentTurnBar}>
-          <Typography color="inherit" className={classes.currentTurnText}>
-            CURRENT TURN:
-          </Typography>
-          <Typography color="inherit" className={classes.currentTurnText}>
-            CURRENT USER
-          </Typography>
+          <div color="inherit" className={classes.currentTurnText}>
+            Current Turn:
+          </div>
+          <div color="inherit" className={classes.currentTurnText}>
+            {this.props.yourTurn ? 'You' : null}
+          </div>
         </AppBar>
 
         {/* MESSAGE LIST */}
