@@ -282,6 +282,14 @@ const fetchRedisMessages = (client, socket, callback) => {
   // callback(outputArray)
 };
 
+const saveVerificationHash = (client, hash, username) => {
+  client.set(hash, username, 'EX', 86400); //  expires after 24 hours
+}
+
+const lookupVerificationHash = (client, hash, username) => {
+
+}
+
 
 module.exports = {
   saveMember,
@@ -295,4 +303,6 @@ module.exports = {
   getWins,
   aliasMembers,
   fetchRedisMessages,
+  saveVerificationHash,
+  lookupVerificationHash,
 };

@@ -29,14 +29,7 @@ const { Op } = db;
 //
 const redis = require('redis');
 
-let client;
-if (process.env.REDIS_URL) {
-  client = redis.createClient(process.env.REDIS_URL);
-} else {
-  client = redis.createClient(process.env.REDIS_URL);
-}
-const multi = client.multi();
-
+let client = redis.createClient(process.env.REDIS_URL);
 //
 // ─── AWS CONFIG ─────────────────────────────────────────────────────────────────
 //
@@ -83,7 +76,7 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-auth.passportHelper(passport);
+auth.passportHelper(passport, client);
 app.use(flash());
 
 // Add Mitsuku to DB if she doesn't exist
@@ -831,6 +824,10 @@ db.models.sequelize.sync().then(() => {
     });
   });
 });
+
+// module.exports = {
+//   client,
+// }
 
 let timerObj = {};
 const nominateTimerObj = {};
