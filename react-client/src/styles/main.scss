@@ -333,8 +333,7 @@ div.columns {
   flex-direction: column;
   justify-content: center;
   margin: 20px;
-  width: calc(100% - 300px);
-  min-width: 300px;
+  flex: 1;
 }
 
 .user-profile-edit-area > * {
