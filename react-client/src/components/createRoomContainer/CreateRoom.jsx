@@ -243,9 +243,12 @@ class ConnectedCreateRoom extends React.Component {
         nameError: true,
       });
     } else {
-      if(this.props.roomMode === "round"){
+      if(this.props.roomMode === "free"){
+
+        console.log("I'm FREE MODE IN CREATE ROOM")
+
         $.post(
-          '/api/save',
+          '/api/saveFreeMode',
           {
             roomName: this.state.roomName,
             members: this.props.usersForNewRoom,
@@ -263,7 +266,7 @@ class ConnectedCreateRoom extends React.Component {
         )        
       }else{
          $.post(
-          '/api/saveFreeMode',
+          '/api/save',
           {
             roomName: this.state.roomName,
             members: this.props.usersForNewRoom,

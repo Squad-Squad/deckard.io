@@ -83,6 +83,7 @@ class ConnectedRoom extends React.Component {
       this.setState({
         waitingForRoomMembers: false
       })
+      axios.post('/api/startTimer', {roomID: this.roomID}) 
       this.getTimer()
 
     })
@@ -96,10 +97,11 @@ class ConnectedRoom extends React.Component {
     console.log("CURRENT ROOM MODE:", this.state.roomMode)
     console.log("current state of waitingForRoomMembers:", this.state.waitingForRoomMembers)
     this.getRoomInfo();
-    // if(this.state.roomMode === "free"){
+    if(this.props.roomMode === "free"){
+      console.log("IS FREE MODE IN ROOM.JSX HAPPENING")
     // axios.post('/api/startTimer', {roomID: this.props.roomID}) 
-    // this.getTimer()
-    // }
+    this.getTimer()
+    }
   }
 
 
