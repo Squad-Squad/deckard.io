@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import Paper from '@material-ui/core/Paper';
 import AppBar from '@material-ui/core/AppBar';
@@ -30,9 +30,27 @@ const styles = {
     marginLeft: -12,
     marginRight: 20,
   },
+  currentTurnBar: {
+    height: '30px',
+    fontSize: '20px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#424242',
+    padding: '0px 40px'
+  },
+  currentTurnText: {
+    fontSize: '20px',
+  },
+
 };
 
-class ConnectedRoundLiveChat extends React.Component {
+type Props = {
+  username: string,
+  usersInRoom: array,
+}
+
+class ConnectedRoundLiveChat extends React.Component<Props> {
   constructor(props) {
     super(props);
     this.state = {
@@ -100,18 +118,27 @@ class ConnectedRoundLiveChat extends React.Component {
 
         {/* TOP BAR */}
         <div className={classes.root}>
-          <AppBar position="static" color="default">
+          <AppBar variant="title" position="static" color="default">
             <Toolbar>
               <Typography variant="title" color="inherit" className={classes.flex}>
                 {this.props.roomName}
               </Typography>
               {this.props.yourTurn ? <Typography variant="title" color="inherit" className={classes.flex}>YOUR TURN</Typography> : null}
-              <Typography variant="title" color="inherit">
+              <Typography color="inherit">
                 {this.props.timer}
               </Typography>
             </Toolbar>
           </AppBar>
         </div>
+
+        <AppBar position="static" className={classes.currentTurnBar}>
+          <Typography color="inherit" className={classes.currentTurnText}>
+            CURRENT TURN:
+          </Typography>
+          <Typography color="inherit" className={classes.currentTurnText}>
+            CURRENT USER
+          </Typography>
+        </AppBar>
 
         {/* MESSAGE LIST */}
         <div className="chat-messages" ref={(el) => { this.messageList = el; }}>
@@ -132,31 +159,23 @@ class ConnectedRoundLiveChat extends React.Component {
         </div>
 
         {/* BOTTOM BAR */}
-        {
-          this.props.yourTurn ?
-
-            <BottomNavigation
-              onChange={this.handleChange}>
-              <FormControl style={{ width: '70%' }}>
-                <Input
-                  style={{ marginTop: '10px' }}
-                  fullWidth
-                  value={this.state.msg}
-                  onChange={this.updateMessage.bind(this)}
-                  onKeyPress={this.handleKeyPress.bind(this)}
-                />
-              </FormControl>
-              <Button variant="fab" color="primary" aria-label="add" className={classes.button}
-                onClick={this.handleClick.bind(this)}>
-                <PublishIcon />
-              </Button>
-            </BottomNavigation>
-
-            :
-
-            null
-
-        }
+        <BottomNavigation
+          onChange={this.handleChange}>
+          <FormControl style={{ width: '70%' }}>
+            <Input
+              style={{ marginTop: '10px' }}
+              fullWidth
+              value={this.state.msg}
+              onChange={this.updateMessage.bind(this)}
+              onKeyPress={this.handleKeyPress.bind(this)}
+              disabled={!this.props.yourTurn}
+            />
+          </FormControl>
+          <Button variant="fab" color="primary" aria-label="add" className={classes.button}
+            onClick={this.handleClick.bind(this)} disabled={!this.props.yourTurn}>
+            <PublishIcon />
+          </Button>
+        </BottomNavigation>
       </Paper>
     );
   }

@@ -12,6 +12,7 @@ import Particles from 'react-particles-js';
 import Navbar from './components/Navbar.jsx';
 import MainView from './components/MainView.jsx';
 import SignupPage from './components/AuthUserMenu/SignupPage.jsx';
+import Splash from './components/Splash.jsx';
 
 import 'animate.css/animate.css';
 import './styles/main.scss';
@@ -177,7 +178,6 @@ class ConnectedApp extends React.Component {
   }
 
   async logout() {
-
     await axios.get('/logout')
 
     console.log('Logging out');
@@ -261,7 +261,7 @@ class ConnectedApp extends React.Component {
                 },
                 "move": {
                   "enable": true,
-                  "speed": 3,
+                  "speed": 1,
                   "direction": "none",
                   "random": false,
                   "straight": false,
@@ -348,7 +348,7 @@ class ConnectedApp extends React.Component {
                   userRooms={this.state.userRooms}
                   io={this.socket}
                   {...props} /> :
-                <Paper id="login-prompt">Login or signup to play.</Paper>} />
+                <Splash />} />
             <Route exact path="/signup" render={
               (props) => <SignupPage
                 subscribe={this.subscribe.bind(this)}
