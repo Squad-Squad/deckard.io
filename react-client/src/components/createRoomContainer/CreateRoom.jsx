@@ -42,8 +42,7 @@ const styles = theme => ({
     paddingBottom: '0px',
     textAlign: 'center',
     color: theme.palette.text.secondary,
-    marginTop: 30,
-    backgroundColor: 'rgba(33, 33, 33, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   container: {
     flexGrow: 1,
@@ -346,18 +345,6 @@ class ConnectedCreateRoom extends React.Component {
         <Typography id="new-room-header" style={{ paddingBottom: '8px' }}>
           New Room
         </Typography>
-        {/* <Button variant="contained"
-          onClick={this.props.freeRoomMode}
-          color="secondary"
-          style={{ marginTop: '15px' }}>
-          Free for All
-        </Button>
-        <Button variant="contained"
-          onClick={this.props.roundRoomMode}
-          color="secondary"
-          style={{ marginTop: '15px' }}>
-          Round Robin
-          </Button> */}
 
         <Divider />
         {createRoomError()}

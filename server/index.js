@@ -33,7 +33,7 @@ let client;
 if (process.env.REDIS_URL) {
   client = redis.createClient(process.env.REDIS_URL);
 } else {
-  client = redis.createClient(process.env.REDIS_URL);
+  client = redis.createClient();
 }
 const multi = client.multi();
 
@@ -268,7 +268,7 @@ app.post('/api/save', (req, res) => {
   });
 
   // CHANGE THE ROOM TIMER LENGTH HERE
-  timerObj[roomUnique].start(100000);
+  timerObj[roomUnique].start(20000);
 
   dbHelpers.saveRoomAndMembers(
     roomName,

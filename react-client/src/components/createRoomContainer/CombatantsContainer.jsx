@@ -95,7 +95,7 @@ class ConnectedCombatantsContainer extends React.Component {
         <Typography id="users-for-new-room-header">
           Users &ensp;<span style={{ flex: "right" }}>{this.props.usersForNewRoom.length}/7</span>
         </Typography>
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap' }}>
           {/* logged in user's chip */}
           <Chip
             style={{ zIndex: '0' }}

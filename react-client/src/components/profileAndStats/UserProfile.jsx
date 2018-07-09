@@ -259,7 +259,12 @@ class UserProfile extends Component {
     }
 
     return (
-      <div style={{ display: 'flex', alignContent: 'flex-start' }}>
+      <div style={{
+        display: 'flex',
+        alignContent: 'flex-start',
+        flexWrap: 'wrap',
+        justifyContent: 'center'
+      }}>
         <div className="profile-photo-upload-container">
           {currImage()}
           <div className="profile-photo-upload-middle">

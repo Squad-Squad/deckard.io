@@ -15,10 +15,11 @@
 // -------MEDIA QUERIES---------------------------------------
 //
 @media screen and (min-width: 0px) and (max-width: 700px) {
-  #image-logo { display: block; }
+  #image-logo { display: block; padding-left: 10px; }
   #typeface-logo { display: none; }
   #login-prompt { width: auto; }
   .hide-if-small { display: none }
+  #navbar-wrapper { padding-top: 10px; }
 }
 
 @media screen and (min-width: 701px) {
@@ -101,8 +102,8 @@ div[class^="MuiBackdrop-"] {
   background-color: rgba(0, 0, 0, .2);
 }
 
-ul[class^="MuiList-"] {
-  padding: 0px;
+ul {
+  background-color: rgba(10, 10, 10, .8);
 }
 
 #site-body p.title {
@@ -196,10 +197,6 @@ div.columns {
   margin: 15px;
 }
 
-.auth-dialog > div {
-  background-color: rgba(33,33,33,.3) !important;
-}
-
 .tile.is-child.notification.combatants {
   margin-bottom: 10px !important;
 }
@@ -226,10 +223,6 @@ div.columns {
 
 .subtitle {
   color: white;
-}
-
-.MuiDialog-paper-95 {
-  background-color: rgba(33, 33, 33, 0.5) !important;
 }
 
 .timer {
@@ -341,7 +334,7 @@ div.columns {
   flex-direction: column;
   justify-content: center;
   margin: 20px;
-  width: calc(100% - 300px);
+  flex: 1;
 }
 
 .user-profile-edit-area > * {
