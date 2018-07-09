@@ -34,8 +34,7 @@ const styles = theme => ({
     padding: theme.spacing.unit * 2,
     textAlign: 'center',
     color: theme.palette.text.secondary,
-    marginTop: 30,
-    backgroundColor: 'rgba(33, 33, 33, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   container: {
     flexGrow: 1,
@@ -60,8 +59,26 @@ class FriendsList extends Component {
       addFriend: false,
       query: '',
 
+      userAvatarMap: [],
+
       clickedFriend: '',
     };
+  }
+
+  componentDidMount() {
+    // Add avatars to users who have set them
+    if (this.props.friends) {
+      Promise.all(this.props.friends.map(friend => {
+        return axios.post('/api/userInfo', { user: friend });
+      }))
+        .then(res => {
+          const avatars = res.map(data => data.data.avatar);
+          const map = this.props.friends.map((friend, i) => {
+            return [friend, avatars[i]];
+          });
+          this.setState({ userAvatarMap: map });
+        });
+    }
   }
 
   handleClick() {
@@ -91,22 +108,20 @@ class FriendsList extends Component {
     });
   }
 
-  addUser(e) {
+  async addUser(e) {
     console.log(e.key);
     if (e.key === 'Enter') {
-      axios.post('/profile/add-friend',
+      await axios.post('/profile/add-friend',
         {
           username: this.props.username,
           friend: this.state.query,
         }
-      )
-        .then(res => {
-          this.props.addFriend(this.state.query);
-          this.setState({
-            addFriend: false,
-            query: '',
-          });
-        });
+      );
+      this.props.addFriend(this.state.query);
+      this.setState({
+        addFriend: false,
+        query: '',
+      });
     }
   }
 
@@ -114,24 +129,47 @@ class FriendsList extends Component {
     const { classes } = this.props;
 
     const list = () => {
-      if (this.props.friends) {
-        return this.props.friends.map(friend => {
-          return ([
-            <ListItem button
-              style={{ padding: '12px' }}
-              onClick={this.handleOpen.bind(this, friend)}>
-              <ListItemText primary={friend} />
-              <ListItemIcon>
-                <LensIcon style={{
-                  color: 'red',
-                  marginRight: '0px',
-                  opacity: '.6',
-                  fontSize: '13px',
-                }} />
-              </ListItemIcon>
-            </ListItem>,
-            <Divider />
-          ])
+      if (this.state.userAvatarMap) {
+        return this.state.userAvatarMap.map(friendAvatar => {
+          if (!this.props.onlineUsers.includes(friendAvatar[0])) {
+            return ([
+              <ListItem button
+                style={{ padding: '12px', opacity: '.4' }}
+                onClick={this.handleOpen.bind(this, friendAvatar[0])}>
+                {(() => (friendAvatar[1] !== './assets/roboheadwhite.png') ?
+                  <img
+                    src={friendAvatar[1]}
+                    style={{
+                      objectFit: 'cover',
+                      borderRadius: '50%',
+                      height: '32px',
+                      width: '32px',
+                      marginRight: '-5px',
+                    }} /> : null)()}
+                <ListItemText primary={friendAvatar[0]} />
+              </ListItem>,
+              <Divider />
+            ])
+          } else {
+            return ([
+              <ListItem button
+                style={{ padding: '12px' }}
+                onClick={this.handleOpen.bind(this, friendAvatar[0])}>
+                {(() => (friendAvatar[1] !== './assets/roboheadwhite.png') ?
+                  <img
+                    src={friendAvatar[1]}
+                    style={{
+                      objectFit: 'cover',
+                      borderRadius: '50%',
+                      height: '32px',
+                      width: '32px',
+                      marginRight: '-5px',
+                    }} /> : null)()}
+                <ListItemText primary={friendAvatar[0]} />
+              </ListItem>,
+              <Divider />
+            ])
+          }
         })
       } else {
         return null;

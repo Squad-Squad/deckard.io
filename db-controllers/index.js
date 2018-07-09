@@ -427,6 +427,7 @@ const removeFromMembersList = (client, socket) =>{
         console.error(err)
       })
 }
+        
 
 
 module.exports = {

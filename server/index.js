@@ -37,7 +37,7 @@ bluebird.promisifyAll(redis.RedisClient.prototype);
 if (process.env.REDIS_URL) {
   client = redis.createClient(process.env.REDIS_URL);
 } else {
-  client = redis.createClient(process.env.REDIS_URL);
+  client = redis.createClient();
 }
 const multi = client.multi();
 
@@ -380,15 +380,6 @@ app.post('/api/userrooms', (req, res) => {
     } else {
       res.send(rooms);
     }
-  });
-});
-
-app.post('/api/userInfo', (req, res) => {
-  console.log('USERINFO in server', req.body);
-  db.models.User.findOne({ where: { email: req.body.user } }).then((instance) => {
-    console.log('USERINFO FROM DATABaSE', instance);
-    const lifeTimeScore = instance.get('lifetime_score');
-    res.send(JSON.stringify(lifeTimeScore));
   });
 });
 

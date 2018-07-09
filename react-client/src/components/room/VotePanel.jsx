@@ -20,7 +20,10 @@ function mapStateToProps(state) {
 
 const styles = theme => ({
   button: {
-    margin: theme.spacing.unit,
+    width: '100%',
+    height: '42px',
+    margin: '0px',
+    borderRadius: '0px',
   },
   input: {
     display: 'none',
@@ -43,7 +46,7 @@ class VotePanel extends Component {
     };
   }
 
-   componentDidMount() {
+  componentDidMount() {
     this.setState({
       membersVoteMap: Object.keys(this.props.memberMap).reduce((obj, member) => {
         obj[member] = '';
@@ -88,38 +91,33 @@ class VotePanel extends Component {
         return (<AwaitingResults />);
       } else {
         return (
-          <Paper style={{
-            backgroundColor: 'rgba(255,255,255,.1)'
-          }}>
+          <Paper>
             {/* TOP BAR */}
             <div className={classes.root}>
               <AppBar position="static" color="default">
                 <Toolbar>
-                  <Typography variant="title" color="inherit" className={classes.flex}>
+                  <Typography variant="title" color="inherit" className={classes.flex}
+                    style={{ fontWeight: 600 }}>
                     Voting
                   </Typography>
                 </Toolbar>
               </AppBar>
             </div>
 
-            {this.props.members.map((user, i) =>{
+            {this.props.members.map((user, i) => {
               console.log('USER:', user, "loggedInUser", this.props.memberMap[this.props.loggedInUser])
-              if(user !== this.props.memberMap[this.props.loggedInUser]){
-                return <VotePanelItem key={i} user={user} setVote={this.setVote.bind(this)} /> 
-                } 
+              if (user !== this.props.memberMap[this.props.loggedInUser]) {
+                return <VotePanelItem key={i} user={user} setVote={this.setVote.bind(this)} />
               }
+            }
             )}
 
             {/* BOTTOM BAR */}
-            <BottomNavigation style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-            }}>
-              <Button variant="contained" color="secondary" aria-label="add" className={classes.button}
-                onClick={this.submitVotes.bind(this)}>
-                Submit
-              </Button>
-            </BottomNavigation>
+            <Button variant="contained" color="secondary" aria-label="add"
+              className={classes.button}
+              onClick={this.submitVotes.bind(this)}>
+              Submit
+            </Button>
           </Paper>
         )
       }

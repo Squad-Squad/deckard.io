@@ -12,7 +12,8 @@ class UserStats extends Component {
     return ([
       <div style={{
         display: 'flex',
-        justifyContent: 'space-around'
+        justifyContent: 'space-around',
+        flexWrap: 'wrap'
       }}>
         <div className="stats-tile">
           GAMES PLAYED
