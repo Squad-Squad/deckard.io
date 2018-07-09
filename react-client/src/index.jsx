@@ -12,6 +12,7 @@ import Particles from 'react-particles-js';
 import Navbar from './components/Navbar.jsx';
 import MainView from './components/MainView.jsx';
 import SignupPage from './components/AuthUserMenu/SignupPage.jsx';
+import Splash from './components/Splash.jsx';
 
 import 'animate.css/animate.css';
 import './styles/main.scss';
@@ -66,6 +67,19 @@ const theme = createMuiTheme({
     contrastThreshold: 3,
     tonalOffset: 0.2,
   },
+  overrides: {
+    MuiPaper: {
+      root: {
+        backgroundColor: 'rgba(0, 0, 0, .5)',
+      }
+    }
+  },
+  typography: {
+    title: {
+      fontFamily: '"Titillium Web", sans-serif',
+      fontWeight: 500,
+    }
+  }
 });
 
 const styles = theme => ({
@@ -177,7 +191,6 @@ class ConnectedApp extends React.Component {
   }
 
   async logout() {
-
     await axios.get('/logout')
 
     console.log('Logging out');
@@ -261,7 +274,7 @@ class ConnectedApp extends React.Component {
                 },
                 "move": {
                   "enable": true,
-                  "speed": 3,
+                  "speed": 1,
                   "direction": "none",
                   "random": false,
                   "straight": false,
@@ -328,7 +341,7 @@ class ConnectedApp extends React.Component {
 
 
           {/* MAIN */}
-          <div>
+          <div id="navbar-wrapper">
             <Navbar
               login={this.login.bind(this)}
               logout={this.logout.bind(this)}
@@ -348,7 +361,7 @@ class ConnectedApp extends React.Component {
                   userRooms={this.state.userRooms}
                   io={this.socket}
                   {...props} /> :
-                <Paper id="login-prompt">Login or signup to play.</Paper>} />
+                <Splash />} />
             <Route exact path="/signup" render={
               (props) => <SignupPage
                 subscribe={this.subscribe.bind(this)}

@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import Paper from '@material-ui/core/Paper';
 import AppBar from '@material-ui/core/AppBar';
@@ -22,6 +22,7 @@ const mapStateToProps = state => {
 const styles = {
   root: {
     flexGrow: 1,
+    position: 'relative',
   },
   flex: {
     flex: 1,
@@ -30,9 +31,29 @@ const styles = {
     marginLeft: -12,
     marginRight: 20,
   },
+  currentTurnBar: {
+    height: '40px',
+    fontSize: '20px',
+    fontWeight: 600,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    backgroundColor: '#424242',
+    padding: '0px 60px'
+  },
+  currentTurnText: {
+    fontSize: '18px',
+  },
+
 };
 
-class ConnectedRoundLiveChat extends React.Component {
+type Props = {
+  username: string,
+  usersInRoom: array,
+}
+
+class ConnectedRoundLiveChat extends React.Component<Props> {
   constructor(props) {
     super(props);
     this.state = {
@@ -96,21 +117,30 @@ class ConnectedRoundLiveChat extends React.Component {
     return (
       <Paper
         id="chat-window"
-        style={{ backgroundColor: 'rgba(255,255,255,.1)' }}>
+        style={{ backgroundColor: 'rgba(0,0,0,.4)' }}>
 
         {/* TOP BAR */}
         <div className={classes.root}>
-          <AppBar position="static" color="default">
+          <AppBar variant="title" position="static" color="default">
             <Toolbar>
-              <Typography variant="title" color="inherit" className={classes.flex}>
+              <Typography variant="title" color="inherit" className={classes.flex}
+                style={{ fontWeight: 600 }}>
                 {this.props.roomName}
               </Typography>
-              {this.props.yourTurn ? <Typography variant="title" color="inherit" className={classes.flex}>YOUR TURN</Typography> : null}
-              <Typography variant="title" color="inherit">
+              <Typography variant="title" color="inherit" style={{ fontWeight: 600 }}>
                 {this.props.timer}
               </Typography>
             </Toolbar>
           </AppBar>
+        </div>
+
+        <div position="static" className={classes.currentTurnBar}>
+          <div color="inherit" className={classes.currentTurnText}>
+            Current Turn:
+          </div>
+          <div color="inherit" className={classes.currentTurnText}>
+            {this.props.yourTurn ? 'You' : null}
+          </div>
         </div>
 
         {/* MESSAGE LIST */}
@@ -132,31 +162,23 @@ class ConnectedRoundLiveChat extends React.Component {
         </div>
 
         {/* BOTTOM BAR */}
-        {
-          this.props.yourTurn ?
-
-            <BottomNavigation
-              onChange={this.handleChange}>
-              <FormControl style={{ width: '70%' }}>
-                <Input
-                  style={{ marginTop: '10px' }}
-                  fullWidth
-                  value={this.state.msg}
-                  onChange={this.updateMessage.bind(this)}
-                  onKeyPress={this.handleKeyPress.bind(this)}
-                />
-              </FormControl>
-              <Button variant="fab" color="primary" aria-label="add" className={classes.button}
-                onClick={this.handleClick.bind(this)}>
-                <PublishIcon />
-              </Button>
-            </BottomNavigation>
-
-            :
-
-            null
-
-        }
+        <BottomNavigation
+          onChange={this.handleChange}>
+          <FormControl style={{ width: '70%' }}>
+            <Input
+              style={{ marginTop: '10px' }}
+              fullWidth
+              value={this.state.msg}
+              onChange={this.updateMessage.bind(this)}
+              onKeyPress={this.handleKeyPress.bind(this)}
+              disabled={!this.props.yourTurn}
+            />
+          </FormControl>
+          <Button variant="fab" color="primary" aria-label="add" className={classes.button}
+            onClick={this.handleClick.bind(this)} disabled={!this.props.yourTurn}>
+            <PublishIcon />
+          </Button>
+        </BottomNavigation>
       </Paper>
     );
   }

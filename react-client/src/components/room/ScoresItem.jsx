@@ -10,6 +10,7 @@ function mapStateToProps(state) {
 
 class ScoresItem extends Component {
   render() {
+    console.log(this.props.winner, this.props.alias);
     const scoreCard = () => {
       if (this.props.winner === this.props.alias) {
         return (

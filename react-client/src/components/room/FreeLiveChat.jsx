@@ -86,16 +86,18 @@ class ConnectedFreeLiveChat extends React.Component {
     return (
       <Paper
         id="chat-window"
-        style={{ backgroundColor: 'rgba(255,255,255,.1)' }}>
+        style={{ backgroundColor: 'rgba(0,0,0,.4)' }}>
 
         {/* TOP BAR */}
         <div className={classes.root}>
           <AppBar position="static" color="default">
             <Toolbar>
-              <Typography variant="title" color="inherit" className={classes.flex}>
+              <Typography variant="title" color="inherit" className={classes.flex}
+                style={{ fontWeight: 600 }}>
                 {this.props.roomName}
               </Typography>
-              <Typography variant="title" color="inherit">
+              <Typography variant="title" color="inherit"
+                style={{ fontWeight: 600 }}>
                 {this.props.timer}
               </Typography>
             </Toolbar>

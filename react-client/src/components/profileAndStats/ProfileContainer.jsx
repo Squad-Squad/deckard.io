@@ -77,7 +77,7 @@ class ProfileContainer extends React.Component {
           </div>
           <div className="column is-10">
             <Paper style={{
-              backgroundColor: 'rgba(255,255,255,.1)'
+              backgroundColor: 'rgba(0,0,0,.5)'
             }}>
               <AppBar position="static" color="default">
                 <Tabs
