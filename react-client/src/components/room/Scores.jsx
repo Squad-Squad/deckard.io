@@ -52,7 +52,7 @@ class Scores extends Component {
             style={{ backgroundColor: 'rgba(30, 30, 30, .5)' }}>
             <Toolbar>
               {/* BOT REVEAL */}
-              <div style={{
+              <Typography variant="title" style={{
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -63,22 +63,23 @@ class Scores extends Component {
                 fontSize: '20px',
                 width: '100%',
               }}>
-                <div>
+                <div style={{ fontSize: '20px' }}>
                   The Bot Is:
-          </div>
-                <div>
+                </div>
+                <div style={{ fontSize: '20px' }}>
                   <span>Mitsuku</span> &nbsp;
-            <strong>{this.props.memberMap['mitsuku@mitsuku.com']}</strong>
+                  <strong>{this.props.memberMap['mitsuku@mitsuku.com']}</strong>
                 </div>
                 <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',
-                  width: '100%'
+                  width: '100%',
+                  marginTop: '10px'
                 }}>
                   <span>Users</span>
                   <span>Scores</span>
                 </div>
-              </div>
+              </Typography>
               <Divider />
             </Toolbar>
           </AppBar>

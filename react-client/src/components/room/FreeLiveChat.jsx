@@ -92,10 +92,12 @@ class ConnectedFreeLiveChat extends React.Component {
         <div className={classes.root}>
           <AppBar position="static" color="default">
             <Toolbar>
-              <Typography variant="title" color="inherit" className={classes.flex}>
+              <Typography variant="title" color="inherit" className={classes.flex}
+                style={{ fontWeight: 600 }}>
                 {this.props.roomName}
               </Typography>
-              <Typography variant="title" color="inherit">
+              <Typography variant="title" color="inherit"
+                style={{ fontWeight: 600 }}>
                 {this.props.timer}
               </Typography>
             </Toolbar>

@@ -58,7 +58,6 @@ class ConnectedNavbar extends React.Component {
         <Toolbar>
           <div style={{ width: "100%" }}>
             <Typography
-              variant="title"
               color="inherit"
               className={'title'}>
               <div id="typeface-logo">

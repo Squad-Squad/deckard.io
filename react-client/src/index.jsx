@@ -67,6 +67,19 @@ const theme = createMuiTheme({
     contrastThreshold: 3,
     tonalOffset: 0.2,
   },
+  overrides: {
+    MuiPaper: {
+      root: {
+        backgroundColor: 'rgba(0, 0, 0, .5)',
+      }
+    }
+  },
+  typography: {
+    title: {
+      fontFamily: '"Titillium Web", sans-serif',
+      fontWeight: 500,
+    }
+  }
 });
 
 const styles = theme => ({

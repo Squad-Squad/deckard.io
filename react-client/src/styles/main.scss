@@ -196,10 +196,6 @@ div.columns {
   margin: 15px;
 }
 
-.auth-dialog > div {
-  background-color: rgba(33,33,33,.3) !important;
-}
-
 .tile.is-child.notification.combatants {
   margin-bottom: 10px !important;
 }
@@ -226,10 +222,6 @@ div.columns {
 
 .subtitle {
   color: white;
-}
-
-.MuiDialog-paper-95 {
-  background-color: rgba(33, 33, 33, 0.5) !important;
 }
 
 .timer {
@@ -342,6 +334,7 @@ div.columns {
   justify-content: center;
   margin: 20px;
   width: calc(100% - 300px);
+  min-width: 300px;
 }
 
 .user-profile-edit-area > * {

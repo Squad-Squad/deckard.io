@@ -345,18 +345,6 @@ class ConnectedCreateRoom extends React.Component {
         <Typography id="new-room-header" style={{ paddingBottom: '8px' }}>
           New Room
         </Typography>
-        {/* <Button variant="contained"
-          onClick={this.props.freeRoomMode}
-          color="secondary"
-          style={{ marginTop: '15px' }}>
-          Free for All
-        </Button>
-        <Button variant="contained"
-          onClick={this.props.roundRoomMode}
-          color="secondary"
-          style={{ marginTop: '15px' }}>
-          Round Robin
-          </Button> */}
 
         <Divider />
         {createRoomError()}

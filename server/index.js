@@ -268,7 +268,7 @@ app.post('/api/save', (req, res) => {
   });
 
   // CHANGE THE ROOM TIMER LENGTH HERE
-  timerObj[roomUnique].start(400000);
+  timerObj[roomUnique].start(20000);
 
   dbHelpers.saveRoomAndMembers(
     roomName,
