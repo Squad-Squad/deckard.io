@@ -4,15 +4,33 @@ const Sequelize = require('sequelize');
 
 const { Op } = Sequelize;
 
-// set up connection and create sequelize instance
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
-  dialect: 'postgres',
-  operatorsAliases: false,
-  logging: false,
-  // dialectOptions: {
-  //   ssl: true,
-  // },
-});
+let sequelize;
+if (process.env.DATABASE_URL) {
+  sequelize = new Sequelize(process.env.DATABASE_URL, {
+    dialect: 'postgres',
+    operatorsAliases: false,
+    logging: false,
+  });
+} else {
+  sequelize = new Sequelize(
+    process.env.DB_NAME,
+    process.env.DB_USER,
+    process.env.DB_PASSWORD,
+    {
+      host: 'localhost',
+      dialect: 'postgres',
+      operatorsAliases: false,
+      logging: false,
+    },
+  );
+}
+
+// DEPLOYMENT
+// const sequelize = new Sequelize(process.env.DATABASE_URL, {
+//   dialect: 'postgres',
+//   operatorsAliases: false,
+//   logging: false,
+// });
 
 // testing connection
 sequelize.authenticate()
@@ -28,6 +46,10 @@ sequelize.authenticate()
 // ─── THESE CANT BE IN SEPARATE FILES ────────────────────────────────────────────
 //
 const User = sequelize.define('user', {
+  username: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
   email: {
     type: Sequelize.STRING,
     allowNull: false,
@@ -35,14 +57,46 @@ const User = sequelize.define('user', {
       isEmail: true,
     },
   },
+  is_google_account: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false,
+  },
   password: {
     type: Sequelize.STRING,
     allowNull: true,
   },
-  wins: {
+  avatar: {
+    type: Sequelize.STRING,
+    defaultValue: './assets/roboheadwhite.png',
+  },
+  description: {
+    type: Sequelize.STRING,
+    allowNull: true,
+    defaultValue: 'Description...',
+  },
+  games_played: {
     type: Sequelize.INTEGER(6),
     defaultValue: 0,
     allowNull: true,
+  },
+  games_won: {
+    type: Sequelize.INTEGER(6),
+    defaultValue: 0,
+    allowNull: true,
+  },
+  lifetime_score: {
+    type: Sequelize.INTEGER(6),
+    defaultValue: 0,
+    allowNull: true,
+  },
+  is_verified: {
+    type: Sequelize.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  },
+  friends: {
+    type: Sequelize.ARRAY(Sequelize.TEXT),
+    defaultValue: [],
   },
 });
 

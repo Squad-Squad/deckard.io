@@ -1,6 +1,5 @@
 import React from 'react';
 import $ from 'jquery';
-import axios from 'axios';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -8,12 +7,14 @@ import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import TextField from '@material-ui/core/TextField';
+import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Input from '@material-ui/core/Input';
 import CombatantsContainer from './CombatantsContainer.jsx';
 import Button from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
+import RoomOptions from './RoomOptions.jsx';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { addUserToNewRoom } from '../../../../redux/actions.js';
@@ -23,6 +24,9 @@ const mapStateToProps = state => {
     loggedIn: state.loggedIn,
     loggedInUsername: state.username,
     usersForNewRoom: state.usersForNewRoom,
+    roomMode: state.roomMode,
+    roomBot: state.roomBot,
+    roomLength: state.roomLength,
   };
 };
 
@@ -35,10 +39,10 @@ const mapDispatchToProps = dispatch => {
 const styles = theme => ({
   paper: {
     padding: theme.spacing.unit * 2,
+    paddingBottom: '0px',
     textAlign: 'center',
     color: theme.palette.text.secondary,
-    marginTop: 30,
-    backgroundColor: 'rgba(33, 33, 33, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   container: {
     flexGrow: 1,
@@ -75,14 +79,15 @@ class ConnectedCreateRoom extends React.Component {
       query: '',
       roomID: null,
       roomName: '',
-
-      error: false,
-
       roomLink: '',
-
-      suggestions: [],
       currSuggestions: [],
       value: '',
+
+      nameError: false,
+      optionsError: '',
+
+      modeAnchorEl: null,
+      botAnchorEl: null,
     };
     this.handleKeyPress = this.handleKeyPress.bind(this);
     this.createRoom = this.createRoom.bind(this);
@@ -91,14 +96,20 @@ class ConnectedCreateRoom extends React.Component {
   }
 
   componentDidMount() {
-    axios.post('/searchUsers')
-      .then(res => {
-        this.setState({
-          suggestions: res.data
-            .map(user => user.email)
-            .filter(email => email !== this.props.loggedInUsername),
-        });
-      });
+    this.props.addUserToNewRoom(this.props.loggedInUsername);
+  }
+
+  componentWillReceiveProps(newProps) {
+    if (newProps.roomMode && newProps.roomBot && newProps.roomLength) {
+      this.setState({
+        optionsError: '',
+      })
+    }
+    if (newProps.roomName) {
+      this.setState({
+        nameError: false,
+      })
+    }
   }
 
   //
@@ -135,9 +146,10 @@ class ConnectedCreateRoom extends React.Component {
         onClick={() => {
           if (this.props.usersForNewRoom.length <= 7) {
             props.addUserToNewRoom(suggestion);
+            console.log(this.state.query);
             this.setState({
-              query: '',
               currSuggestions: [],
+              query: '',
             });
           }
         }}>
@@ -181,7 +193,7 @@ class ConnectedCreateRoom extends React.Component {
 
     return inputLength === 0
       ? []
-      : this.state.suggestions.filter(suggestion => {
+      : this.props.onlineUsers.filter(suggestion => {
         const keep =
           count < 5 && suggestion.toLowerCase().slice(0, inputLength) === inputValue;
 
@@ -204,26 +216,39 @@ class ConnectedCreateRoom extends React.Component {
       currSuggestions: [],
     });
   };
-
-  handleSuggestionClick = (username) => {
-  }
   // ────────────────────────────────────────────────────────────────────────────────
 
+  generateOptionsError() {
+    const err = [];
+    if (!this.props.roomMode) err.push('a mode');
+    if (!this.props.roomBot) err.push('a bot');
+    if (!this.props.roomLength) err.push('a duration');
+    if (err.length === 3) {
+      return 'Please choose a mode, a bot, and a duration';
+    } else if (err.length === 2) {
+      return `Please choose ${err[0]} and ${err[1]}`;
+    } else if (err.length === 1) {
+      return `Please choose ${err[0]}`;
+    }
+    return null;
+  }
 
   createRoom() {
-    if (this.props.loggedIn === false ||
-      this.state.roomName.length === 0 ||
-      this.props.usersForNewRoom.length === 0) {
+    const optionsError = this.generateOptionsError();
+    if (optionsError) {
+      this.setState({ optionsError })
+    } else if (this.state.roomName.length === 0) {
+      console.log('SETSTASTE');
       this.setState({
-        error: true,
+        nameError: true,
       });
     } else {
-      // this.props.io.emit('invite', {users: this.props.usersForNewRoom, room:this.state.roomName})
       $.post(
         '/api/save',
         {
           roomName: this.state.roomName,
           members: this.props.usersForNewRoom,
+          roomMode: this.props.roomModeSelection
         },
         (roomInfo, status) => {
           this.sendRoomEmail(roomInfo, this.props.usersForNewRoom);
@@ -231,7 +256,7 @@ class ConnectedCreateRoom extends React.Component {
             roomLink: roomInfo.uniqueid
           }, () => {
             this.props.history.push(`/rooms/${roomInfo.uniqueid}`)
-            this.props.io.emit('invite', { users: this.props.usersForNewRoom, roomHash: roomInfo.uniqueid, roomName: this.state.roomName })
+            this.props.io.emit('invite', { users: this.props.usersForNewRoom, roomHash: roomInfo.uniqueid, roomName: this.state.roomName, roomMode: this.props.roomModeSelection })
           });
         }
       )
@@ -265,6 +290,7 @@ class ConnectedCreateRoom extends React.Component {
 
   handleAutoSuggestKeyPress(event) {
     if (event.key == 'Enter') {
+      console.log('IS IT ENTER');
       if (this.state.query.length &&
         this.props.usersForNewRoom.length <= 7) {
         this.props.addUserToNewRoom(this.state.currSuggestions[0]);
@@ -282,10 +308,11 @@ class ConnectedCreateRoom extends React.Component {
     }
   }
 
-
   render() {
     const { classes } = this.props;
-    this.props.addUserToNewRoom(this.props.loggedInUsername);
+    const { anchorEl } = this.state;
+
+    const { vertical, horizontal, open } = this.state;
 
     var uniqueURL = this.state.roomID ?
       `https://food-fight-greenfield.herokuapp.com/rooms/${this.state.roomID}`
@@ -293,24 +320,21 @@ class ConnectedCreateRoom extends React.Component {
 
     // Error creating room
     const createRoomError = () => {
-      if (!this.props.loggedIn) {
+      console.log(this.state.optionsError.length);
+      if (this.state.optionsError) {
         return (
           <section className="section login-error" style={{ color: 'white' }}>
-            <div className="container">
-              <h2 className="subtitle">
-                Please login to create a room.
-              </h2>
-            </div>
+            <p>
+              {this.state.optionsError}
+            </p>
           </section>
         )
       } else {
-        return this.state.error ? (
+        return this.state.nameError ? (
           <section className="section login-error" style={{ color: 'white' }}>
-            <div className="container">
-              <h2 className="subtitle">
-                You must have a name and the arena must have combatants.
-              </h2>
-            </div>
+            <p>
+              Your room must have a name.
+          </p>
           </section>
         ) : null;
       }
@@ -323,6 +347,12 @@ class ConnectedCreateRoom extends React.Component {
         </Typography>
 
         <Divider />
+        {createRoomError()}
+
+        <RoomOptions
+          freeRoomMode={this.props.freeRoomMode}
+          roundRoomMode={this.props.roundRoomMode} />
+
         <div style={{ margin: '8px' }}>
           <FormControl style={{ width: '100%' }} >
             <Input
@@ -368,7 +398,13 @@ class ConnectedCreateRoom extends React.Component {
           color="secondary"
           className={classes.newRoomButton}
           onClick={this.createRoom}
-          style={{ marginTop: '15px' }}>
+          style={{
+            marginTop: '15px',
+            borderRadius: '0px',
+            width: 'calc(100% + 32px)',
+            marginLeft: '-16px',
+            height: '40px',
+          }}>
           Create New Room
         </Button>
       </Paper>

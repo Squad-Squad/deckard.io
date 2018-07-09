@@ -20,6 +20,7 @@ function getModalStyle() {
 const styles = theme => ({
   paper: {
     position: 'absolute',
+
     width: theme.spacing.unit * 50,
     backgroundColor: theme.palette.background.paper,
     boxShadow: theme.shadows[5],
@@ -58,6 +59,7 @@ class InviteDialogue extends React.Component {
               You've Been Invited to Play with {this.props.host}!
             </Typography>
             <Button><a href={`/rooms/${this.props.roomHash}`}>Join Room</a></Button>
+            <Button onClick={()=>{this.props.decline()}}>Decline</Button>
           </div>
         </Modal>
       </div>

@@ -1,6 +1,6 @@
 # Deckard.io
 
-Deckard.io is gamifying the idea of the [Turing Test](https://en.wikipedia.org/wiki/Turing_test) by pitting you and some strangers in a chatroom with an ai bot. Your goal is to guess who the bot is correctly and have the other humans guess that you are the bot. 
+Deckard.io is gamifying the idea of the [Turing Test](https://en.wikipedia.org/wiki/Turing_test) by pitting you and some strangers in a chatroom with an ai bot. Your goal is to guess who the bot is correctly and have the other humans guess that you are the bot.
 
 ### Installing
 

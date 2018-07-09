@@ -8,15 +8,17 @@ const bcrypt = require('bcrypt');
 //
 // ─── USER TABLE HELPERS ─────────────────────────────────────────────────────────
 //
-const saveMember = (email, password, callback) => {
+const saveMember = (username, email, password, isGoogle, callback) => {
   let hashedPW;
   if (password) {
     const salt = bcrypt.genSaltSync(3);
     hashedPW = bcrypt.hashSync(password, salt);
   }
   db.models.User.create({
+    username,
     email,
     password: hashedPW,
+    is_google_account: isGoogle,
   })
     .then((result) => {
       callback(result);
@@ -90,12 +92,62 @@ const saveRoomAndMembers = (roomName, members, id, callback) => {
     });
 };
 
+const aliasMembers = (roomName, roomMode, members, callback) => {
+  const aliases = ['HAL 9000',
+    'Android 18',
+    'AM',
+    'Marvin',
+    'Roy Batty',
+    'Pris',
+    'Rachael',
+    'C-3PO',
+    'Ash',
+    'T-800',
+    'T-1000',
+    'Data',
+    'Bishop',
+    'Johnny 5',
+    'Robocop',
+    'Rosie',
+    'Cortana',
+    'HK-47',
+    '2B',
+    'GlaDOS',
+    'SHODAN',
+    'Dolores'];
+
+  // const randomAlias = Math.floor(Math.random() * aliases.length);
+  const randomForAI = Math.floor(Math.random() * aliases.length);
+  const membersObj = { room: roomName, roomMode, 'mitsuku@mitsuku.com': aliases[randomForAI] };
+  aliases.splice(randomForAI, 1);
+  members.forEach((member) => {
+    const randomAlias = Math.floor(Math.random() * aliases.length);
+    membersObj[member] = aliases[randomAlias];
+    aliases.splice(randomAlias, 1);
+  });
+  callback(membersObj);
+};
+
+const updateUser = (updateData) => {
+  db.models.User.findOne({ username: updateData.username })
+    .then((user) => {
+      if (user) {
+        if (updateData.username) user.updateAttributes({ username: updateData.username });
+        if (updateData.email) user.updateAttributes({ email: updateData.email });
+        if (updateData.imageURL) user.updateAttributes({ imageURL: updateData.imageURL });
+      } else {
+        console.log('ERROR UPDATING THE USER');
+      }
+    });
+};
+
+
 // Add Mitsuku user to table if she doesn't already exist
 const addMitsuku = () => {
   db.models.User.findAll({ where: { email: 'mitsuku@mitsuku.com' } })
     .then((res) => {
       if (!res.length) {
-        db.models.User.create({ email: 'mitsuku@mitsuku.com' });
+        db.models.User.create({ username: 'Mitsuku', email: 'mitsuku@mitsuku.com' });
       }
     });
 };
@@ -104,7 +156,6 @@ const addMitsuku = () => {
 // ─── MESSAGE TABLE HELPERS ─────────────────────────────────────────────────────────
 //
 const saveMessage = (user_id, name, message, roomID, callback) => {
-  console.log('Saving message', user_id, name, message, roomID);
   db.models.Room.findOne({
     where: {
       uniqueid: roomID,
@@ -207,13 +258,68 @@ const getWins = (email, callback) => {
     });
 };
 
+
+const fetchRedisMessages = (client, socket, callback) => {
+  console.log('SOCKET.ROOOM in the DBCONTROLLERS', socket.room);
+  const outputArray = [];
+  client.lrange(`${socket.room}:messages`, 0, -1, (err, replies) => {
+    if (err) {
+      console.log(err);
+    } else {
+      replies.forEach((reply) => {
+        const msgObj = {};
+        const incoming = JSON.parse(reply);
+        for (const key in incoming) {
+          msgObj.message = incoming[key];
+          msgObj.name = key;
+          msgObj.user_id = null;
+        }
+        outputArray.push(msgObj);
+      });
+      callback(outputArray);
+    }
+  });
+  // callback(outputArray)
+};
+
+const saveVerificationHash = (client, hash, username) => {
+  client.set(hash, username, 'EX', 86400); //  expires after 24 hours
+}
+
+const lookupVerificationHash = (client, hash, username) => {
+
+}
+
+const setVerified = (username) => {
+  db.models.User
+  .findOne({
+    where: {username: username,},
+  })
+  .then((user) =>{
+    if(user){
+      user.updateAttributes({is_verified: true})
+      console.log('Verified User ', username);
+    } else {
+      console.log ("Error updating user")
+    }
+  }).catch((error) => {
+    console.log(error);
+  })  
+}
+
 module.exports = {
   saveMember,
   saveRoomAndMembers,
+  updateUser,
   getRoomMembers,
   addMitsuku,
   saveMessage,
   getMessages,
   getRooms,
   getWins,
+  aliasMembers,
+  fetchRedisMessages,
+  saveVerificationHash,
+  lookupVerificationHash,
+  setVerified,
 };

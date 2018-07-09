@@ -32,7 +32,7 @@ const styles = {
   },
 };
 
-class ConnectedLiveChat extends React.Component {
+class ConnectedFreeLiveChat extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -41,7 +41,9 @@ class ConnectedLiveChat extends React.Component {
   }
 
   componentDidMount() {
+    console.log("AM I MOUNTING", this.props.roomID)
     this.scrollToBottom();
+    this.props.getTimer()
   }
 
   updateMessage(e) {
@@ -84,16 +86,18 @@ class ConnectedLiveChat extends React.Component {
     return (
       <Paper
         id="chat-window"
-        style={{ backgroundColor: 'rgba(255,255,255,.1)' }}>
+        style={{ backgroundColor: 'rgba(0,0,0,.4)' }}>
 
         {/* TOP BAR */}
         <div className={classes.root}>
           <AppBar position="static" color="default">
             <Toolbar>
-              <Typography variant="title" color="inherit" className={classes.flex}>
+              <Typography variant="title" color="inherit" className={classes.flex}
+                style={{ fontWeight: 600 }}>
                 {this.props.roomName}
               </Typography>
-              <Typography variant="title" color="inherit">
+              <Typography variant="title" color="inherit"
+                style={{ fontWeight: 600 }}>
                 {this.props.timer}
               </Typography>
             </Toolbar>
@@ -111,7 +115,8 @@ class ConnectedLiveChat extends React.Component {
             } else {
               return (<div className="section" key={i}
                 style={{ textAlign: "left", borderTop: "1px solid black", padding: "17px", fontSize: "18px" }}>
-                <p><strong>{this.props.memberMap[message.name]}:&nbsp;</strong>{message.message}</p>
+                <p><strong>{this.props.memberMap[message.name]}
+                  {(() => this.props.memberMap[message.name] ? ':' : null)()}&nbsp;</strong>{message.message}</p>
               </div>)
             }
           })}
@@ -139,6 +144,6 @@ class ConnectedLiveChat extends React.Component {
   }
 }
 
-const LiveChat = connect(mapStateToProps)(ConnectedLiveChat);
+const FreeLiveChat = connect(mapStateToProps)(ConnectedFreeLiveChat);
 
-export default withStyles(styles)(LiveChat);
+export default withStyles(styles)(FreeLiveChat);

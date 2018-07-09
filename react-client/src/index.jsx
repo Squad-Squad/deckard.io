@@ -1,16 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import $ from 'jquery';
 import { BrowserRouter, Route } from 'react-router-dom';
 import axios from 'axios';
+import { composeWithDevTools } from 'redux-devtools-extension';
+import io from 'socket.io-client';
+import { withRouter } from 'react-router-dom';
+
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Particles from 'react-particles-js';
-
 import Navbar from './components/Navbar.jsx';
-import MainView from './components/MainView.jsx'
+import MainView from './components/MainView.jsx';
 import SignupPage from './components/AuthUserMenu/SignupPage.jsx';
-import io from 'socket.io-client';
+import Splash from './components/Splash.jsx';
 
 import 'animate.css/animate.css';
 import './styles/main.scss';
@@ -19,11 +21,13 @@ import './styles/main.scss';
 // ─── REDUX STUFF ────────────────────────────────────────────────────────────────
 import { createStore, combineReducers, applyMiddleware } from 'redux';
 import { Provider, connect } from 'react-redux';
-import logger from 'redux-logger';
 import { login, logout, searchUsers, removeAllUsersFromNewRoom } from '../../redux/actions';
 import reducer from '../../redux/reducer';
 
-const store = createStore(reducer, applyMiddleware(logger));
+// redux devtools
+
+const composeEnhancers = composeWithDevTools({});
+const store = createStore(reducer, composeEnhancers());
 
 const mapStateToProps = state => {
   return {
@@ -34,7 +38,9 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    login: (username) => dispatch(login(username)),
+    login: (username, email, isGoogleAccount, avatarURL, description, friends) => {
+      return dispatch(login(username, email, isGoogleAccount, avatarURL, description, friends));
+    },
     logout: () => dispatch(logout()),
     searchUsers: (users) => dispatch(searchUsers(users)),
     removeAllUsersFromNewRoom: () => dispatch(removeAllUsersFromNewRoom()),
@@ -61,6 +67,19 @@ const theme = createMuiTheme({
     contrastThreshold: 3,
     tonalOffset: 0.2,
   },
+  overrides: {
+    MuiPaper: {
+      root: {
+        backgroundColor: 'rgba(0, 0, 0, .5)',
+      }
+    }
+  },
+  typography: {
+    title: {
+      fontFamily: '"Titillium Web", sans-serif',
+      fontWeight: 500,
+    }
+  }
 });
 
 const styles = theme => ({
@@ -93,17 +112,20 @@ class ConnectedApp extends React.Component {
     this.socket = io();
   }
 
-  componentDidMount() {
-    axios.get('/checklogin')
-      .then(res => {
-        if (res.data.user) {
-          console.log('Logged in as:', res.data.user.email);
-          this.props.login(res.data.user.email);
-          this.setState({
-            loginError: false,
-          });
-        }
+  async componentDidMount() {
+    const res = await axios.get('/checklogin')
+    if (res.data.user) {
+      console.log('Logged in as:', res.data.user);
+      this.props.login(res.data.user.username,
+        res.data.user.email,
+        res.data.user.is_google_account,
+        res.data.user.avatar,
+        res.data.user.description,
+        res.data.user.friends);
+      this.setState({
+        loginError: false,
       });
+    }
   }
 
   updateQuery(e) {
@@ -112,48 +134,41 @@ class ConnectedApp extends React.Component {
     });
   }
 
-  searchUsers(query) {
+  async searchUsers(query) {
     console.log('SEARCHING FOR', query);
-    axios.post('/searchUsers', { query })
-      .then(res => {
-        console.log('RESULTS', res);
-        this.props.searchUsers(res.data);
-      });
+    const res = await axios.post('/searchUsers', { query })
+    console.log('RESULTS', res);
+    this.props.searchUsers(res.data);
   }
 
-  getUserRooms(email) {
-    axios.post('/api/userrooms', { username: email })
-      .then(res => {
-        this.setState({
-          userRooms: res.data
-        })
-      })
-  }
-
-  getUserWins(email) {
-    axios.post('/api/userwins', { username: email })
-      .then(res => {
-        this.setState({
-          userWins: res.data
-        })
-      })
-  }
 
   //
   // ─── USER AUTH ──────────────────────────────────────────────────────────────────
   //
-  subscribe(email, password, zip) {
+  subscribe(username, email, password, zip) {
     console.log(`Subscribe with ${email} and ${password}`);
     axios.post('/subscribe', {
+      username,
       email,
       password,
-      zip
     })
       .then((res) => {
-        const email = JSON.parse(res.config.data).email;
+        console.log('THESE THE DATA', res.config);
+        const data = JSON.parse(res.config.data);
+        data.avatarURL = './assets/roboheadwhite.png';
+        data.friends = [];
+        data.description = 'Description...';
+        data.isGoogleAccount = false;
         if (res) {
-          this.props.login(email);
-        }
+          this.props.login(
+            data.username,
+            data.email,
+            data.isGoogleAccount,
+            data.avatarURL,
+            data.description,
+            data.friends
+          );
+        };
       })
       .catch(() => {
         this.setState({
@@ -162,39 +177,36 @@ class ConnectedApp extends React.Component {
       });
   }
 
-  login(email, password) {
-    console.log(`Login with ${email} and ${password}`);
-    axios.post('/login', {
-      email,
+  async login(usernameOrEmail, password) {
+    const res = await axios.post('/login', {
+      username: usernameOrEmail,
+      email: usernameOrEmail,
       password
     })
-      .then(res => {
-        if (res.config.data) {
-          console.log('Logged in as:', JSON.parse(res.config.data).email);
-          this.props.login(JSON.parse(res.config.data).email);
-        }
-      })
-      .catch(
-        (error => {
-          console.log(this);
-          this.setState({
-            loginError: true
-          });
-        })()
-      );
+
+    if (res.config.data) {
+      console.log('Logged in as:', JSON.parse(res.config.data).username);
+      this.props.login(JSON.parse(res.config.data).username);
+    }
   }
 
-  logout() {
-    axios.get('/logout')
-      .then(res => {
-        console.log('Logging out');
-        this.props.logout();
-        this.props.removeAllUsersFromNewRoom();
-        this.setState({
-          loginError: false
-        });
-      })
+  async logout() {
+    await axios.get('/logout')
+
+    console.log('Logging out');
+    this.props.logout();
+    this.props.removeAllUsersFromNewRoom();
+    this.setState({
+      loginError: false
+    });
+
+    this.socket.emit('leaveRoom', this.props.loggedInUsername)
   }
+
+  profileRedirect() {
+    this.props.history.push(`/userprofile/${this.props.loggedInUsername}`)
+  }
+
   // ────────────────────────────────────────────────────────────────────────────────
 
 
@@ -203,11 +215,13 @@ class ConnectedApp extends React.Component {
     return (
       <BrowserRouter>
         <div>
+
+          {/* PARTICLES */}
           <Particles
             params={{
               "particles": {
                 "number": {
-                  "value": 20,
+                  "value": 40,
                   "density": {
                     "enable": true,
                     "value_area": 800
@@ -242,7 +256,7 @@ class ConnectedApp extends React.Component {
                   }
                 },
                 "size": {
-                  "value": 4,
+                  "value": 3,
                   "random": true,
                   "anim": {
                     "enable": false,
@@ -260,7 +274,7 @@ class ConnectedApp extends React.Component {
                 },
                 "move": {
                   "enable": true,
-                  "speed": 3,
+                  "speed": 1,
                   "direction": "none",
                   "random": false,
                   "straight": false,
@@ -319,17 +333,23 @@ class ConnectedApp extends React.Component {
               left: '0px',
               top: '0px',
               zIndex: '-1',
-              backgroundImage: 'url("../../dist/assets/deckardBG.jpg")',
+              background: '#000000', /* fallback for old browsers */
+              background: '-webkit-linear-gradient(to top, #202020, black 10%',  /* Chrome 10-25, Safari 5.1-6 */
+              background: 'linear-gradient(to top, #202020, black 10%)', /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
               backgroundSize: 'cover',
             }} />
-          <div>
+
+
+          {/* MAIN */}
+          <div id="navbar-wrapper">
             <Navbar
               login={this.login.bind(this)}
               logout={this.logout.bind(this)}
               subscribe={this.subscribe.bind(this)}
               error={this.state.loginError}
               subscribeError={this.state.subscribeError}
-              wins={this.state.userWins} />
+              wins={this.state.userWins}
+              profile={this.profileRedirect.bind(this)} />
           </div>
           <div className="container">
             <Route path="/" render={
@@ -341,7 +361,7 @@ class ConnectedApp extends React.Component {
                   userRooms={this.state.userRooms}
                   io={this.socket}
                   {...props} /> :
-                <Paper id="login-prompt">Login or signup to play.</Paper>} />
+                <Splash />} />
             <Route exact path="/signup" render={
               (props) => <SignupPage
                 subscribe={this.subscribe.bind(this)}
