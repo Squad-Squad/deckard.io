@@ -290,6 +290,22 @@ const lookupVerificationHash = (client, hash, username) => {
 
 }
 
+const setVerified = (username) => {
+  db.models.User
+  .findOne({
+    where: {username: username,},
+  })
+  .then((user) =>{
+    if(user){
+      user.updateAttributes({is_verified: true})
+      console.log('Verified User ', username);
+    } else {
+      console.log ("Error updating user")
+    }
+  }).catch((error) => {
+    console.log(error);
+  })  
+}
 
 module.exports = {
   saveMember,
@@ -305,4 +321,5 @@ module.exports = {
   fetchRedisMessages,
   saveVerificationHash,
   lookupVerificationHash,
+  setVerified,
 };

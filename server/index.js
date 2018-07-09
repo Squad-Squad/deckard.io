@@ -311,6 +311,29 @@ app.post('/api/userrooms', (req, res) => {
   });
 });
 
+app.get('/verify/:hashID', (req, res) => {
+
+  const { hashID } = req.params
+  let hashExists = false
+
+  client.get(hashID, (err, username) => {
+    if (err) {
+      console.log(err);
+    } else {
+      dbHelpers.setVerified(username)
+      console.log("USERNAME ", username);
+      res.redirect('/');
+    }
+  })
+  // client.hgetall(`${roomID}:members`, (err, replies) => {
+  //   if (err) {
+  //     console.log(err);
+  //   } else {
+  //     res.send(replies);
+  //   }
+  // });
+});
+
 // ────────────────────────────────────────────────────────────────────────────────
 
 // Sets up default case so that any URL not handled by the Express Router
@@ -825,9 +848,7 @@ db.models.sequelize.sync().then(() => {
   });
 });
 
-// module.exports = {
-//   client,
-// }
+
 
 let timerObj = {};
 const nominateTimerObj = {};

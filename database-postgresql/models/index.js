@@ -89,7 +89,7 @@ const User = sequelize.define('user', {
     defaultValue: 0,
     allowNull: true,
   },
-  is_validated: {
+  is_verified: {
     type: Sequelize.BOOLEAN,
     allowNull: false,
     defaultValue: false,
