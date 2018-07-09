@@ -101,8 +101,8 @@ div[class^="MuiBackdrop-"] {
   background-color: rgba(0, 0, 0, .2);
 }
 
-ul[class^="MuiList-"] {
-  padding: 0px;
+ul {
+  background-color: rgba(10, 10, 10, .8);
 }
 
 #site-body p.title {

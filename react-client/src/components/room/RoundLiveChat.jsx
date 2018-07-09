@@ -22,6 +22,7 @@ const mapStateToProps = state => {
 const styles = {
   root: {
     flexGrow: 1,
+    position: 'relative',
   },
   flex: {
     flex: 1,
@@ -116,7 +117,7 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
     return (
       <Paper
         id="chat-window"
-        style={{ backgroundColor: 'rgba(255,255,255,.1)' }}>
+        style={{ backgroundColor: 'rgba(0,0,0,.4)' }}>
 
         {/* TOP BAR */}
         <div className={classes.root}>
@@ -132,14 +133,14 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
           </AppBar>
         </div>
 
-        <AppBar position="static" className={classes.currentTurnBar}>
+        <div position="static" className={classes.currentTurnBar}>
           <div color="inherit" className={classes.currentTurnText}>
             Current Turn:
           </div>
           <div color="inherit" className={classes.currentTurnText}>
             {this.props.yourTurn ? 'You' : null}
           </div>
-        </AppBar>
+        </div>
 
         {/* MESSAGE LIST */}
         <div className="chat-messages" ref={(el) => { this.messageList = el; }}>

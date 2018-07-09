@@ -86,7 +86,7 @@ class ConnectedFreeLiveChat extends React.Component {
     return (
       <Paper
         id="chat-window"
-        style={{ backgroundColor: 'rgba(255,255,255,.1)' }}>
+        style={{ backgroundColor: 'rgba(0,0,0,.4)' }}>
 
         {/* TOP BAR */}
         <div className={classes.root}>
