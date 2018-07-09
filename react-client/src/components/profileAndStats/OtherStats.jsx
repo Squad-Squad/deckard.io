@@ -9,10 +9,11 @@ function mapStateToProps(state) {
 
 class UserStats extends Component {
   render() {
-    return ([
+    return (
       <div style={{
         display: 'flex',
-        justifyContent: 'space-around'
+        justifyContent: 'space-around',
+        flexWrap: 'wrap'
       }}>
         <div className="stats-tile">
           GAMES PLAYED
@@ -26,14 +27,14 @@ class UserStats extends Component {
             {this.props.gamesWon}
           </div>
         </div>
-        <div className="stats-tile">
+        <div className="stats-tile" style={{ marginBottom: '30px' }}>
           LIFETIME SCORE
-          <div className="stats-number">
+          <div className="stats-number" style={{ marginBottom: '30px' }}>
             {this.props.lifetimeScore}
           </div>
         </div>
       </div>
-    ]);
+    );
   }
 }
 

@@ -206,7 +206,7 @@ class FriendsList extends Component {
           Friends
         </Typography>
         <Divider />
-        <List>
+        <List style={{ backgroundColor: 'rgba(0, 0, 0, .5)', }}>
           {list()}
         </List>
         {addFriend()}

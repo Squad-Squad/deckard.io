@@ -84,7 +84,7 @@ class OtherProfileContainer extends React.Component {
     return (
       <div>
         <Paper style={{
-          backgroundColor: 'rgba(255,255,255,.1)'
+          backgroundColor: 'rgba(20,20,20,.7)'
         }}>
           <AppBar position="static" color="default">
             <Tabs
@@ -97,19 +97,21 @@ class OtherProfileContainer extends React.Component {
               <Tab label="Stats" />
             </Tabs>
           </AppBar>
-          <SwipeableViews
-            index={this.state.value}
-            onChangeIndex={this.handleChangeIndex.bind(this)}>
-            <OtherProfile
-              username={this.state.username}
-              email={this.state.email}
-              description={this.state.description}
-              avatarURL={this.state.avatarURL} />
-            <UserStats
-              gamesPlayed={this.state.gamesPlayed}
-              gamesWon={this.state.gamesWon}
-              lifetimeScore={this.state.lifetimeScore} />
-          </SwipeableViews>
+          <div className="modal-profile-view">
+            <SwipeableViews
+              index={this.state.value}
+              onChangeIndex={this.handleChangeIndex.bind(this)}>
+              <OtherProfile
+                username={this.state.username}
+                email={this.state.email}
+                description={this.state.description}
+                avatarURL={this.state.avatarURL} />
+              <OtherStats
+                gamesPlayed={this.state.gamesPlayed}
+                gamesWon={this.state.gamesWon}
+                lifetimeScore={this.state.lifetimeScore} />
+            </SwipeableViews>
+          </div>
         </Paper>
       </div>
     );

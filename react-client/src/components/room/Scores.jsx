@@ -43,9 +43,7 @@ class Scores extends Component {
 
   render() {
     return (
-      <Paper style={{
-        backgroundColor: 'rgba(255,255,255,.1)'
-      }}>
+      <Paper>
         {/* TOP BAR */}
         <div style={{ flex: 1 }}>
           <AppBar position="static" color="default"

@@ -21,6 +21,7 @@
   .hide-if-small { display: none }
   #navbar-wrapper { padding-top: 10px; }
   .profile-modal { width: 90%; }
+  .modal-profile-view { height: 500px; overflow: auto; }
 }
 
 @media screen and (min-width: 701px) {
@@ -43,6 +44,21 @@
 @media screen and (min-width: 400px) {
   #google-login-button { float: right; }
 }
+
+@media screen and (min-height: 0px) and (max-height: 750px) {
+  .chat-messages {
+    height: 400px;
+    overflow: auto;
+  }
+}
+
+@media screen and (min-height: 750px) {
+  .chat-messages {
+    height: 500px;
+    overflow: auto;
+  }
+}
+
 // -----------------------------------------------------------
 
 textarea::-webkit-input-placeholder { /* Chrome/Opera/Safari */
@@ -257,15 +273,9 @@ div.columns {
   font-family: 'Titillium Web', sans-serif;
 }
 
-.chat-messages {
-  height: 500px;
-  overflow: auto;
-}
-
-
 .stats-tile {
   height: 200px;
-  width: 300px;
+  width: 200px;
   padding: 40px 20px 20px 20px;
   text-align: center;
   font-size: 20px;
