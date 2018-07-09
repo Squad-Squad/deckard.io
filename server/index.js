@@ -348,7 +348,7 @@ app.post('/api/startTimer', (req, res)=>{
     countdown: true,
   });
 
-  timerObj[roomID].start(30000);
+  timerObj[roomID].start(10000);
 
 })
 
@@ -803,8 +803,8 @@ db.models.sequelize.sync().then(() => {
             console.log("OLD VOTES STRUCTURE:", rooms[socket.room])
 
             if(roomMembers.length - 1 <= roomScores.length){
-              // const scores = gameLogic.calcScores(roomScores);
-              const scores = gameLogic.calcScores(rooms[socket.room]);
+              const scores = gameLogic.calcScores(roomScores);
+              // const scores = gameLogic.calcScores(rooms[socket.room]);
 
                 for (var user in scores) {
                   db.models.User.findOne({ where: { username: user } })
