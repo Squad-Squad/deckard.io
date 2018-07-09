@@ -44,10 +44,6 @@ const styles = theme => ({
   input: {
     fontSize: '16px',
   },
-  modal: {
-    position: 'absolute',
-    boxShadow: theme.shadows[5],
-  },
 });
 
 class FriendsList extends Component {
@@ -220,13 +216,7 @@ class FriendsList extends Component {
         open={this.state.open}
         onClose={this.handleClose.bind(this)}
       >
-        <div style={{
-          top: '20%',
-          margin: 'auto',
-          width: '700px',
-          backgroundColor: 'black',
-        }}
-          className={classes.modal}>
+        <div className="profile-modal" style={{ backgroundColor: 'rgba(0,0,0,.9)' }}>
           <OtherProfileContainer friend={this.state.clickedFriend} />
         </div>
       </Modal>

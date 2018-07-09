@@ -20,12 +20,14 @@
   #login-prompt { width: auto; }
   .hide-if-small { display: none }
   #navbar-wrapper { padding-top: 10px; }
+  .profile-modal { width: 90%; }
 }
 
 @media screen and (min-width: 701px) {
   #image-logo { display: none; }
   #typeface-logo { display: block; }
   #login-prompt { width: 30%; }
+  .profile-modal { width: 60%; }
 }
 
 #login-form-dialog-title {
@@ -334,6 +336,15 @@ div.columns {
   flex-direction: column;
   justify-content: center;
   margin: 20px;
+  flex: 1;
+}
+
+.other-user-profile-edit-area {
+  font-size: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 0 20px 20px 20px;
   flex: 1;
 }
 
