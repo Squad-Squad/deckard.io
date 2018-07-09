@@ -52,7 +52,7 @@ class ConnectedRoundLiveChat extends React.Component {
   componentDidMount() {
     this.scrollToBottom();
     axios.post('/api/startTimer', {roomID: this.props.roomID})
-    this.props.getTimer()
+    // this.props.getTimer()
   }
 
   updateMessage(e) {
