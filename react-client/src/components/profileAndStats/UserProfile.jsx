@@ -112,7 +112,6 @@ class UserProfile extends Component {
 
   async updateProfile() {
     const login = this.props.login;
-    console.log('update profile please');
 
     const data = new FormData();
     data.append('avatar', this.state.file);
@@ -120,7 +119,6 @@ class UserProfile extends Component {
     data.append('newusername', this.state.newUsername);
     data.append('newemail', this.state.newEmail);
     data.append('newdescription', this.state.newDescription);
-    console.log(data);
 
     const res = await axios({
       method: 'post',
@@ -129,7 +127,6 @@ class UserProfile extends Component {
       config: { headers: { 'Content-Type': 'multipart/form-data' } }
     })
 
-    console.log('DATA', res.data);
     const updateUsername = this.state.newUsername || this.props.username,
       updateEmail = this.state.newEmail || this.props.email,
       updateAvatarURL = res.data || this.props.avatarURL,

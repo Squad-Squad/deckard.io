@@ -60,17 +60,17 @@ class ConnectedNavbar extends React.Component {
             <Typography
               color="inherit"
               className={'title'}>
-              <div id="typeface-logo">
+              <span id="typeface-logo">
                 <a href="/"
                   style={{ color: "white" }}>
                   deckard.io
                 </a>
-              </div>
-              <div id="image-logo">
+              </span>
+              <span id="image-logo">
                 <a href="/">
                   <img src={logo} style={{ height: '3em' }} />
                 </a>
-              </div>
+              </span>
             </Typography>
           </div>
 

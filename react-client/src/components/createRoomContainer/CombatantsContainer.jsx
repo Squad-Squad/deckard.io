@@ -73,7 +73,6 @@ class ConnectedCombatantsContainer extends React.Component {
   }
 
   handleOpen(friend) {
-    console.log(friend);
     this.setState({
       clickedFriend: friend
     }, () => {
@@ -91,7 +90,7 @@ class ConnectedCombatantsContainer extends React.Component {
     const { classes } = this.props;
 
     return ([
-      <div>
+      <div key={1}>
         <Typography id="users-for-new-room-header">
           Users &ensp;<span style={{ flex: "right" }}>{this.props.usersForNewRoom.length}/7</span>
         </Typography>
@@ -115,13 +114,13 @@ class ConnectedCombatantsContainer extends React.Component {
           />
 
           {/* invited users' chips */}
-          {this.state.userAvatarMap.map(userAvatar => {
-            console.log('USERAVATAR', userAvatar)
+          {this.state.userAvatarMap.map((userAvatar, i) => {
             if (userAvatar[1] &&
               userAvatar[1] !== './assets/roboheadwhite.png') {
               return (
                 <Chip
                   style={{ zIndex: '0' }}
+                  key={i}
                   avatar={
                     <Avatar>
                       <img src={userAvatar[1]}
@@ -140,7 +139,7 @@ class ConnectedCombatantsContainer extends React.Component {
               )
             } else {
               return (
-                <Chip
+                <Chip key={i}
                   style={{ zIndex: '0' }}
                   label={userAvatar[0]}
                   className={classes.chip}
@@ -152,7 +151,7 @@ class ConnectedCombatantsContainer extends React.Component {
         </div>
 
       </div>,
-      <Modal
+      <Modal key={2}
         style={{ alignItems: 'center', justifyContent: 'center' }}
         open={this.state.open}
         onClose={this.handleClose.bind(this)}

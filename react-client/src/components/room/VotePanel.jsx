@@ -105,9 +105,8 @@ class VotePanel extends Component {
             </div>
 
             {this.props.members.map((user, i) => {
-              console.log('USER:', user, "loggedInUser", this.props.memberMap[this.props.loggedInUser])
               if (user !== this.props.memberMap[this.props.loggedInUser]) {
-                return <VotePanelItem key={i} user={user} setVote={this.setVote.bind(this)} />
+                return <VotePanelItem thisKey={i} user={user} setVote={this.setVote.bind(this)} />
               }
             }
             )}

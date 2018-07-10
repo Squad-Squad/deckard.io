@@ -44,7 +44,6 @@ class SignupPage extends React.Component {
   }
 
   handleSubscribe() {
-    console.log(this.props.subscribe);
     this.props.subscribe(
       this.state.email,
       this.state.password);

@@ -44,24 +44,34 @@ class OtherProfile extends Component {
     };
 
     return (
-      <div style={{ display: 'flex', alignContent: 'flex-start' }}>
+      <div style={{
+        display: 'flex',
+        alignContent: 'flex-start',
+        justifyContent: 'center',
+        flexWrap: 'wrap'
+      }}>
         <div className="profile-photo-upload-container">
           {currImage()}
         </div>
         <div
-          className="user-profile-edit-area">
+          className="other-user-profile-edit-area">
           <div>
-            <span style={{ display: 'flex', alignContent: 'center' }}>
-              <AccountCircle style={{ marginRight: '10px' }} />
+            <span style={{
+              display: 'flex',
+              alignContent: 'center',
+              justifyContent: 'center',
+              fontSize: '25px',
+              marginBottom: '20px'
+            }}>
               {this.props.username}
             </span>
           </div>
-          <div>
+          {/* <div>
             <span style={{ display: 'flex', alignContent: 'center' }}>
               <Email style={{ marginRight: '10px' }} />
               {this.props.email}
             </span >
-          </div>
+          </div> */}
           <Divider style={{ margin: '0px 0px 15px 0px' }} />
           <div>
             <div style={{ display: 'flex', alignContent: 'center', marginBottom: '10px' }}>
@@ -69,7 +79,7 @@ class OtherProfile extends Component {
             </div>
           </div>
         </div>
-      </div>
+      </div >
     );
   }
 }
