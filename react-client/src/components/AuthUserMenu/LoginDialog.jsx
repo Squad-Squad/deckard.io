@@ -131,7 +131,7 @@ class LoginDialog extends React.Component {
                   <p style={{ paddingLeft: '15px' }}>Login With Github</p>
                 </Button>
               </div>
-              <div style={{ textAlign: 'center', margin: '20px 0px' }}>
+              <div style={{ textAlign: 'center', margin: '15px 0px' }}>
                 <Divider />
               </div>
               <TextField

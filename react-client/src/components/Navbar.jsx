@@ -5,6 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import LoginDialog from './AuthUserMenu/LoginDialog.jsx';
 import SubscribeDialog from './AuthUserMenu/SubscribeDialog.jsx';
 import UserMenu from './AuthUserMenu/UserMenu.jsx';
+import UnicornSVG from '../../dist/assets/unicorn2.svg';
 import logo from '../../dist/assets/unicorn.png';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
@@ -68,7 +69,7 @@ class ConnectedNavbar extends React.Component {
               </span>
               <span id="image-logo">
                 <a href="/">
-                  <img src={logo} style={{ height: '3em' }} />
+                  <img src={UnicornSVG} style={{ height: '3em' }} />
                 </a>
               </span>
             </Typography>
