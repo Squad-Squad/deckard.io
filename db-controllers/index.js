@@ -282,7 +282,7 @@ const fetchRedisMessages = (client, socket, callback) => {
 };
 
 
-const getRoomReady = (io, client, socket, data, rooms) => {
+const getRoomReady = (io, client, socket, data, rooms, membersInfo) => {
   // notify everyone when mitsuku's joined the room (but only with her alias)
   if (socket.roomMode === 'free') {
     if (rooms[socket.room].length === 2) {
@@ -297,7 +297,10 @@ const getRoomReady = (io, client, socket, data, rooms) => {
         );
 
         // add a message to room messages in redis notifying that mitsuku has joined
+
         const mitMessage = `${data.mitsuku} has joined the room`;
+
+
         client.rpush(
           `${socket.room}:messages`,
           JSON.stringify({ matrixOverLords: mitMessage }),
@@ -340,7 +343,15 @@ const getRoomReady = (io, client, socket, data, rooms) => {
 
               // ADD A MESSAGE TO ROOM MESSAGES IN REDIS NOTIFYING THAT MITSUKU HAS JOINED
 
-              const mitMessage = `${data.mitsuku} has joined the room`;
+              let mitMessage;
+              if (membersInfo) {
+                console.log('MEMBERSINFOLENGTH');
+                mitMessage = `${membersInfo['mitsuku@mitsuku.com']} has joined the room`;
+              } else {
+                mitMessage = `${data.mitsuku} has joined the room`;
+              }
+
+
               client.rpush(
                 `${data.roomID}:messages`,
                 JSON.stringify({ matrixOverLords: mitMessage }),
@@ -384,8 +395,6 @@ const getRoomReady = (io, client, socket, data, rooms) => {
                 io.sockets.sockets[firstTurnSocketId].emit('yourTurn', key[0]);
                 io.sockets.sockets[firstTurnSocketId].emit('startTimer');
               }
-
-              io.sockets.in(data.roomID).emit('roomReady', true);
             }
           }
         })

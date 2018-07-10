@@ -23,6 +23,7 @@ class ConnectedMainView extends React.Component {
       inviteHost: null,
       roomHash: null,
       roomMode: "free",
+      messages: [],
 
     };
     this.props.io.on('invitation', (data) => {
@@ -36,17 +37,23 @@ class ConnectedMainView extends React.Component {
           });
         }
       }
+    })
 
 
     this.props.io.on('return option', (data)=>{
       console.log("RETURN OPTION", data)
     })
 
+     this.props.io.on('chat', messages => {
+      this.setState({
+        messages: messages
+      });
+    });
+
 
       this.freeRoomMode = this.freeRoomMode.bind(this, "free")
       this.roundRoomMode = this.roundRoomMode.bind(this, "round")
       this.decline = this.decline.bind(this)
-    })
 
   }
 
@@ -65,8 +72,6 @@ class ConnectedMainView extends React.Component {
   handleClose = () => {
     this.setState({ invite: false });
   };
-
-
 
 
   freeRoomMode() {
@@ -125,6 +130,7 @@ class ConnectedMainView extends React.Component {
           (props) =>
             [
               <Room key={1}
+                messages={this.state.messages}
                 searchUsers={this.props.searchUsers}
                 searchedUsers={this.props.searchedUsers}
                 loggedIn={this.props.loggedIn}

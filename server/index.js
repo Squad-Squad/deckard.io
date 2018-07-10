@@ -280,7 +280,7 @@ app.post('/api/save', (req, res) => {
     client.hmset(`${roomUnique}:members`, results, (err, reply) => {
       if (err) {
         console.error(err);
-      }else {
+      } else {
         console.log('reply setting members', reply);
       }
     });
@@ -308,7 +308,9 @@ app.post('/api/save', (req, res) => {
 app.post('/api/saveFreeMode', (req, res) => {
   console.log('NEW ROOM DATA', req.body);
 
-  const { roomName, roomMode, members } = req.body;
+  const {
+    roomName, roomMode, members, roomLength,
+  } = req.body;
   const roomUnique = uniqueString().slice(0, 6);
   timerObj[roomUnique] = new Tock({
     countdown: true,
@@ -318,7 +320,7 @@ app.post('/api/saveFreeMode', (req, res) => {
     client.hmset(`${roomUnique}:members`, results, (err, reply) => {
       if (err) {
         console.error(err);
-      } else{
+      } else {
         console.log('reply setting members', reply);
         client.expire(`${roomUnique}:members`, 3600);
       }
@@ -328,7 +330,10 @@ app.post('/api/saveFreeMode', (req, res) => {
 
   // CHANGE THE ROOM TIMER LENGTH HERE
 
-  timerObj[roomUnique].start(30000);
+  const roomLengthInMilis = roomLength * 60 * 1000;
+  console.log('ROOMLENGTHIN MILIS', roomLengthInMilis);
+
+  timerObj[roomUnique].start(roomLengthInMilis);
 
 
   dbHelpers.saveRoomAndMembers(
@@ -348,12 +353,15 @@ app.post('/api/saveFreeMode', (req, res) => {
 
 
 app.post('/api/startTimer', (req, res) => {
-  const { roomID } = req.body;
+  const { roomID, roomLength } = req.body;
   console.log('ROOOM ID IN START TIME API CALLL:', roomID);
   timerObj[roomID] = new Tock({
     countdown: true,
   });
-  timerObj[roomID].start(20000);
+
+  const roomLengthInMilis = roomLength * 60 * 1000;
+
+  timerObj[roomID].start(roomLengthInMilis);
 });
 
 // Get room members here
@@ -411,7 +419,7 @@ db.models.sequelize.sync().then(() => {
   io.on('connection', (socket) => {
     socket.on('username connect', (data) => {
       socket.username = data;
-      console.log('USERNAME CONNECT:', data);
+      console.log('++++++USERNAME CONNECT++++++:', data);
 
       client.lremAsync('onlineUsers', 0, socket.username)
         .then((reply) => {
@@ -458,8 +466,8 @@ db.models.sequelize.sync().then(() => {
       const user = socket.username;
       client.rpushAsync(
         `${socket.room}:membersList`,
-        JSON.stringify({ [user]: socket.id })
-)
+        JSON.stringify({ [user]: socket.id }),
+      )
         .then((reply) => {
           console.log('user pushed to room in redis', reply);
         })
@@ -687,36 +695,44 @@ db.models.sequelize.sync().then(() => {
         console.log('updatedMembersInvitedList after decline:', reply);
       });
 
-      // dbHelpers.getRoomReady(io, client, socket, data, rooms);
+      client.hgetallAsync(`${data.roomID}:members`)
+        .then((replies) => {
+          console.log('GET MEMBERS INFO IN DECLINE SOCKET', replies);
 
-      let membersInRoomDECLINE;
-      let membersInvitedtoRoomDECLINE;
-      client.lrange(`${data.roomID}:membersList`, 0, -1, (err, replies) => {
-        if (err) {
-          console.log(err);
-        } else {
-          membersInRoomDECLINE = replies;
-        }
+          dbHelpers.getRoomReady(io, client, socket, data, rooms, replies);
+        });
 
-        client.lrange(
-          `${data.roomID}:membersInvited`, 0, -1,
-          (err, replies) => {
-            if (err) {
-              console.log(err);
-            } else {
-              membersInvitedtoRoomDECLINE = replies;
-              if (data.roomMode === 'round') {
-                if (
-                  membersInRoomDECLINE.length >=
-                  membersInvitedtoRoomDECLINE.length
-                ) {
-                  io.sockets.in(data.roomID).emit('roomReady', true);
-                }
-              }
-            }
-          },
-        );
+      dbHelpers.fetchRedisMessages(client, socket, (result) => {
+        io.sockets.in(data.roomID).emit('chat', result);
       });
+      // let membersInRoomDECLINE;
+      // let membersInvitedtoRoomDECLINE;
+      // client.lrange(`${data.roomID}:membersList`, 0, -1, (err, replies) => {
+      //   if (err) {
+      //     console.log(err);
+      //   } else {
+      //     membersInRoomDECLINE = replies;
+      //   }
+
+      //   client.lrange(
+      //     `${data.roomID}:membersInvited`, 0, -1,
+      //     (err, replies) => {
+      //       if (err) {
+      //         console.log(err);
+      //       } else {
+      //         membersInvitedtoRoomDECLINE = replies;
+      //         if (data.roomMode === 'round') {
+      //           if (
+      //             membersInRoomDECLINE.length >=
+      //             membersInvitedtoRoomDECLINE.length
+      //           ) {
+      //             io.sockets.in(data.roomID).emit('roomReady', true);
+      //           }
+      //         }
+      //       }
+      //     },
+      //   );
+      // });
     });
 
     // handle cases in which player leaves the room without completely disconnecting from the site
@@ -752,7 +768,7 @@ db.models.sequelize.sync().then(() => {
       if (rooms[socket.room]) {
         users.splice(users.indexOf(socket.username), 1);
         rooms[socket.room].splice(thisRoom.indexOf(socket.username), 1);
-        console.log('this users has disconnected:', socket.username, 'AND ROOMS[SOCKET.ROOM] AFTER DISCONNECT:', rooms[socket.room],);
+        console.log('this users has disconnected:', socket.username, 'AND ROOMS[SOCKET.ROOM] AFTER DISCONNECT:', rooms[socket.room]);
         client.rpush(
           `${socket.room}:messages`,
           JSON.stringify({ matrixOverLords: `${socket.alias} left the room` }),
@@ -810,7 +826,7 @@ db.models.sequelize.sync().then(() => {
                 gameLogic.calcScores(roomScores)
                   .then((scoresArr) => {
                     console.log('SCOREARR IN SERVER:', scoresArr);
-                    let [scores, winners] = scoresArr;
+                    const [scores, winners] = scoresArr;
 
                     console.log('OUR RETURNED GOODSSSS', scores, winners);
 
@@ -825,7 +841,7 @@ db.models.sequelize.sync().then(() => {
                             });
                           });
                       }
-                    }else {
+                    } else {
                       db.models.User.findOne({ where: { username: winners[0] } })
                         .then((instance) => {
                           let prevGamesWon = instance.get('games_won');
@@ -838,7 +854,7 @@ db.models.sequelize.sync().then(() => {
                     for (var user in scores) {
                       db.models.User.findOne({ where: { username: user } })
                         .then((instance) => {
-                          let oldScore = instance.get('lifetime_score');
+                          const oldScore = instance.get('lifetime_score');
                           let prevGamesPlayed = instance.get('games_played');
                           if (!isNaN(scores[user])) {
                             instance.updateAttributes({
