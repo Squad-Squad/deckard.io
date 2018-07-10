@@ -79,13 +79,16 @@ class ConnectedRoom extends React.Component {
       })
     })
 
+    this.props.io.on('startTimer', ()=>{
+     axios.post('/api/startTimer', {roomID: this.roomID}) 
+    })
+
     this.props.io.on('roomReady', data => {
+      console.log("++++++++++++++I'm ROOOM READY INCOMING+++++++++")
       this.setState({
         waitingForRoomMembers: false
       })
-      axios.post('/api/startTimer', {roomID: this.roomID}) 
       this.getTimer()
-
     })
 
   }

@@ -374,7 +374,8 @@ const getRoomReady = (io, client, socket, data, rooms) => {
             const firstTurnSocketId = shuffledOrder[1][fixKey];
             console.log("WHOSE TURN IN DBCONTROLLERS", fixKey)
             io.sockets.emit('whose turn', fixKey)
-            io.sockets.sockets[firstTurnSocketId].emit('yourTurn', true);
+            io.sockets.sockets[firstTurnSocketId].emit('yourTurn', key[0]);
+            io.sockets.sockets[firstTurnSocketId].emit('startTimer')
           } else {
             const key = Object.keys(shuffledOrder[0]);
             const fixKey = key[0];
@@ -382,7 +383,7 @@ const getRoomReady = (io, client, socket, data, rooms) => {
             console.log("WHOSE TURN IN DBCONTROLLERS2", fixKey)
             io.sockets.emit('whose turn', fixKey)
             io.sockets.sockets[firstTurnSocketId].emit('yourTurn', key[0]);
-
+            io.sockets.sockets[firstTurnSocketId].emit('startTimer')
           }
 
           io.sockets.in(data.roomID).emit('roomReady', true);

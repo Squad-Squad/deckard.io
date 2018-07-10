@@ -265,7 +265,6 @@ class ConnectedCreateRoom extends React.Component {
           }
         )        
       }else{
-
         console.log("I'm +++++not+++++ FREE MODE IN CREATE ROOM")
          $.post(
           '/api/save',
