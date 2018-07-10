@@ -243,7 +243,7 @@ class ConnectedCreateRoom extends React.Component {
         nameError: true,
       });
     } else {
-      if(this.props.roomMode === "free"){
+      if(this.props.roomModeSelection === "free"){
 
         console.log("I'm FREE MODE IN CREATE ROOM")
 
@@ -265,6 +265,8 @@ class ConnectedCreateRoom extends React.Component {
           }
         )        
       }else{
+
+        console.log("I'm +++++not+++++ FREE MODE IN CREATE ROOM")
          $.post(
           '/api/save',
           {

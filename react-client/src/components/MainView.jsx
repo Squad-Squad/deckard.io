@@ -67,7 +67,6 @@ class ConnectedMainView extends React.Component {
 
 
   freeRoomMode(){
-    // console.log("ROOM MODE TARGET:", e.target.value)
     console.log("ARGUENTMENS", arguments[0])
     this.setState({
       roomMode: arguments[0]
@@ -75,7 +74,6 @@ class ConnectedMainView extends React.Component {
   }
 
   roundRoomMode(){
-    // console.log("ROOM MODE TARGET:", e.target.value)
     console.log("ARGUMETS", arguments[0])
     this.setState({
       roomMode: arguments[0]

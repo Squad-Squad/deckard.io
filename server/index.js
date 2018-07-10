@@ -39,7 +39,6 @@ if (process.env.REDIS_URL) {
 } else {
   client = redis.createClient();
 }
-const multi = client.multi();
 
 //
 // ─── AWS CONFIG ─────────────────────────────────────────────────────────────────
@@ -308,16 +307,18 @@ app.post('/api/saveFreeMode', (req, res) => {
   });
 
   dbHelpers.aliasMembers(roomName, roomMode, members, (results) => {
-    console.log("AM I HAPPENING", results)
     client.hmset(`${roomUnique}:members`, results, (err, reply)=>{
       if(err){
         console.error(err)
       }else{
         console.log("reply setting members", reply)
+        client.expire(`${roomUnique}:members`, 3600)
       }
     })
   });
 
+  
+  
   // CHANGE THE ROOM TIMER LENGTH HERE
   timerObj[roomUnique].start(10000);
 
