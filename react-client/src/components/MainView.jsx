@@ -100,8 +100,8 @@ class ConnectedMainView extends React.Component {
                 loggedInUser={this.props.loggedInUser}
                 userRooms={this.props.userRooms}
                 io={this.props.io}
-                roundRoomMode={this.roundRoomMode}
-                freeRoomMode={this.freeRoomMode}
+                roundRoomMode={this.roundRoomMode.bind(this, 'round')}
+                freeRoomMode={this.freeRoomMode.bind(this, 'free')}
                 roomModeSelection={this.state.roomMode}
                 {...props}
                 key={2} />
