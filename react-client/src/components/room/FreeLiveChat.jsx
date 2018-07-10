@@ -135,6 +135,9 @@ class ConnectedFreeLiveChat extends React.Component {
               value={this.state.msg}
               onChange={this.updateMessage.bind(this)}
               onKeyPress={this.handleKeyPress.bind(this)}
+              inputProps={{
+                 maxLength: 100,
+              }}
             />
           </FormControl>
           <Button variant="fab" color="primary" aria-label="add" className={classes.button}

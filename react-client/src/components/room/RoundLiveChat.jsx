@@ -179,6 +179,9 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
           onChange={this.handleChange}>
           <FormControl style={{ width: '70%' }}>
             <Input
+              inputProps={{
+                 maxLength: 75,
+              }}
               style={{ marginTop: '10px' }}
               fullWidth
               value={this.state.msg}
