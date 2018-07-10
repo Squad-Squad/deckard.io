@@ -75,6 +75,7 @@ const theme = createMuiTheme({
     }
   },
   typography: {
+    fontFamily: '"Montserrat", sans-serif',
     title: {
       fontFamily: '"Titillium Web", sans-serif',
       fontWeight: 500,
@@ -361,7 +362,7 @@ class ConnectedApp extends React.Component {
                   subscribe={this.subscribe.bind(this)}
                   login={this.login.bind(this)}
                   error={this.state.loginError}
-                  subscribeError={this.state.subscribeError}/>
+                  subscribeError={this.state.subscribeError} />
             } />
             <Route exact path="/signup" render={
               (props) => <SignupPage

@@ -132,6 +132,11 @@ class SubscribeDialog extends React.Component {
             onClose={this.handleClose}
             aria-labelledby="form-dialog-title"
             maxWidth='xs'
+            PaperProps={{
+              style: {
+                backgroundColor: 'rgba(0, 0, 0, .9)',
+              },
+            }}
           >
             <DialogTitle id="form-dialog-title">
               Sign Up

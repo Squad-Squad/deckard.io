@@ -102,7 +102,6 @@ class LoginDialog extends React.Component {
             PaperProps={{
               style: {
                 backgroundColor: 'rgba(0, 0, 0, .9)',
-                boxShadow: 'none',
               },
             }}
           >

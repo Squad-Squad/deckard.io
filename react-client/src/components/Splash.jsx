@@ -12,10 +12,19 @@ function mapStateToProps(state) {
 }
 
 class Splash extends Component {
+  state = {
+    waiting: true,
+  }
+
+  componentDidMount() {
+    setTimeout(() => this.setState({
+      waiting: false,
+    }), 1000);
+  }
+
   render() {
     return (
       <div
-        className="animated fadeIn"
         style={{
           width: '100%',
           height: '100vh',
@@ -25,24 +34,30 @@ class Splash extends Component {
           alignItems: 'center',
           flexWrap: 'wrap'
         }}>
-        <div id="splash-unicorn">
+        <div id="splash-unicorn"
+          className="animated fadeIn">
           <img
             src={UnicornSVG} />
         </div>
         <Divider light />
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-around',
-            alignItems: 'center',
-            flexWrap: 'wrap'
-          }}>
-          <LoginDialog
-            login={this.props.login}
-            error={this.props.error} />
-          <SubscribeDialog subscribe={this.props.subscribe} />
-        </div>
+        {
+          (this.state.waiting) ? null :
+            <div
+              className="animated fadeIn"
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-around',
+                alignItems: 'center',
+                flexWrap: 'wrap'
+              }}>
+              <LoginDialog
+                login={this.props.login}
+                error={this.props.error} />
+              <SubscribeDialog subscribe={this.props.subscribe} />
+            </div>
+
+        }
       </div>
     );
   }
