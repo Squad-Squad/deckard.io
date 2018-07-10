@@ -334,16 +334,19 @@ class ConnectedApp extends React.Component {
 
 
           {/* MAIN */}
-          <div id="navbar-wrapper">
-            <Navbar
-              login={this.login.bind(this)}
-              logout={this.logout.bind(this)}
-              subscribe={this.subscribe.bind(this)}
-              error={this.state.loginError}
-              subscribeError={this.state.subscribeError}
-              wins={this.state.userWins}
-              profile={this.profileRedirect.bind(this)} />
-          </div>
+          {(this.props.loggedInUsername) ?
+            <div id="navbar-wrapper">
+              <Navbar
+                login={this.login.bind(this)}
+                logout={this.logout.bind(this)}
+                subscribe={this.subscribe.bind(this)}
+                error={this.state.loginError}
+                subscribeError={this.state.subscribeError}
+                wins={this.state.userWins}
+                profile={this.profileRedirect.bind(this)} />
+            </div>
+            : null
+          }
           <div className="container">
             <Route path="/" render={
               (props) => (loggedIn) ?
@@ -354,7 +357,11 @@ class ConnectedApp extends React.Component {
                   userRooms={this.state.userRooms}
                   io={this.socket}
                   {...props} /> :
-                <Splash />
+                <Splash
+                  subscribe={this.subscribe.bind(this)}
+                  login={this.login.bind(this)}
+                  error={this.state.loginError}
+                  subscribeError={this.state.subscribeError}/>
             } />
             <Route exact path="/signup" render={
               (props) => <SignupPage

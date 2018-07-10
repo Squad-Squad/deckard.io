@@ -31,6 +31,14 @@
   .profile-modal { width: 60%; }
 }
 
+@media screen and (min-width: 0px) and (max-width: 600px) {
+  #splash-unicorn { width: 50%; }
+}
+
+@media screen and (min-width: 600px) {
+  #splash-unicorn { width: 30%; }
+}
+
 @media screen and (min-width: 0px) and (max-width: 400px) {
   .login-title { float: left; margin-bottom: 20px; }
 }
@@ -256,7 +264,9 @@ div.columns {
 }
 
 .auth-buttons {
-  font-family: 'Titillium Web', sans-serif;
+  font-family: 'Titillium Web', sans-serif !important;
+  font-size: 26px !important;
+  margin-top: 10px !important;
 }
 
 .stats-tile {

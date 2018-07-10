@@ -98,6 +98,7 @@ class LoginDialog extends React.Component {
             onClose={this.handleClose}
             aria-labelledby="form-dialog-title"
             maxWidth='xs'
+            overlayStyle={{ backgroundColor: 'red' }}
           >
             <DialogTitle>
               Login
