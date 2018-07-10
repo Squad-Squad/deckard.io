@@ -355,7 +355,7 @@ class ConnectedApp extends React.Component {
                   io={this.socket}
                   {...props} /> :
                 <Splash />
-                } />
+            } />
             <Route exact path="/signup" render={
               (props) => <SignupPage
                 subscribe={this.subscribe.bind(this)}

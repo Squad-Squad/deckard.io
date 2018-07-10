@@ -11,6 +11,8 @@ import FormControl from '@material-ui/core/FormControl';
 import Input from '@material-ui/core/Input';
 import axios from 'axios';
 import Modal from '@material-ui/core/Modal';
+import KeyboardArrowDown from '@material-ui/icons/KeyboardArrowDown';
+import KeyboardArrowUp from '@material-ui/icons/KeyboardArrowUp';
 import OtherProfileContainer from '../profileAndStats/OtherProfileContainer.jsx';
 import { addFriend } from '../../../../redux/actions';
 import { connect } from 'react-redux';
@@ -58,10 +60,20 @@ class FriendsList extends Component {
       userAvatarMap: [],
 
       clickedFriend: '',
+
+      width: 0,
+      height: 0,
+
+      expanded: false,
     };
+
+    this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
   }
 
   componentDidMount() {
+    this.updateWindowDimensions();
+    window.addEventListener('resize', this.updateWindowDimensions);
+
     // Add avatars to users who have set them
     if (this.props.friends) {
       Promise.all(this.props.friends.map(friend => {
@@ -75,6 +87,19 @@ class FriendsList extends Component {
           this.setState({ userAvatarMap: map });
         });
     }
+  }
+
+  updateWindowDimensions() {
+    this.setState({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    }, () => {
+      if (this.state.width > 700) {
+        this.setState({
+          expanded: true,
+        })
+      }
+    })
   }
 
   handleClick() {
@@ -103,6 +128,13 @@ class FriendsList extends Component {
     });
   }
 
+  showFriends() {
+    console.log(this.state.expanded);
+    this.setState(prevState => ({
+      expanded: !prevState.expanded,
+    }))
+  }
+
   async addUser(e) {
     if (e.key === 'Enter') {
       await axios.post('/profile/add-friend',
@@ -121,6 +153,28 @@ class FriendsList extends Component {
 
   render() {
     const { classes } = this.props;
+
+    console.log(this.state.expanded);
+
+    const expandList = () => {
+      if (this.state.expanded) {
+        return (
+          <div>
+            <List
+              style={{
+                backgroundColor: 'rgba(0, 0, 0, .5)',
+                maxHeight: '280px',
+                overflow: 'auto'
+              }}>
+              {list()}
+            </List>
+            {addFriend()}
+          </div>
+        )
+      } else {
+        return null;
+      }
+    }
 
     const list = () => {
       if (this.state.userAvatarMap) {
@@ -149,16 +203,18 @@ class FriendsList extends Component {
               <ListItem button key={1}
                 style={{ padding: '12px' }}
                 onClick={this.handleOpen.bind(this, friendAvatar[0])}>
-                {(() => (friendAvatar[1] !== './assets/roboheadwhite.png') ?
-                  <img
-                    src={friendAvatar[1]}
-                    style={{
-                      objectFit: 'cover',
-                      borderRadius: '50%',
-                      height: '32px',
-                      width: '32px',
-                      marginRight: '-5px',
-                    }} /> : null)()}
+                {
+                  (friendAvatar[1] !== './assets/roboheadwhite.png') ?
+                    <img
+                      src={friendAvatar[1]}
+                      style={{
+                        objectFit: 'cover',
+                        borderRadius: '50%',
+                        height: '32px',
+                        width: '32px',
+                        marginRight: '-5px',
+                      }} /> : null
+                }
                 <ListItemText primary={friendAvatar[0]} />
               </ListItem>,
               <Divider key={2} />
@@ -199,20 +255,30 @@ class FriendsList extends Component {
     }
 
     return ([
-      <Paper className={classes.paper} key={1}>
-        <Typography id="new-room-header" style={{ paddingBottom: '8px', fontSize: '24px' }}>
-          Friends
-        </Typography>
-        <Divider />
-        <List
+      <Paper
+        className={classes.paper}
+        key={1}>
+        <div
+          onClick={this.showFriends.bind(this)}
           style={{
-            backgroundColor: 'rgba(0, 0, 0, .5)',
-            maxHeight: '280px',
-            overflow: 'auto'
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
           }}>
-          {list()}
-        </List>
-        {addFriend()}
+          <Typography id="new-room-header" style={{ paddingBottom: '8px', fontSize: '24px' }}>
+            Friends
+          </Typography>
+          <span style={{ marginLeft: '5px' }}>
+            {
+              (this.state.width < 700) ?
+                (this.state.expanded) ? <KeyboardArrowUp />
+                  : <KeyboardArrowDown />
+                : null
+            }
+          </span>
+        </div>
+        <Divider />
+        {expandList()}
       </Paper >,
       <Modal key={2}
         style={{ alignItems: 'center', justifyContent: 'center' }}
