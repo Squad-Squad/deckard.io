@@ -279,6 +279,7 @@ class FriendsList extends Component {
         {expandList()}
       </Paper >,
       <Modal key={2}
+        disableAutoFocus={true}
         style={{ alignItems: 'center', justifyContent: 'center' }}
         open={this.state.open}
         onClose={this.handleClose.bind(this)}
