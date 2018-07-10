@@ -806,7 +806,7 @@ db.models.sequelize.sync().then(() => {
       let userVotes = data.user
       let roomMembers;
       let roomScores;
-      rooms[data.roomID][0][userVotes] = data.votes;
+      // rooms[data.roomID][0][userVotes] = data.votes;
 
       client.rpush(`${data.roomID}:votes`,JSON.stringify({[userVotes]: data.votes}), (err, replies)=>{
         console.log('added users votes to redis', replies)
