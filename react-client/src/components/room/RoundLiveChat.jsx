@@ -65,7 +65,6 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
     };
 
     this.props.io.on('turn over', (data) => {
-      console.log('YOUR TURNs over', data, "!!!!")
       this.setState({
           yourTurn: false       
       }) 
@@ -117,7 +116,6 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
   }
 
   handleClick() {
-    console.log("THIS.STATE.MSG", this.state.msg)
     this.props.io.emit('turn done', { user: this.props.username, message: this.state.msg })
     if (this.state.msg) this.props.sendMessage(this.state.msg);
     this.setState({

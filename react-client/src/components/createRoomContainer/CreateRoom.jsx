@@ -146,7 +146,6 @@ class ConnectedCreateRoom extends React.Component {
         onClick={() => {
           if (this.props.usersForNewRoom.length <= 7) {
             props.addUserToNewRoom(suggestion);
-            console.log(this.state.query);
             this.setState({
               currSuggestions: [],
               query: '',
@@ -238,7 +237,6 @@ class ConnectedCreateRoom extends React.Component {
     if (optionsError) {
       this.setState({ optionsError })
     } else if (this.state.roomName.length === 0) {
-      console.log('SETSTASTE');
       this.setState({
         nameError: true,
       });
@@ -295,7 +293,6 @@ class ConnectedCreateRoom extends React.Component {
           roomInfo: roomInfo
         },
         (data, status) => {
-          console.log('Room emails sent!', status);
         });
     });
   }
@@ -314,7 +311,6 @@ class ConnectedCreateRoom extends React.Component {
 
   handleAutoSuggestKeyPress(event) {
     if (event.key == 'Enter') {
-      console.log('IS IT ENTER');
       if (this.state.query.length &&
         this.props.usersForNewRoom.length <= 7) {
         this.props.addUserToNewRoom(this.state.currSuggestions[0]);
@@ -344,7 +340,6 @@ class ConnectedCreateRoom extends React.Component {
 
     // Error creating room
     const createRoomError = () => {
-      console.log(this.state.optionsError.length);
       if (this.state.optionsError) {
         return (
           <section className="section login-error" style={{ color: 'white' }}>

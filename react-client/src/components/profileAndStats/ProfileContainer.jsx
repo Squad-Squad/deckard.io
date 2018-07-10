@@ -54,7 +54,7 @@ class ProfileContainer extends React.Component {
       gamesPlayed: response.data.games_played,
       gamesWon: response.data.games_won,
       lifetimeScore: response.data.lifetime_score,
-    }, () => (console.log('USER INFO', this.state)));
+    });
   }
 
   handleChange(event, value) {
@@ -62,7 +62,6 @@ class ProfileContainer extends React.Component {
   }
 
   handleChangeIndex(index) {
-    console.log('CHANGING');
     this.setState({ value: index });
   }
 

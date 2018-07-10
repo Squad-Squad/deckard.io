@@ -186,14 +186,22 @@ app.post('/profile/update-profile', upload.single('avatar'), (req, res) => {
   }
 });
 
-app.post('/profile/add-friend', (req, res) => {
-  db.models.User.update(
-    { friends: sequelize.fn('array_append', sequelize.col('friends'), req.body.friend) },
-    { where: { username: req.body.username } },
-  )
-    .then((results) => {
-      res.status(200).send();
-    });
+app.post('/profile/add-friend', async (req, res) => {
+  const friend = await db.models.User.findOne({ where: { username: req.body.friend } });
+  const user = await db.models.User.findOne({ where: { username: req.body.username } });
+  if (friend &&
+  !user.dataValues.friends.includes(req.body.friend)) {
+    await db.models.User.update(
+      { friends: sequelize.fn('array_append', sequelize.col('friends'), req.body.friend) },
+      { where: { username: req.body.username } },
+    );
+    res.status(200).send();
+  } else if (user.dataValues.friends.includes(req.body.friend)) {
+    console.log('ERROR');
+    res.send('You\'re already friends with that user.');
+  } else {
+    res.send('That user does not exist.');
+  }
 });
 
 
@@ -320,7 +328,9 @@ app.post('/api/saveFreeMode', (req, res) => {
   
   
   // CHANGE THE ROOM TIMER LENGTH HERE
-  timerObj[roomUnique].start(10000);
+
+  timerObj[roomUnique].start(30000);
+
 
   dbHelpers.saveRoomAndMembers(
     roomName,
@@ -345,7 +355,7 @@ app.post('/api/startTimer', (req, res)=>{
   timerObj[roomID] = new Tock({
     countdown: true,
   });
-  timerObj[roomID].start(10000);
+  timerObj[roomID].start(20000);
 
 })
 

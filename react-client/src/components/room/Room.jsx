@@ -50,22 +50,19 @@ class ConnectedRoom extends React.Component {
     // this.voteApprove = this.voteApprove.bind(this);
 
     this.props.io.on('chat', messages => {
-      console.log("MESSAGE IN CHAT :", messages)
       this.setState({
         messages: messages
-      }, () => { console.log("this.state.messages in room:", this.state.messages) });
+      });
     });
 
 
     this.props.io.on('scores', scores => {
-      console.log('RECEIVING SCORES');
       this.setState({
         scores
       });
     });
 
     this.props.io.on('yourTurn', player => {
-      console.log("your turn", player, "!!!!")
       this.setState({
         yourTurn: true,
         // timer: "00:15"
@@ -73,7 +70,6 @@ class ConnectedRoom extends React.Component {
     })
 
     this.props.io.on('turnOver', player => {
-      console.log("your turn's over", player, "!!!!")
       this.setState({
         yourTurn: false,
       })
@@ -97,8 +93,6 @@ class ConnectedRoom extends React.Component {
 
   /// Send post request to server to fetch room info when user visits link
   componentDidMount() {
-    console.log("CURRENT ROOM MODE:", this.state.roomMode)
-    console.log("current state of waitingForRoomMembers:", this.state.waitingForRoomMembers)
     this.getRoomInfo();
     if(this.props.roomMode === "free"){
     axios.post('/api/startTimer', {roomID: this.props.roomID}) 
@@ -109,8 +103,6 @@ class ConnectedRoom extends React.Component {
 
   getRoomInfo() {
     $.get(`/api/rooms/${this.roomID}`).then(roomMembers => {
-      console.log("GET ROOM INFO RECEIVING OBJ:", roomMembers);
-
 
       let aliasedMembers = [];
       let memberMap = {};
@@ -153,7 +145,7 @@ class ConnectedRoom extends React.Component {
         },
       });
 
-      // console.log('STARTING TIMER');
+
       tock.start(timer.timeLeft + 1000);
     });
   }

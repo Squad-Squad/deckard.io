@@ -22,31 +22,32 @@ class ConnectedMainView extends React.Component {
       invite: false,
       inviteHost: null,
       roomHash: null,
-      roomMode: "free", 
+      roomMode: "free",
 
     };
     this.props.io.on('invitation', (data) => {
-      console.log("INVITATION USERS:", data.host)
       for (var el of data.users) {
         if (el === this.props.loggedInUsername) {
-          // console.log("WORD FROM THE OTHERSIDE:", data)
           this.setState({
             invite: true,
             inviteHost: data.host,
             roomHash: data.roomHash,
-            roomMode: data.roomMode
-          }, () => console.log("MAINVIEWINVITESTATE:", this.state.invite))
+            roomMode: data.roomMode,
+          });
         }
       }
-    })
+
 
     this.props.io.on('return option', (data)=>{
       console.log("RETURN OPTION", data)
     })
 
-    this.freeRoomMode = this.freeRoomMode.bind(this, "free")
-    this.roundRoomMode = this.roundRoomMode.bind(this, "round")
-    this.decline = this.decline.bind(this)
+
+      this.freeRoomMode = this.freeRoomMode.bind(this, "free")
+      this.roundRoomMode = this.roundRoomMode.bind(this, "round")
+      this.decline = this.decline.bind(this)
+    })
+
   }
 
   componentDidMount() {
@@ -66,23 +67,25 @@ class ConnectedMainView extends React.Component {
   };
 
 
-  freeRoomMode(){
-    console.log("ARGUENTMENS", arguments[0])
+
+
+  freeRoomMode() {
     this.setState({
       roomMode: arguments[0]
-    }, ()=>{console.log("NEW ROOM MODE:", this.state.roomMode)})
+    })
   }
+
 
   roundRoomMode(){
     console.log("ARGUMETS", arguments[0])
     this.setState({
       roomMode: arguments[0]
-    }, ()=>{console.log("NEW ROOM MODE:", this.state.roomMode)})
+    })
   }
 
-  decline(){
-    this.props.io.emit('decline', {user:this.props.loggedInUsername, roomID:this.state.roomHash, roomMode: this.state.roomMode})
-    this.setState({invite: false})
+  decline() {
+    this.props.io.emit('decline', { user: this.props.loggedInUsername, roomID: this.state.roomHash, roomMode: this.state.roomMode })
+    this.setState({ invite: false })
 
   }
 
@@ -99,7 +102,8 @@ class ConnectedMainView extends React.Component {
                 host={this.state.inviteHost}
                 roomHash={this.state.roomHash}
                 decline={this.decline}
-                {...props} />,
+                {...props}
+                key={1} />,
               <CreateRoomContainer
                 searchUsers={this.props.searchUsers}
                 searchedUsers={this.props.searchedUsers}
@@ -107,10 +111,11 @@ class ConnectedMainView extends React.Component {
                 loggedInUser={this.props.loggedInUser}
                 userRooms={this.props.userRooms}
                 io={this.props.io}
-                roundRoomMode={this.roundRoomMode}
-                freeRoomMode={this.freeRoomMode}
+                roundRoomMode={this.roundRoomMode.bind(this, 'round')}
+                freeRoomMode={this.freeRoomMode.bind(this, 'free')}
                 roomModeSelection={this.state.roomMode}
-                {...props} />
+                {...props}
+                key={2} />
             ]
         } />
         <Route path="/userprofile/:username" render={
@@ -119,7 +124,7 @@ class ConnectedMainView extends React.Component {
         <Route path="/rooms/:roomID" render={
           (props) =>
             [
-              <Room
+              <Room key={1}
                 searchUsers={this.props.searchUsers}
                 searchedUsers={this.props.searchedUsers}
                 loggedIn={this.props.loggedIn}
@@ -128,7 +133,7 @@ class ConnectedMainView extends React.Component {
                 io={this.props.io}
                 roomMode={this.state.roomMode}
                 {...props} />,
-              <InviteDialogueModal
+              <InviteDialogueModal key={2}
                 handleClose={this.handleClose.bind(this)}
                 addOpen={this.state.invite}
                 host={this.state.inviteHost}
