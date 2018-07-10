@@ -38,14 +38,14 @@ class Splash extends Component {
           alignItems: 'center',
           flexWrap: 'wrap'
         }}>
-        <div id="splash-unicorn"
-          className="animated fadeIn">
+        <div
+          className="animated fadeIn splash">
           <img
             src={UnicornSVG} />
         </div>
         {
           (this.state.waiting) ?
-            <div
+            <div className="splash--plus"
               style={{
                 visibility: 'hidden'
               }}>
@@ -72,8 +72,7 @@ class Splash extends Component {
               </div>
             </div> :
             <div
-              className="animated fadeIn"
-              style={{ width: '30%' }}>
+              className="animated fadeIn splash--plus">
               <hr
                 className={'trans--grow ' + (this.state.lineWait ? null : 'grow')}
                 style={{

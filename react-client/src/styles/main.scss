@@ -32,11 +32,13 @@
 }
 
 @media screen and (min-width: 0px) and (max-width: 600px) {
-  #splash-unicorn { width: 50%; }
+  .splash { width: 50%; }
+  .splash--plus { width: 70% }
 }
 
 @media screen and (min-width: 600px) {
-  #splash-unicorn { width: 20%; }
+  .splash  { width: 20%; }
+  .splash--plus { width: 30% }
 }
 
 @media screen and (min-width: 0px) and (max-width: 400px) {
