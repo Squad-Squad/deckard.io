@@ -321,16 +321,14 @@ const hashUsername = (username) => {
   return hash;
 };
 
-const getUser = (username) => {
-  return db.models.User.findOne({ where: { username } })
-    .then(user => {
-      console.log("Found user ", user);
-      return user;
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-};
+const getUser = username => db.models.User.findOne({ where: { username } })
+  .then((user) => {
+    console.log('Found user ', user);
+    return user;
+  })
+  .catch((err) => {
+    console.log(err);
+  });
 
 module.exports = {
   saveMember,
