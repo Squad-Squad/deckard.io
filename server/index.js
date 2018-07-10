@@ -458,7 +458,10 @@ db.models.sequelize.sync().then(() => {
           console.error(err)
         });
 
-      // notify everyone when someone has joined the room
+      //SET 1 HOUR EXPIRATION ON MEMBERSLIST DATA FOR THIS ROOM
+        client.expire(`${socket.room}:membersList`, 3600)
+
+      //NOTIFY EVERYONE WHEN SOMEONE HAS JOINED THE ROOM
       const user_id = socket.username;
       const name = socket.username;
       const message = `${data.user} has joined the room!`;
@@ -468,9 +471,11 @@ db.models.sequelize.sync().then(() => {
         JSON.stringify({ matrixOverLords: message }),
       );
 
+      //SET 1 HOUR EXPIRATION ON MESSAGE DATA FOR THIS ROOM
+       client.expire(`${socket.room}:messages`, 3600)
+
 
       dbHelpers.getRoomReady(io, client, socket, data, rooms);
-
 
       dbHelpers.fetchRedisMessages(client, socket, (result) => {
         io.sockets.in(socket.room).emit('chat', result);
