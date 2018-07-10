@@ -154,8 +154,6 @@ class FriendsList extends Component {
   render() {
     const { classes } = this.props;
 
-    console.log(this.state.expanded);
-
     const expandList = () => {
       if (this.state.expanded) {
         return (
