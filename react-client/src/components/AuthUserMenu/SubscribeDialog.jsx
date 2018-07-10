@@ -125,56 +125,59 @@ class SubscribeDialog extends React.Component {
     return (
       <div>
         <Button onClick={this.handleClickOpen} className="auth-button">Signup</Button>
-        <Dialog
-          className="auth-dialog"
-          open={this.state.open}
-          onClose={this.handleClose}
-          aria-labelledby="form-dialog-title"
-        >
-          <DialogTitle id="form-dialog-title">
-            Sign Up
+        <div>
+          <Dialog
+            className="auth-dialog"
+            open={this.state.open}
+            onClose={this.handleClose}
+            aria-labelledby="form-dialog-title"
+            maxWidth='xs'
+          >
+            <DialogTitle id="form-dialog-title">
+              Sign Up
           </DialogTitle>
-          <DialogContent>
-            <TextField
-              label="Username"
-              // InputLabelProps={{
-              //   shrink: true,
-              // }}
-              fullWidth
-              type="username"
-              autoFocus={true}
-              onChange={this.enterUsername}
-              onKeyUp={this.handleKeyPress}
-            />
-            <TextField
-              {...isEmailValid}
-              label="Email"
-              // InputLabelProps={{
-              //   shrink: true,
-              // }}
-              fullWidth
-              onChange={this.enterEmail}
-            />
-            <TextField
-              label="Password"
-              // InputLabelProps={{
-              //   shrink: true,
-              // }}
-              fullWidth
-              type="password"
-              onChange={this.enterPassword}
-              onKeyUp={this.handleKeyPress}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={this.handleClose} >
-              Cancel
+            <DialogContent>
+              <TextField
+                label="Username"
+                // InputLabelProps={{
+                //   shrink: true,
+                // }}
+                fullWidth
+                type="username"
+                autoFocus={true}
+                onChange={this.enterUsername}
+                onKeyUp={this.handleKeyPress}
+              />
+              <TextField
+                {...isEmailValid}
+                label="Email"
+                // InputLabelProps={{
+                //   shrink: true,
+                // }}
+                fullWidth
+                onChange={this.enterEmail}
+              />
+              <TextField
+                label="Password"
+                // InputLabelProps={{
+                //   shrink: true,
+                // }}
+                fullWidth
+                type="password"
+                onChange={this.enterPassword}
+                onKeyUp={this.handleKeyPress}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={this.handleClose} >
+                Cancel
             </Button>
-            <Button onClick={this.handleSubscribe} >
-              Signup
+              <Button onClick={this.handleSubscribe} >
+                Signup
             </Button>
-          </DialogActions>
-        </Dialog>
+            </DialogActions>
+          </Dialog>
+        </div>
       </div >
     );
   }

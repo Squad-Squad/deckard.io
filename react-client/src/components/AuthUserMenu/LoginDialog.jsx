@@ -96,6 +96,7 @@ class LoginDialog extends React.Component {
             open={this.state.open}
             onClose={this.handleClose}
             aria-labelledby="form-dialog-title"
+            maxWidth='xs'
           >
             <DialogTitle>
               <div id="login-form-dialog-title">
@@ -137,10 +138,10 @@ class LoginDialog extends React.Component {
             <DialogActions>
               <Button onClick={this.handleClose}>
                 Cancel
-          </Button>
+              </Button>
               <Button onClick={this.handleLogin}>
                 Login
-          </Button>
+              </Button>
             </DialogActions>
           </Dialog>
         </div>
