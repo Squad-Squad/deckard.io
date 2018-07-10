@@ -1,5 +1,6 @@
 const db = require('../database-postgresql/models');
 const bcrypt = require('bcrypt');
+const _ = require('underscore')
 
 // db.sequelize.query('SELECT * FROM users').spread((results) => {
 //   console.log('AAAAAAAAAAAAAAA', results[0]);
@@ -232,7 +233,6 @@ const getRoomMembers = (roomID, callback) => {
 };
 
 const getRooms = (email, callback) => {
-  // Joseph using SQL to get user's rooms
   const sqlQuery = `SELECT rooms.id AS room_id, rooms.uniqueid AS room_uniqueid, rooms.name AS room_name
     FROM room_users
     FULL JOIN rooms
@@ -276,11 +276,157 @@ const fetchRedisMessages = (client, socket, callback) => {
         }
         outputArray.push(msgObj);
       });
+      console.log('AM I GETTING A FULL ARRAY OF MESSAGES', outputArray);
       callback(outputArray);
     }
   });
-  // callback(outputArray)
 };
+
+
+const getRoomReady = (io, client, socket, data, rooms) => {
+  // notify everyone when mitsuku's joined the room (but only with her alias)
+  if (socket.roomMode === 'free') {
+    if (rooms[socket.room].length === 2) {
+      setTimeout(() => {
+        // add mitsuku to the members list in redis
+        client.rpush(
+          `${socket.room}:membersList`,
+          JSON.stringify({ mitsuku: 'mitsuku@mitsuku.com' }),
+          (err, replies) => {
+            console.log('mitsuku added to redis db', replies);
+          },
+        );
+
+        // add a message to room messages in redis notifying that mitsuku has joined
+        const mitMessage = `${data.mitsuku} has joined the room`;
+        client.rpush(
+          `${socket.room}:messages`,
+          JSON.stringify({ matrixOverLords: mitMessage }),
+          (err, reply) => {
+            console.log("I've pushed to redis:", reply);
+          },
+        );
+
+        // fetch all the messages from redis right after adding mitsuku's joined room message
+        fetchRedisMessages(client, socket, (result) => {
+          io.sockets.in(socket.room).emit('chat', result);
+        });
+      }, Math.random() * 5000);
+    }
+  }
+
+
+  let membersInRoom;
+  let membersInvitedtoRoom;
+  client.lrangeAsync(`${data.roomID}:membersList`, 0, -1)
+  .then((replies) => {
+      membersInRoom = replies.map(reply => JSON.parse(reply));
+
+  client.lrangeAsync(`${data.roomID}:membersInvited`, 0, -1)
+  .then((replies) => {
+      membersInvitedtoRoom = replies;
+
+      if (data.roomMode === 'round') {
+        if (membersInRoom.length === membersInvitedtoRoom.length) {
+          // PUSH MITSUKU TO ROOM'S MEMBERLIST IN REDIS
+
+          client.rpush(
+            `${data.roomID}:membersList`,
+            JSON.stringify({ mitsuku: 'mitsuku@mitsuku.com' }),
+            (err, replies) => {
+              console.log('mitsuku added to redis db', replies);
+            },
+          );
+
+
+          // ADD A MESSAGE TO ROOM MESSAGES IN REDIS NOTIFYING THAT MITSUKU HAS JOINED
+
+          const mitMessage = `${data.mitsuku} has joined the room`;
+          client.rpush(
+            `${data.roomID}:messages`,
+            JSON.stringify({ matrixOverLords: mitMessage }),
+            (err, reply) => {
+              console.log("I've pushed to redis:", reply);
+            },
+          );
+
+
+          // FETCH AND EMIT ALL MESSAGES AFTER MITSUKU'S JOIN MESSAGE HAS PUSHED TO REDIS
+
+          fetchRedisMessages(client, socket, (result) => {
+            io.sockets.in(data.roomID).emit('chat', result);
+          });
+          membersInRoom.push({ mitsuku: 'mitsuku@mitsuku.com' });
+
+
+          // RANDOMIZE THE ORDER OF TURNS FOR ROUNDROBIN MODE
+
+          const shuffledOrder = _.shuffle(membersInRoom);
+          console.log('SHUFFLED ORDER FOR PLAY:', shuffledOrder);
+          rooms[data.roomID].gameOrder = shuffledOrder;
+          var fixedKey;
+
+          // WHEN ITS MITSUKU'S TURN
+
+          if (Object.keys(shuffledOrder[0])[0] === 'mitsuku') {
+            const key = Object.keys(shuffledOrder[1]);
+            const fixKey = key[0];
+            const firstTurnSocketId = shuffledOrder[1][fixKey];
+            console.log("WHOSE TURN IN DBCONTROLLERS", fixKey)
+            io.sockets.emit('whose turn', fixKey)
+            io.sockets.sockets[firstTurnSocketId].emit('yourTurn', key[0]);
+            io.sockets.sockets[firstTurnSocketId].emit('startTimer')
+          } else {
+            const key = Object.keys(shuffledOrder[0]);
+            const fixKey = key[0];
+            const firstTurnSocketId = shuffledOrder[0][fixKey];
+            console.log("WHOSE TURN IN DBCONTROLLERS2", fixKey)
+            io.sockets.emit('whose turn', fixKey)
+            io.sockets.sockets[firstTurnSocketId].emit('yourTurn', key[0]);
+            io.sockets.sockets[firstTurnSocketId].emit('startTimer')
+          }
+
+          io.sockets.in(data.roomID).emit('roomReady', true);
+        }
+      }
+      
+  })
+  .catch(err=>{
+    console.error(err)
+  })
+
+  })
+  .catch(err=>{
+    console.error(err)
+  })
+
+}
+
+
+const removeFromMembersList = (client, socket) =>{
+  let user = socket.username
+      console.log("WHO I'mTRYING TO REMOVE", JSON.stringify({[user]: socket.id}))
+      client.lremAsync(`${socket.room}:membersList`, 1, JSON.stringify({[user]: socket.id}))
+      .then((replies) => {
+      console.log('REMOVE FROM MEMBERSLIST REPLY', replies);
+      client.lrangeAsync(`${socket.room}:membersList`, 0, -1)
+        .then((reply) => {
+          console.log(`ROOM MEMmbers of ${socket.room} CHECK AFTER REM:`, reply);
+
+
+          //LEAVE ROOM ASYNCHRONOUSLY HERE
+          socket.leave(socket.room);
+
+        })
+        .catch(err=>{
+          console.error(err)
+        })
+      })
+      .catch(err=>{
+        console.error(err)
+      })
+}
+        
 
 
 module.exports = {
@@ -295,4 +441,6 @@ module.exports = {
   getWins,
   aliasMembers,
   fetchRedisMessages,
+  getRoomReady,
+  removeFromMembersList,
 };

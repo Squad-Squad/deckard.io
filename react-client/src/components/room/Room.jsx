@@ -9,6 +9,7 @@ import RoundLiveChat from './RoundLiveChat.jsx';
 import VotePanel from './VotePanel.jsx';
 import Scores from './Scores.jsx';
 import AwaitingResults from './AwaitingResults.jsx';
+import axios from 'axios'
 import { addCurrUsersFromDB } from '../../../../redux/actions';
 import { connect } from 'react-redux';
 
@@ -41,6 +42,7 @@ class ConnectedRoom extends React.Component {
       roomMode: this.props.roomMode,
       waitingForRoomMembers: true,
       yourTurn: false,
+      // whoseTurn: null
     };
     this.roomID = this.props.match.params.roomID;
     this.getTimer = this.getTimer.bind(this)
@@ -63,7 +65,7 @@ class ConnectedRoom extends React.Component {
     this.props.io.on('yourTurn', player => {
       this.setState({
         yourTurn: true,
-        timer: "00:15"
+        // timer: "00:15"
       })
     })
 
@@ -73,10 +75,16 @@ class ConnectedRoom extends React.Component {
       })
     })
 
+    this.props.io.on('startTimer', ()=>{
+     axios.post('/api/startTimer', {roomID: this.roomID}) 
+    })
+
     this.props.io.on('roomReady', data => {
+      console.log("++++++++++++++I'm ROOOM READY INCOMING+++++++++")
       this.setState({
         waitingForRoomMembers: false
       })
+      this.getTimer()
     })
 
   }
@@ -86,11 +94,16 @@ class ConnectedRoom extends React.Component {
   /// Send post request to server to fetch room info when user visits link
   componentDidMount() {
     this.getRoomInfo();
+    if(this.props.roomMode === "free"){
+    axios.post('/api/startTimer', {roomID: this.props.roomID}) 
+    this.getTimer()
+    }
   }
 
 
   getRoomInfo() {
     $.get(`/api/rooms/${this.roomID}`).then(roomMembers => {
+
       let aliasedMembers = [];
       let memberMap = {};
       for (var key in roomMembers) {
@@ -108,7 +121,7 @@ class ConnectedRoom extends React.Component {
       });
     })
       .then(() => {
-        this.props.io.emit('join', { room: this.roomID, user: this.state.memberMap[this.props.loggedInUsername], mitsuku: this.state.memberMap['mitsuku@mitsuku.com'], roomMode: this.state.roomMode });
+        this.props.io.emit('join', { roomID: this.roomID, user: this.state.memberMap[this.props.loggedInUsername], mitsuku: this.state.memberMap['mitsuku@mitsuku.com'], roomMode: this.state.roomMode });
       });
 
 
@@ -131,6 +144,7 @@ class ConnectedRoom extends React.Component {
           });
         },
       });
+
 
       tock.start(timer.timeLeft + 1000);
     });
@@ -159,6 +173,7 @@ class ConnectedRoom extends React.Component {
       // this.getTimer();
       if (this.state.timer === "00:00" && !this.state.scores) {
         return (<VotePanel members={this.state.members}
+          roomID={this.roomID} 
           memberMap={this.state.memberMap} io={this.props.io} />);
       } else if (!this.state.scores) {
         return (<FreeLiveChat
@@ -184,12 +199,14 @@ class ConnectedRoom extends React.Component {
       } else {
         if (this.state.timer === "00:00" && !this.state.scores) {
           return (<VotePanel members={this.state.members}
+            roomID={this.roomID} 
             memberMap={this.state.memberMap} io={this.props.io} />);
         } else if (!this.state.scores) {
           return (<RoundLiveChat
             alias={this.state.memberMap[this.props.loggedInUsername]}
             io={this.props.io}
             yourTurn={this.state.yourTurn}
+            // whoseTurn={this.state.whoseTurn}
             roomName={this.state.roomName}
             roomID={this.roomID}
             messages={this.state.messages}
