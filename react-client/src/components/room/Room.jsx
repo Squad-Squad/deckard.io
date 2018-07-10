@@ -33,7 +33,7 @@ class ConnectedRoom extends React.Component {
     super(props);
     this.state = {
       message: '',
-      messages: [],
+      messages: this.props.messages,
       memberMap: [],
       members: [],
       roomName: '',
@@ -80,7 +80,6 @@ class ConnectedRoom extends React.Component {
     })
 
     this.props.io.on('roomReady', data => {
-      console.log("++++++++++++++I'm ROOOM READY INCOMING+++++++++")
       this.setState({
         waitingForRoomMembers: false
       })

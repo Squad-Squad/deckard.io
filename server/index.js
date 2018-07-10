@@ -414,7 +414,7 @@ db.models.sequelize.sync().then(() => {
   io.on('connection', (socket) => {
     socket.on('username connect', (data) => {
       socket.username = data;
-      console.log('USERNAME CONNECT:', data);
+      console.log('++++++USERNAME CONNECT++++++:', data);
 
       client.lremAsync('onlineUsers', 0, socket.username)
       .then((reply) => {
@@ -689,36 +689,40 @@ db.models.sequelize.sync().then(() => {
         console.log('updatedMembersInvitedList after decline:', reply);
       });
 
-      // dbHelpers.getRoomReady(io, client, socket, data, rooms);
+      dbHelpers.getRoomReady(io, client, socket, data, rooms);
 
-      let membersInRoomDECLINE;
-      let membersInvitedtoRoomDECLINE;
-      client.lrange(`${data.roomID}:membersList`, 0, -1, (err, replies) => {
-        if (err) {
-          console.log(err);
-        } else {
-          membersInRoomDECLINE = replies;
-        }
 
-        client.lrange(
-          `${data.roomID}:membersInvited`, 0, -1,
-          (err, replies) => {
-            if (err) {
-              console.log(err);
-            } else {
-              membersInvitedtoRoomDECLINE = replies;
-              if (data.roomMode === 'round') {
-                if (
-                  membersInRoomDECLINE.length >=
-                  membersInvitedtoRoomDECLINE.length
-                ) {
-                  io.sockets.in(data.roomID).emit('roomReady', true);
-                }
-              }
-            }
-          },
-        );
+      dbHelpers.fetchRedisMessages(client, socket, (result) => {
+        io.sockets.in(data.roomID).emit('chat', result);
       });
+      // let membersInRoomDECLINE;
+      // let membersInvitedtoRoomDECLINE;
+      // client.lrange(`${data.roomID}:membersList`, 0, -1, (err, replies) => {
+      //   if (err) {
+      //     console.log(err);
+      //   } else {
+      //     membersInRoomDECLINE = replies;
+      //   }
+
+      //   client.lrange(
+      //     `${data.roomID}:membersInvited`, 0, -1,
+      //     (err, replies) => {
+      //       if (err) {
+      //         console.log(err);
+      //       } else {
+      //         membersInvitedtoRoomDECLINE = replies;
+      //         if (data.roomMode === 'round') {
+      //           if (
+      //             membersInRoomDECLINE.length >=
+      //             membersInvitedtoRoomDECLINE.length
+      //           ) {
+      //             io.sockets.in(data.roomID).emit('roomReady', true);
+      //           }
+      //         }
+      //       }
+      //     },
+      //   );
+      // });
     });
 
     // handle cases in which player leaves the room without completely disconnecting from the site
