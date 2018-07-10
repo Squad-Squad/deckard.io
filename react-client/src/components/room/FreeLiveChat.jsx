@@ -41,7 +41,6 @@ class ConnectedFreeLiveChat extends React.Component {
   }
 
   componentDidMount() {
-    console.log("AM I MOUNTING", this.props.roomID)
     this.scrollToBottom();
     this.props.getTimer()
   }

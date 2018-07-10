@@ -63,7 +63,7 @@ class CreateRoomContainer extends React.Component {
       <div>
         <div className="columns" style={{ display: 'flex', flexWrap: 'wrap-reverse' }}>
           <div className="column is-1 hide-if-small"></div>
-          <div className="column is-4">
+          <div className="column is-4" style={{ minWidth: '300px' }}>
             <FriendsList
               onlineUsers={this.state.onlineUsers} />
           </div>

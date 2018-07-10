@@ -27,7 +27,7 @@ function mapDispatchToProps(dispatch) {
 const styles = theme => ({
   button: {
     minHeight: '50px',
-    minWidth: '100px',
+    // minWidth: '100px',
   },
 });
 
