@@ -31,18 +31,8 @@
   .profile-modal { width: 60%; }
 }
 
-#login-form-dialog-title {
-  display: flex;
-  justify-content: space-between;
-}
-
 @media screen and (min-width: 0px) and (max-width: 400px) {
-  #login-form-dialog-title { flex-direction: column; }
   .login-title { float: left; margin-bottom: 20px; }
-}
-
-@media screen and (min-width: 400px) {
-  #google-login-button { float: right; }
 }
 
 @media screen and (min-height: 0px) and (max-height: 750px) {
@@ -217,10 +207,6 @@ div.columns {
 
 .tile.is-child.notification.combatants {
   margin-bottom: 10px !important;
-}
-
-.create-room-container {
-  // background-color: $grey;
 }
 
 .google-button-container {
