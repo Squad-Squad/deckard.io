@@ -689,8 +689,13 @@ db.models.sequelize.sync().then(() => {
         console.log('updatedMembersInvitedList after decline:', reply);
       });
 
-      dbHelpers.getRoomReady(io, client, socket, data, rooms);
+      client.hgetallAsync(`${data.roomID}:members`)
+      .then(replies => { 
+        console.log('GET MEMBERS INFO IN DECLINE SOCKET', replies)
 
+      dbHelpers.getRoomReady(io, client, socket, data, rooms, replies);
+
+      })
 
       dbHelpers.fetchRedisMessages(client, socket, (result) => {
         io.sockets.in(data.roomID).emit('chat', result);
