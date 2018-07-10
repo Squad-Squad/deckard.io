@@ -39,24 +39,55 @@ class Splash extends Component {
           <img
             src={UnicornSVG} />
         </div>
-        <Divider light />
         {
-          (this.state.waiting) ? null :
+          (this.state.waiting) ?
+            <div
+              style={{
+                visibility: 'hidden'
+              }}>
+              <Divider style={{
+                width: '30%',
+                backgroundColor: 'white',
+                opacity: 1,
+                marginTop: '20px',
+                height: '4px',
+              }} />
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                <LoginDialog
+                  login={this.props.login}
+                  error={this.props.error} />
+                <SubscribeDialog subscribe={this.props.subscribe} />
+              </div>
+            </div> :
             <div
               className="animated fadeIn"
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'space-around',
-                alignItems: 'center',
-                flexWrap: 'wrap'
-              }}>
-              <LoginDialog
-                login={this.props.login}
-                error={this.props.error} />
-              <SubscribeDialog subscribe={this.props.subscribe} />
+              style={{ width: '30%' }}>
+              <Divider style={{
+                width: '100%',
+                backgroundColor: 'white',
+                opacity: 1,
+                marginTop: '20px',
+                height: '4px',
+              }} />
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                <LoginDialog
+                  login={this.props.login}
+                  error={this.props.error} />
+                <SubscribeDialog subscribe={this.props.subscribe} />
+              </div>
             </div>
-
         }
       </div>
     );
