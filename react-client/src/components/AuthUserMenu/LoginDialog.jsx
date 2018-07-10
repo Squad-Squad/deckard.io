@@ -99,6 +99,12 @@ class LoginDialog extends React.Component {
             aria-labelledby="form-dialog-title"
             maxWidth='xs'
             overlayStyle={{ backgroundColor: 'red' }}
+            PaperProps={{
+              style: {
+                backgroundColor: 'rgba(0, 0, 0, .9)',
+                boxShadow: 'none',
+              },
+            }}
           >
             <DialogTitle>
               Login
