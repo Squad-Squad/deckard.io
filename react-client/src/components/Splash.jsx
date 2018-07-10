@@ -14,12 +14,16 @@ function mapStateToProps(state) {
 class Splash extends Component {
   state = {
     waiting: true,
+    lineWait: true,
   }
 
   componentDidMount() {
     setTimeout(() => this.setState({
       waiting: false,
     }), 1000);
+    setTimeout(() => this.setState({
+      lineWait: false,
+    }), 1100);
   }
 
   render() {
@@ -45,13 +49,15 @@ class Splash extends Component {
               style={{
                 visibility: 'hidden'
               }}>
-              <Divider style={{
-                width: '30%',
-                backgroundColor: 'white',
-                opacity: 1,
-                marginTop: '20px',
-                height: '4px',
-              }} />
+              <hr
+                className={'trans--grow ' + (this.state.lineWait ? null : 'grow')}
+                style={{
+                  backgroundColor: 'white',
+                  opacity: 1,
+                  marginTop: '20px',
+                  marginBottom: '0px',
+                  height: '2px',
+                }} />
               <div
                 style={{
                   display: 'flex',
@@ -68,13 +74,13 @@ class Splash extends Component {
             <div
               className="animated fadeIn"
               style={{ width: '30%' }}>
-              <Divider
-                className="trans--grow grow"
+              <hr
+                className={'trans--grow ' + (this.state.lineWait ? null : 'grow')}
                 style={{
-                  width: '100%',
                   backgroundColor: 'white',
                   opacity: 1,
                   marginTop: '20px',
+                  marginBottom: '0px',
                   height: '2px',
                 }} />
               <div

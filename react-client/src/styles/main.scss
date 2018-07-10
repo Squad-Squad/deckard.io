@@ -453,8 +453,8 @@ $font-size: 25px;
 
 // ANIMATE DIVIDER
 .trans--grow{
-  -webkit-transition: width 1s ease-out; /* For Safari 3.1 to 6.0 */
-  transition: width 1s  ease-out;
+  -webkit-transition: width .5s ease-out; /* For Safari 3.1 to 6.0 */
+  transition: width .5s  ease-out;
   width : 0%;
 }
 .grow{
