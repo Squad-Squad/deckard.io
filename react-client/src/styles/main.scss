@@ -36,7 +36,7 @@
 }
 
 @media screen and (min-width: 600px) {
-  #splash-unicorn { width: 30%; }
+  #splash-unicorn { width: 20%; }
 }
 
 @media screen and (min-width: 0px) and (max-width: 400px) {
@@ -265,7 +265,7 @@ div.columns {
 
 .auth-buttons {
   font-family: 'Titillium Web', sans-serif !important;
-  font-size: 26px !important;
+  font-size: 20px !important;
   margin-top: 10px !important;
 }
 
@@ -449,4 +449,14 @@ $font-size: 25px;
     margin-right: 10px;
     margin-top: 15px;
   }
+}
+
+// ANIMATE DIVIDER
+.trans--grow{
+  -webkit-transition: width 1s ease-out; /* For Safari 3.1 to 6.0 */
+  transition: width 1s  ease-out;
+  width : 0%;
+}
+.grow{
+  width:100%;
 }

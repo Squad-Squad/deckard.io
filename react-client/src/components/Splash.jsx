@@ -68,13 +68,15 @@ class Splash extends Component {
             <div
               className="animated fadeIn"
               style={{ width: '30%' }}>
-              <Divider style={{
-                width: '100%',
-                backgroundColor: 'white',
-                opacity: 1,
-                marginTop: '20px',
-                height: '4px',
-              }} />
+              <Divider
+                className="trans--grow grow"
+                style={{
+                  width: '100%',
+                  backgroundColor: 'white',
+                  opacity: 1,
+                  marginTop: '20px',
+                  height: '2px',
+                }} />
               <div
                 style={{
                   display: 'flex',
