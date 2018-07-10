@@ -344,8 +344,6 @@ const getRoomReady = (io, client, socket, data, rooms, membersInfo) => {
 
           // ADD A MESSAGE TO ROOM MESSAGES IN REDIS NOTIFYING THAT MITSUKU HAS JOINED
 
-          console.log("MEMBERS INFO IN DB CONTROLLERS", membersInfo)
-
           let mitMessage;
           if(membersInfo){
             console.log("MEMBERSINFOLENGTH")
@@ -354,9 +352,7 @@ const getRoomReady = (io, client, socket, data, rooms, membersInfo) => {
             mitMessage = `${data.mitsuku} has joined the room` 
           } 
 
-          console.log("I AM MIT MESSAGE", mitMessage)
 
-          // const mitMessage = `${data.mitsuku} has joined the room`;
           client.rpush(
             `${data.roomID}:messages`,
             JSON.stringify({ matrixOverLords: mitMessage }),

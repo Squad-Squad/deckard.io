@@ -18,7 +18,7 @@ const mapStateToProps = state => {
     username: state.username,
     loggedInUsername: state.username,
     usersForNewRoom: state.usersForNewRoom,
-
+    roomLength: state.roomLength,
   };
 };
 
@@ -76,7 +76,7 @@ class ConnectedRoom extends React.Component {
     })
 
     this.props.io.on('startTimer', ()=>{
-     axios.post('/api/startTimer', {roomID: this.roomID}) 
+     axios.post('/api/startTimer', {roomID: this.roomID, roomLength: this.props.roomLength}) 
     })
 
     this.props.io.on('roomReady', data => {
@@ -122,7 +122,6 @@ class ConnectedRoom extends React.Component {
       .then(() => {
         this.props.io.emit('join', { roomID: this.roomID, user: this.state.memberMap[this.props.loggedInUsername], mitsuku: this.state.memberMap['mitsuku@mitsuku.com'], roomMode: this.state.roomMode });
       });
-
 
   }
 

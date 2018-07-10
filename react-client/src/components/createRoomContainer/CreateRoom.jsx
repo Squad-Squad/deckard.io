@@ -250,7 +250,8 @@ class ConnectedCreateRoom extends React.Component {
           {
             roomName: this.state.roomName,
             members: this.props.usersForNewRoom,
-            roomMode: this.props.roomModeSelection
+            roomMode: this.props.roomModeSelection,
+            roomLength: this.props.roomLength
           },
           (roomInfo, status) => {
             this.sendRoomEmail(roomInfo, this.props.usersForNewRoom);
@@ -269,7 +270,9 @@ class ConnectedCreateRoom extends React.Component {
           {
             roomName: this.state.roomName,
             members: this.props.usersForNewRoom,
-            roomMode: this.props.roomModeSelection
+            roomMode: this.props.roomModeSelection,
+            roomLength: this.props.roomLength
+
           },
           (roomInfo, status) => {
             this.sendRoomEmail(roomInfo, this.props.usersForNewRoom);

@@ -308,7 +308,7 @@ app.post('/api/save', (req, res) => {
 app.post('/api/saveFreeMode', (req, res) => {
   console.log('NEW ROOM DATA', req.body);
 
-  const { roomName, roomMode, members } = req.body;
+  const { roomName, roomMode, members, roomLength } = req.body;
   const roomUnique = uniqueString().slice(0, 6);
   timerObj[roomUnique] = new Tock({
     countdown: true,
@@ -329,7 +329,10 @@ app.post('/api/saveFreeMode', (req, res) => {
   
   // CHANGE THE ROOM TIMER LENGTH HERE
 
-  timerObj[roomUnique].start(30000);
+  let roomLengthInMilis = roomLength * 60 * 1000
+  console.log("ROOMLENGTHIN MILIS", roomLengthInMilis)
+
+  timerObj[roomUnique].start(roomLengthInMilis);
 
 
   dbHelpers.saveRoomAndMembers(
@@ -350,12 +353,15 @@ app.post('/api/saveFreeMode', (req, res) => {
 
 
 app.post('/api/startTimer', (req, res)=>{
-  const { roomID } = req.body
+  const { roomID, roomLength } = req.body
   console.log("ROOOM ID IN START TIME API CALLL:", roomID)
   timerObj[roomID] = new Tock({
     countdown: true,
   });
-  timerObj[roomID].start(20000);
+
+  let roomLengthInMilis = roomLength * 60 * 1000
+  
+  timerObj[roomID].start(roomLengthInMilis);
 
 })
 
