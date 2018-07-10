@@ -321,14 +321,20 @@ const hashUsername = (username) => {
   return hash;
 };
 
-const getUser = username => db.models.User.findOne({ where: { username } })
-  .then((user) => {
-    console.log('Found user ', user);
-    return user;
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+const getUser = username =>
+  db.models.User.findOne({ where: { username } })
+    .then(user => user)
+    .catch((err) => {
+      console.log('ERROR getUser Function', err);
+    });
+
+const getUserEmail = username =>
+  getUser(username)
+    .then((user) => {
+      const { email } = user.dataValues;
+      return email;
+    })
+    .catch(err => console.log('error', err));
 
 module.exports = {
   saveMember,
@@ -347,4 +353,5 @@ module.exports = {
   setVerified,
   hashUsername,
   getUser,
+  getUserEmail,
 };
