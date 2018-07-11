@@ -22,6 +22,7 @@ const Mailjet = require('node-mailjet').connect(
 const db = require('../database-postgresql/models/index');
 const dbHelpers = require('../db-controllers');
 const { sequelize } = require('../database-postgresql/models/index');
+const email = require('../lib/nodemailerHelpers');
 
 const { Op } = db;
 
@@ -57,10 +58,8 @@ const upload = multer({
 });
 const s3 = new AWS.S3();
 const s3Params = {
-
   Bucket: 'deckard-io',
   Key: `userAvatars/${Date.now()}`,
-
 };
 
 //
@@ -87,7 +86,7 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-auth.passportHelper(passport);
+auth.passportHelper(passport, client);
 app.use(flash());
 
 // Add Mitsuku to DB if she doesn't exist
@@ -120,10 +119,13 @@ app.get('/checklogin', (req, res) => {
   res.status(200).send(req.session.passport);
 });
 
-app.post('/subscribe', passport.authenticate('local-signup', {
-  successRedirect: '/',
-  failureFlash: true,
-}));
+app.post(
+  '/subscribe',
+  passport.authenticate('local-signup', {
+    successRedirect: '/',
+    failureFlash: true,
+  }),
+);
 
 app.post(
   '/login',
@@ -145,10 +147,9 @@ app.get('/logout', (req, res) => {
 // ─── USER PROFILE ENDPOINTS ─────────────────────────────────────────────────────
 //
 app.post('/api/userInfo', (req, res) => {
-  db.models.User.findOne({ where: { username: req.body.user } })
-    .then((user) => {
-      res.send(JSON.parse(JSON.stringify(user)));
-    });
+  db.models.User.findOne({ where: { username: req.body.user } }).then((user) => {
+    res.send(JSON.parse(JSON.stringify(user)));
+  });
 });
 
 app.post('/profile/update-profile', upload.single('avatar'), (req, res) => {
@@ -159,39 +160,36 @@ app.post('/profile/update-profile', upload.single('avatar'), (req, res) => {
       if (data) {
         console.log('Successfully saved image to S3', data);
 
-        db.models.User.findOne({ where: { username: req.body.username } })
-          .then((user) => {
-            user.update({
-              username: req.body.newusername || user.dataValues.username,
-              email: req.body.newemail || user.dataValues.email,
-              description: req.body.newdescription || user.dataValues.description,
-              avatar: data.Location,
-            });
-
-            res.status(200).send(data.Location);
+        db.models.User.findOne({ where: { username: req.body.username } }).then((user) => {
+          user.update({
+            username: req.body.newusername || user.dataValues.username,
+            email: req.body.newemail || user.dataValues.email,
+            description: req.body.newdescription || user.dataValues.description,
+            avatar: data.Location,
           });
+
+          res.status(200).send(data.Location);
+        });
       }
     });
   } else {
-    db.models.User.findOne({ where: { username: req.body.username } })
-      .then((user) => {
-        console.log('GETTING USER');
-        user.update({
-          username: req.body.newusername || user.dataValues.username,
-          email: req.body.newemail || user.dataValues.email,
-          description: req.body.newdescription || user.dataValues.description,
-        });
-
-        res.status(200).send();
+    db.models.User.findOne({ where: { username: req.body.username } }).then((user) => {
+      console.log('GETTING USER');
+      user.update({
+        username: req.body.newusername || user.dataValues.username,
+        email: req.body.newemail || user.dataValues.email,
+        description: req.body.newdescription || user.dataValues.description,
       });
+
+      res.status(200).send();
+    });
   }
 });
 
 app.post('/profile/add-friend', async (req, res) => {
   const friend = await db.models.User.findOne({ where: { username: req.body.friend } });
   const user = await db.models.User.findOne({ where: { username: req.body.username } });
-  if (friend &&
-  !user.dataValues.friends.includes(req.body.friend)) {
+  if (friend && !user.dataValues.friends.includes(req.body.friend)) {
     await db.models.User.update(
       { friends: sequelize.fn('array_append', sequelize.col('friends'), req.body.friend) },
       { where: { username: req.body.username } },
@@ -199,12 +197,11 @@ app.post('/profile/add-friend', async (req, res) => {
     res.status(200).send();
   } else if (user.dataValues.friends.includes(req.body.friend)) {
     console.log('ERROR');
-    res.send('You\'re already friends with that user.');
+    res.send("You're already friends with that user.");
   } else {
     res.send('That user does not exist.');
   }
 });
-
 
 //
 // ─── USER SEARCH AND INVITE ─────────────────────────────────────────────────────
@@ -226,8 +223,8 @@ app.post('/api/signupEmail', (req, res) => {
     FromEmail: 'd3ck4rd.io@gmail.com',
     FromName: 'deckard.io',
     Subject: "You've been invited to deckard.io!",
-    'Text-part': `You've been invited to play deckard.io -- visit ${process.env
-      .DOMAIN || 'http://localhost:3000/'}signup to signup.`,
+    'Text-part': `You've been invited to play deckard.io -- visit ${process.env.DOMAIN ||
+      'http://localhost:3000/'}signup to signup.`,
     Recipients: [{ Email: email }],
   };
   Mailjet.post('send')
@@ -248,8 +245,8 @@ app.post('/api/roomEmail', (req, res) => {
     FromEmail: 'd3ck4rd.io@gmail.com',
     FromName: 'deckard.io',
     Subject: "You've been invited to join a deckard.io room!",
-    'Text-part': `You've been invited to a deckard.io room. Visit ${process.env
-      .DOMAIN || 'http://localhost:3000/'}rooms/${roomInfo.uniqueid} to join.`,
+    'Text-part': `You've been invited to a deckard.io room. Visit ${process.env.DOMAIN ||
+      'http://localhost:3000/'}rooms/${roomInfo.uniqueid} to join.`,
     Recipients: [{ Email: email }],
   };
   Mailjet.post('send')
@@ -336,19 +333,14 @@ app.post('/api/saveFreeMode', (req, res) => {
   timerObj[roomUnique].start(roomLengthInMilis);
 
 
-  dbHelpers.saveRoomAndMembers(
-    roomName,
-    members,
-    roomUnique,
-    (err, room, users) => {
-      if (err) {
-        console.log('Error saving room and members', err);
-      } else {
-        console.log(`Saved room: ${roomName}`);
-        res.send(room[0].dataValues);
-      }
-    },
-  );
+  dbHelpers.saveRoomAndMembers(roomName, members, roomUnique, (err, room, users) => {
+    if (err) {
+      console.log('Error saving room and members', err);
+    } else {
+      console.log(`Saved room: ${roomName}`);
+      res.send(room[0].dataValues);
+    }
+  });
 });
 
 
@@ -393,6 +385,60 @@ app.post('/api/userrooms', (req, res) => {
       res.send(rooms);
     }
   });
+});
+
+// EMAIL VERIFICATION ROUTES
+app.get('/verify/:hashID', (req, res) => {
+  const { hashID } = req.params;
+
+  client.get(hashID, (err, username) => {
+    if (err) {
+      console.log(err);
+    } else {
+      dbHelpers.setVerified(username);
+      console.log('USERNAME ', username);
+      res.redirect('/');
+    }
+  });
+});
+
+app.get('/userz/:user', (req, res) => {
+  // TODO Testing Function, remove in production
+  const { user } = req.params;
+  // const {email} = dbHelpers.getUser(user).dataValues;
+
+  dbHelpers
+    .getUserEmail(user)
+    .then((user) => {
+      console.log(user);
+    })
+    .catch(err => console.log('error', err));
+});
+
+app.get('/regenerate/:username', (req, res) => {
+  const { username } = req.params;
+  let address;
+  let hashedUsername;
+  dbHelpers
+    .getUserEmail(username)
+    .then((email) => {
+      address = email;
+    })
+    .then(() => {
+      hashedUsername = dbHelpers.hashUsername(username);
+      console.log('ADDRESS: ', address);
+      console.log('HashedUSername: ', hashedUsername);
+      console.log('Username :', username);
+    })
+    .then(() => {
+      dbHelpers.saveVerificationHash(client, hashedUsername, username)
+    })
+    .then((() =>{
+      email.sendReverificationEmail(address, hashedUsername, username)}))
+    .then(res.redirect('/'))
+    .catch((err) => {
+      console.log('ERRROR REGENERATING___ ', err);
+    });
 });
 
 // ────────────────────────────────────────────────────────────────────────────────
@@ -483,22 +529,128 @@ db.models.sequelize.sync().then(() => {
       const name = socket.username;
       const message = `${data.user} has joined the room!`;
 
-      client.rpush(
-        `${socket.room}:messages`,
-        JSON.stringify({ matrixOverLords: message }),
-      );
+      client.rpush(`${socket.room}:messages`, JSON.stringify({ matrixOverLords: message }));
 
+<<<<<<< HEAD
+      // notify everyone when mitsuku's joined the room (but only with her alias)
+      if (socket.roomMode === 'free') {
+        if (rooms[socket.room].length === 2) {
+          setTimeout(() => {
+            // add mitsuku to the members list in redis
+            client.rpush(
+              `${socket.room}:membersList`,
+              JSON.stringify({ mitsuku: 'mitsuku@mitsuku.com' }),
+              (err, replies) => {
+                console.log('mitsuku added to redis db', replies);
+              },
+            );
+
+            // add a message to room messages in redis notifying that mitsuku has joined
+            const mitMessage = `${data.mitsuku} has joined the room`;
+            client.rpush(
+              `${socket.room}:messages`,
+              JSON.stringify({ matrixOverLords: mitMessage }),
+              (err, reply) => {
+                console.log("I've pushed to redis:", reply);
+              },
+            );
+
+            // fetch all the messages from redis right after adding mitsuku's joined room message
+            dbHelpers.fetchRedisMessages(client, socket, (result) => {
+              io.sockets.in(socket.room).emit('chat', result);
+            });
+          }, Math.random() * 5000);
+        }
+      }
+
+      let membersInRoom;
+      let membersInvitedtoRoom;
+      client.lrange(`${socket.room}:membersList`, 0, -1, (err, replies) => {
+        if (err) {
+          console.log(err);
+        } else {
+          membersInRoom = replies.map(reply => JSON.parse(reply));
+        }
+
+        client.lrange(`${socket.room}:membersInvited`, 0, -1, (err, replies) => {
+          if (err) {
+            console.log(err);
+          } else {
+            membersInvitedtoRoom = replies;
+            if (data.roomMode === 'round') {
+              if (membersInRoom.length === membersInvitedtoRoom.length) {
+                // PUSH MITSUKU TO ROOM'S MEMBERLIST IN REDIS
+
+                client.rpush(
+                  `${socket.room}:membersList`,
+                  JSON.stringify({ mitsuku: 'mitsuku@mitsuku.com' }),
+                  (err, replies) => {
+                    console.log('mitsuku added to redis db', replies);
+                  },
+                );
+
+                // ADD A MESSAGE TO ROOM MESSAGES IN REDIS NOTIFYING THAT MITSUKU HAS JOINED
+
+                const mitMessage = `${data.mitsuku} has joined the room`;
+                client.rpush(
+                  `${socket.room}:messages`,
+                  JSON.stringify({ matrixOverLords: mitMessage }),
+                  (err, reply) => {
+                    console.log("I've pushed to redis:", reply);
+                  },
+                );
+
+                // FETCH AND EMIT ALL MESSAGES AFTER MITSUKU'S JOIN MESSAGE HAS PUSHED TO REDIS
+
+                dbHelpers.fetchRedisMessages(client, socket, (result) => {
+                  io.sockets.in(socket.room).emit('chat', result);
+                });
+                membersInRoom.push({ mitsuku: 'mitsuku@mitsuku.com' });
+
+                // RANDOMIZE THE ORDER OF TURNS FOR ROUNDROBIN MODE
+
+                const shuffledOrder = _.shuffle(membersInRoom);
+                console.log('SHUFFLED ORDER FOR PLAY:', shuffledOrder);
+                rooms[socket.room].gameOrder = shuffledOrder;
+
+                // WHEN ITS MITSUKU'S TURN
+
+                if (Object.keys(shuffledOrder[0])[0] === 'mitsuku') {
+                  const key = Object.keys(shuffledOrder[1]);
+                  const fixKey = key[0];
+                  console.log('KEY2', key, 'FIXKEY2', fixKey);
+                  const firstTurnSocketId = shuffledOrder[1][fixKey];
+                  console.log('firstTurnSocketId:', firstTurnSocketId);
+                  io.sockets.sockets[firstTurnSocketId].emit('yourTurn', true);
+                } else {
+                  const key = Object.keys(shuffledOrder[0]);
+                  const fixKey = key[0];
+                  console.log('KEY', key, 'FIXKEY', fixKey);
+                  const firstTurnSocketId = shuffledOrder[0][fixKey];
+                  console.log('firstTurnSocketId:', firstTurnSocketId);
+                  io.sockets.sockets[firstTurnSocketId].emit('yourTurn', key[0]);
+                }
+
+                io.sockets.in(socket.room).emit('roomReady', true);
+              }
+            }
+          }
+        });
+      });
+
+      // FETCH ALL MESSAGES FROM REDIS
+=======
       // SET 1 HOUR EXPIRATION ON MESSAGE DATA FOR THIS ROOM
       client.expire(`${socket.room}:messages`, 3600);
 
 
       dbHelpers.getRoomReady(io, client, socket, data, rooms);
+>>>>>>> dev
 
       dbHelpers.fetchRedisMessages(client, socket, (result) => {
         io.sockets.in(socket.room).emit('chat', result);
       });
     });
-
 
     socket.on('turn done', (data) => {
       console.log('TURN DONE for Me:', data.user, socket.room);
@@ -590,26 +742,15 @@ db.models.sequelize.sync().then(() => {
 
     // console.log("A DIFFERENT METHOD INDEX", rooms[socket.room]['gameOrder'].indexOf({[data.user]:socket.id}))
 
-
     socket.on('invite', (data) => {
       data.users.forEach((user) => {
-        console.log(
-          'userINvites in socket',
-          user,
-          'and dataHash',
-          data.roomHash,
-        );
+        console.log('userINvites in socket', user, 'and dataHash', data.roomHash);
         client.rpush(`${data.roomHash}:membersInvited`, user, (err, reply) => {
           console.log('replies from membersInvited', reply);
         });
-        client.lrange(
-          `${data.roomHash}:membersInvited`,
-          0,
-          -1,
-          (err, reply) => {
-            console.log('updated members in membersInvited', reply);
-          },
-        );
+        client.lrange(`${data.roomHash}:membersInvited`, 0, -1, (err, reply) => {
+          console.log('updated members in membersInvited', reply);
+        });
       });
 
       // send invitation to all online users (whether they are invited or not is sorted on front end), except inviter
@@ -631,23 +772,17 @@ db.models.sequelize.sync().then(() => {
       console.log('ROOMMODE WITH CHAT:', roomMode);
 
       // push all the messages sent from client to redis room key message list
-      client.rpush(
-        `${socket.room}:messages`,
-        JSON.stringify({ [user]: message }),
-      );
+      client.rpush(`${socket.room}:messages`, JSON.stringify({ [user]: message }));
 
       // Change Mitsuku's response frequency based on the number of room users
 
       if (roomMode === 'round') {
-
-
       }
-
 
       let extraDelay = 0;
       if (roomMode === 'free') {
         if (Math.ceil(Math.random() * (data.numUsers - 1)) === data.numUsers - 1) {
-        // Delay Mitsuku a random number of seconds
+          // Delay Mitsuku a random number of seconds
           mitsuku.send(data.message.message).then((response) => {
             console.log('GETTING MESSAGE BACK', response);
             if (/here\sin\sleeds/g.test(response)) {
@@ -659,7 +794,7 @@ db.models.sequelize.sync().then(() => {
             console.log('EXTRA DELAY', extraDelay);
 
             setTimeout(() => {
-            // Save her message to redis
+              // Save her message to redis
               client.rpush(
                 `${socket.room}:messages`,
                 JSON.stringify({ 'mitsuku@mitsuku.com': response }),
@@ -683,14 +818,9 @@ db.models.sequelize.sync().then(() => {
     // handle cases in which an invitation to a room is declined, remove from membersinvited so when compared with who has joined
     // we know when to start the room
     socket.on('decline', (data) => {
-      client.lrem(
-        `${data.roomID}:membersInvited`,
-        0,
-        data.user,
-        (err, reply) => {
-          console.log('decline REPLIES', reply);
-        },
-      );
+      client.lrem(`${data.roomID}:membersInvited`, 0, data.user, (err, reply) => {
+        console.log('decline REPLIES', reply);
+      });
       client.lrange(`${data.roomID}:membersInvited`, 0, -1, (err, reply) => {
         console.log('updatedMembersInvitedList after decline:', reply);
       });
@@ -699,11 +829,26 @@ db.models.sequelize.sync().then(() => {
         .then((replies) => {
           console.log('GET MEMBERS INFO IN DECLINE SOCKET', replies);
 
+<<<<<<< HEAD
+        client.lrange(`${data.roomID}:membersInvited`, 0, -1, (err, replies) => {
+          if (err) {
+            console.log(err);
+          } else {
+            membersInvitedtoRoomDECLINE = replies;
+            if (data.roomMode === 'round') {
+              if (membersInRoomDECLINE.length >= membersInvitedtoRoomDECLINE.length) {
+                io.sockets.in(data.roomID).emit('roomReady', true);
+              }
+            }
+          }
+        });
+=======
           dbHelpers.getRoomReady(io, client, socket, data, rooms, replies);
         });
 
       dbHelpers.fetchRedisMessages(client, socket, (result) => {
         io.sockets.in(data.roomID).emit('chat', result);
+>>>>>>> dev
       });
       // let membersInRoomDECLINE;
       // let membersInvitedtoRoomDECLINE;
@@ -738,10 +883,7 @@ db.models.sequelize.sync().then(() => {
     // handle cases in which player leaves the room without completely disconnecting from the site
     socket.on('leaveRoom', (data) => {
       if (socket.room) {
-        rooms[socket.room].splice(
-          rooms[socket.room].indexOf(socket.username),
-          1,
-        );
+        rooms[socket.room].splice(rooms[socket.room].indexOf(socket.username), 1);
 
         client.rpush(
           `${socket.room}:messages`,
@@ -775,6 +917,16 @@ db.models.sequelize.sync().then(() => {
         );
       }
 
+<<<<<<< HEAD
+      client.lrem('onlineUsers', 1, socket.username, (err, replies) => {
+        console.log('WAS I REMOVED FROM REDIS WHEN I DISCONNECTED:', socket.username);
+        console.log('REMOVE REPLY', replies);
+      });
+
+      client.lrange('onlineUsers', 0, -1, (err, reply) => {
+        console.log('ONLINE USERS CHECK:', reply);
+      });
+=======
       client.lremAsync('onlineUsers', 1, socket.username)
         .then((replies) => {
           client.lrangeAsync('onlineUsers', 0, -1)
@@ -788,6 +940,7 @@ db.models.sequelize.sync().then(() => {
         .catch((err) => {
           console.error(err);
         });
+>>>>>>> dev
 
       dbHelpers.removeFromMembersList(client, socket);
 
