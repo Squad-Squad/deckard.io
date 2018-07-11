@@ -395,6 +395,8 @@ const getRoomReady = (io, client, socket, data, rooms, membersInfo) => {
                 io.sockets.sockets[firstTurnSocketId].emit('yourTurn', key[0]);
                 io.sockets.sockets[firstTurnSocketId].emit('startTimer');
               }
+
+              io.sockets.in(data.roomID).emit('roomReady', true);
             }
           }
         })
