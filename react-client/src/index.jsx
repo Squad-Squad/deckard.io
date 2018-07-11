@@ -72,6 +72,16 @@ const theme = createMuiTheme({
       root: {
         backgroundColor: 'rgba(0, 0, 0, .5)',
       }
+    },
+    MuiAppBar: {
+      colorDefault: {
+        backgroundColor: 'rgba(20, 20, 20, .7)'
+      }
+    },
+    MuiBottomNavigation: {
+      root: {
+        backgroundColor: 'rgba(30, 30, 30, .7)'
+      }
     }
   },
   typography: {
