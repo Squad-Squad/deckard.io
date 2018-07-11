@@ -15,6 +15,7 @@ const mitsuku = require('../lib/mitsukuHelper')();
 const gameLogic = require('../lib/gameLogic');
 const _ = require('underscore');
 const bluebird = require('bluebird');
+const Jimp = require('jimp');
 const Mailjet = require('node-mailjet').connect(
   process.env.MAILJET_API_KEY,
   process.env.MAILJET_API_SECRET,
@@ -113,6 +114,7 @@ app.get(
   },
 );
 
+
 //
 // ─── LOCAL AUTH ENDPOINTS ───────────────────────────────────────────────────────
 //
@@ -141,6 +143,7 @@ app.get('/logout', (req, res) => {
   res.redirect('/');
 });
 
+
 //
 // ─── USER PROFILE ENDPOINTS ─────────────────────────────────────────────────────
 //
@@ -151,28 +154,39 @@ app.post('/api/userInfo', (req, res) => {
     });
 });
 
-app.post('/profile/update-profile', upload.single('avatar'), (req, res) => {
+app.post('/profile/update-profile', upload.single('avatar'), async (req, res) => {
+  // If updating profile photo
   if (req.file) {
-    s3Params.Body = req.file.buffer;
-    s3.upload(s3Params, (err, data) => {
-      if (err) console.log('Error uploading image to S3', err);
-      if (data) {
-        console.log('Successfully saved image to S3', data);
+  // Reduce avatar size to 400x400
+    Jimp.read(req.file.buffer, (err, data) => {
+      if (err) throw err;
+      data.resize(256, Jimp.AUTO)
+        .quality(60)
+        .getBuffer(Jimp.AUTO, (err, data2) => {
+          // Save smaller image to S3
+          s3Params.Body = data2;
+          s3.upload(s3Params, (err, data3) => {
+            if (err) console.log('Error uploading image to S3', err);
+            if (data3) {
+              console.log('Successfully saved image to S3', data3);
 
-        db.models.User.findOne({ where: { username: req.body.username } })
-          .then((user) => {
-            user.update({
-              username: req.body.newusername || user.dataValues.username,
-              email: req.body.newemail || user.dataValues.email,
-              description: req.body.newdescription || user.dataValues.description,
-              avatar: data.Location,
-            });
+              db.models.User.findOne({ where: { username: req.body.username } })
+                .then((user) => {
+                  user.update({
+                    username: req.body.newusername || user.dataValues.username,
+                    email: req.body.newemail || user.dataValues.email,
+                    description: req.body.newdescription || user.dataValues.description,
+                    avatar: data3.Location,
+                  });
 
-            res.status(200).send(data.Location);
+                  res.status(200).send(data3.Location);
+                });
+            }
           });
-      }
+        });
     });
   } else {
+    // If only updating user fields
     db.models.User.findOne({ where: { username: req.body.username } })
       .then((user) => {
         console.log('GETTING USER');
