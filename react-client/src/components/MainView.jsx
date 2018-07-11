@@ -136,7 +136,7 @@ class ConnectedMainView extends React.Component {
             [
               <AboutDialogue 
                 openStatus={this.props.aboutDialogue}
-                handleCloseAbout={this.handleCloseAbout.bind(this)}
+                handleCloseAbout={this.props.handleCloseAbout}
                 />,
               <Room key={1}
                 messages={this.state.messages}
