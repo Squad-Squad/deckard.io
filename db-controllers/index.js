@@ -397,6 +397,7 @@ const getRoomReady = (io, client, socket, data, rooms, membersInfo) => {
               }
             }
           }
+          io.sockets.in(data.roomID).emit('roomReady', true);
         })
         .catch((err) => {
           console.error(err);

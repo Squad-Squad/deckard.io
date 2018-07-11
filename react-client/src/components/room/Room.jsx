@@ -3,7 +3,6 @@ import io from 'socket.io-client';
 import $ from 'jquery';
 import Tock from 'tocktimer';
 import sizeMe from 'react-sizeme';
-import Confetti from 'react-confetti';
 import FreeLiveChat from './FreeLiveChat.jsx';
 import RoundLiveChat from './RoundLiveChat.jsx';
 import VotePanel from './VotePanel.jsx';
