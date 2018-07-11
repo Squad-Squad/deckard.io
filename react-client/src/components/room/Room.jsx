@@ -75,8 +75,8 @@ class ConnectedRoom extends React.Component {
       })
     })
 
-    this.props.io.on('startTimer', ()=>{
-     axios.post('/api/startTimer', {roomID: this.roomID, roomLength: this.props.roomLength}) 
+    this.props.io.on('startTimer', () => {
+      axios.post('/api/startTimer', { roomID: this.roomID, roomLength: this.props.roomLength })
     })
 
     this.props.io.on('roomReady', data => {
@@ -93,9 +93,9 @@ class ConnectedRoom extends React.Component {
   /// Send post request to server to fetch room info when user visits link
   componentDidMount() {
     this.getRoomInfo();
-    if(this.props.roomMode === "free"){
-    axios.post('/api/startTimer', {roomID: this.props.roomID}) 
-    this.getTimer()
+    if (this.props.roomMode === "free") {
+      axios.post('/api/startTimer', { roomID: this.props.roomID })
+      this.getTimer()
     }
   }
 
@@ -171,7 +171,7 @@ class ConnectedRoom extends React.Component {
       // this.getTimer();
       if (this.state.timer === "00:00" && !this.state.scores) {
         return (<VotePanel members={this.state.members}
-          roomID={this.roomID} 
+          roomID={this.roomID}
           memberMap={this.state.memberMap} io={this.props.io} />);
       } else if (!this.state.scores) {
         return (<FreeLiveChat
@@ -197,7 +197,7 @@ class ConnectedRoom extends React.Component {
       } else {
         if (this.state.timer === "00:00" && !this.state.scores) {
           return (<VotePanel members={this.state.members}
-            roomID={this.roomID} 
+            roomID={this.roomID}
             memberMap={this.state.memberMap} io={this.props.io} />);
         } else if (!this.state.scores) {
           return (<RoundLiveChat
@@ -224,8 +224,7 @@ class ConnectedRoom extends React.Component {
 
     return (
       <div>
-        <div className="columns">
-          <div className="column is-2 hide-if-small"></div>
+        <div className="columns" style={{ display: 'flex', justifyContent: 'center' }}>
           <div className="column is-8">
             {(() => {
               switch (this.state.roomMode) {
