@@ -15,6 +15,8 @@ const initialState = {
   roomLength: '',
 
   currRoomUsers: [],
+
+  aboutDialogOpen: false,
 };
 
 function reducer(state = initialState, action) {
@@ -92,6 +94,18 @@ function reducer(state = initialState, action) {
         currRoomUsers: action.payload,
       });
 
+    //
+    // ─── RENDER LOGIC ───────────────────────────────────────────────────────────────
+    //
+    case 'OPEN_ABOUT_DIALOG':
+      return Object.assign({}, state, {
+        aboutDialogOpen: true,
+      });
+
+    case 'CLOSE_ABOUT_DIALOG':
+      return Object.assign({}, state, {
+        aboutDialogOpen: false,
+      });
 
     default:
       return state;

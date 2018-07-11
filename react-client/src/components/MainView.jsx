@@ -4,6 +4,7 @@ import Room from './room/Room.jsx';
 import InviteDialogueModal from './inviteDialogueModal/InviteDialogueModal.jsx'
 import { Route } from 'react-router-dom';
 import ProfileContainer from './profileAndStats/ProfileContainer.jsx';
+import { closeAboutDialog } from '../../../redux/actions';
 import { connect } from 'react-redux';
 import AboutDialogue from './AboutDialogue.jsx'
 
@@ -12,6 +13,13 @@ const mapStateToProps = state => {
   return {
     loggedInUsername: state.username,
     searchedUsers: state.searchedUsers,
+    aboutDialogOpen: state.aboutDialogOpen
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    closeAboutDialog: () => dispatch(closeAboutDialog()),
   };
 };
 
@@ -25,8 +33,6 @@ class ConnectedMainView extends React.Component {
       roomHash: null,
       roomMode: "free",
       messages: [],
-      aboutDialogue: false
-
     };
     this.props.io.on('invitation', (data) => {
       for (var el of data.users) {
@@ -100,12 +106,13 @@ class ConnectedMainView extends React.Component {
   render() {
     return (
       <div>
+        <AboutDialogue
+          openStatus={this.props.aboutDialogOpen}
+          handleCloseAbout={this.props.closeAboutDialog}
+        />
         <Route exact path="/" render={
           (props) =>
-            [ <AboutDialogue 
-                openStatus={this.props.aboutDialogue}
-                handleCloseAbout={this.props.handleCloseAbout}
-                />,
+            [
               <InviteDialogueModal
                 handleClose={this.handleClose.bind(this)}
                 addOpen={this.state.invite}
@@ -134,10 +141,6 @@ class ConnectedMainView extends React.Component {
         <Route path="/rooms/:roomID" render={
           (props) =>
             [
-              <AboutDialogue 
-                openStatus={this.props.aboutDialogue}
-                handleCloseAbout={this.props.handleCloseAbout}
-                />,
               <Room key={1}
                 messages={this.state.messages}
                 searchUsers={this.props.searchUsers}
@@ -161,7 +164,7 @@ class ConnectedMainView extends React.Component {
   }
 }
 
-const MainView = connect(mapStateToProps)(ConnectedMainView);
+const MainView = connect(mapStateToProps, mapDispatchToProps)(ConnectedMainView);
 
 
 export default MainView;
