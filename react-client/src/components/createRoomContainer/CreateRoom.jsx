@@ -144,6 +144,7 @@ class ConnectedCreateRoom extends React.Component {
       <MenuItem selected={isHighlighted}
         component="div"
         onClick={() => {
+          console.log(this.props.onlineUsers, suggestion);
           if (this.props.usersForNewRoom.length <= 7) {
             props.addUserToNewRoom(suggestion);
             this.setState({
@@ -241,23 +242,50 @@ class ConnectedCreateRoom extends React.Component {
         nameError: true,
       });
     } else {
-      $.post(
-        '/api/save',
-        {
-          roomName: this.state.roomName,
-          members: this.props.usersForNewRoom,
-          roomMode: this.props.roomModeSelection
-        },
-        (roomInfo, status) => {
-          this.sendRoomEmail(roomInfo, this.props.usersForNewRoom);
-          this.setState({
-            roomLink: roomInfo.uniqueid
-          }, () => {
-            this.props.history.push(`/rooms/${roomInfo.uniqueid}`)
-            this.props.io.emit('invite', { users: this.props.usersForNewRoom, roomHash: roomInfo.uniqueid, roomName: this.state.roomName, roomMode: this.props.roomModeSelection })
-          });
-        }
-      )
+      if (this.props.roomModeSelection === "free") {
+
+        console.log("I'm FREE MODE IN CREATE ROOM")
+
+        $.post(
+          '/api/saveFreeMode',
+          {
+            roomName: this.state.roomName,
+            members: this.props.usersForNewRoom,
+            roomMode: this.props.roomModeSelection,
+            roomLength: this.props.roomLength
+          },
+          (roomInfo, status) => {
+            this.sendRoomEmail(roomInfo, this.props.usersForNewRoom);
+            this.setState({
+              roomLink: roomInfo.uniqueid
+            }, () => {
+              this.props.history.push(`/rooms/${roomInfo.uniqueid}`)
+              this.props.io.emit('invite', { users: this.props.usersForNewRoom, roomHash: roomInfo.uniqueid, roomName: this.state.roomName, roomMode: this.props.roomModeSelection })
+            });
+          }
+        )
+      } else {
+        console.log("I'm +++++not+++++ FREE MODE IN CREATE ROOM")
+        $.post(
+          '/api/save',
+          {
+            roomName: this.state.roomName,
+            members: this.props.usersForNewRoom,
+            roomMode: this.props.roomModeSelection,
+            roomLength: this.props.roomLength
+
+          },
+          (roomInfo, status) => {
+            this.sendRoomEmail(roomInfo, this.props.usersForNewRoom);
+            this.setState({
+              roomLink: roomInfo.uniqueid
+            }, () => {
+              this.props.history.push(`/rooms/${roomInfo.uniqueid}`)
+              this.props.io.emit('invite', { users: this.props.usersForNewRoom, roomHash: roomInfo.uniqueid, roomName: this.state.roomName, roomMode: this.props.roomModeSelection })
+            });
+          }
+        )
+      }
     }
   }
 
@@ -288,7 +316,8 @@ class ConnectedCreateRoom extends React.Component {
   handleAutoSuggestKeyPress(event) {
     if (event.key == 'Enter') {
       if (this.state.query.length &&
-        this.props.usersForNewRoom.length <= 7) {
+        this.props.usersForNewRoom.length <= 7 &&
+        this.props.onlineUsers.includes(this.state.query)) {
         this.props.addUserToNewRoom(this.state.currSuggestions[0]);
         this.setState({
           currSuggestions: [],

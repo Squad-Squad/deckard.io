@@ -9,6 +9,7 @@ import Button from '@material-ui/core/Button';
 import PublishIcon from '@material-ui/icons/Publish';
 import FormControl from '@material-ui/core/FormControl';
 import Input from '@material-ui/core/Input';
+import axios from 'axios'
 import { withStyles } from '@material-ui/core/styles';
 import { connect } from 'react-redux';
 
@@ -58,19 +59,31 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
     super(props);
     this.state = {
       msg: '',
-      yourTurn: this.props.yourTurn
+      yourTurn: this.props.yourTurn,
+      whoseTurn: null
+
     };
 
     this.props.io.on('turn over', (data) => {
       this.setState({
-        yourTurn: false
+          yourTurn: false       
+      }) 
+    }) 
+
+    this.props.io.on('whose turn', (data)=>{
+      console.log('username of turn', data, "!!!!", "and alias:", this.props.memberMap[data])
+      this.setState({
+        whoseTurn: this.props.memberMap[data]
       })
     })
   }
 
   componentDidMount() {
     this.scrollToBottom();
-    this.props.getTimer()
+    // if(this.props.timer !== "00:00"){
+      // axios.post('/api/startTimer', {roomID: this.props.roomID}) 
+      // this.props.getTimer()
+    // }
   }
 
   updateMessage(e) {
@@ -137,7 +150,7 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
             Current Turn:
           </div>
           <div color="inherit" className={classes.currentTurnText}>
-            {this.props.yourTurn ? 'You' : null}
+            {this.props.yourTurn ? 'You' : this.state.whoseTurn}
           </div>
         </div>
 
@@ -164,6 +177,9 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
           onChange={this.handleChange}>
           <FormControl style={{ width: '70%' }}>
             <Input
+              inputProps={{
+                 maxLength: 75,
+              }}
               style={{ marginTop: '10px' }}
               fullWidth
               value={this.state.msg}

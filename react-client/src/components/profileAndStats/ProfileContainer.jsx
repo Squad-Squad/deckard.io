@@ -39,7 +39,6 @@ class ProfileContainer extends React.Component {
     super(props);
     this.state = {
       value: 0,
-
       gamesPlayed: 0,
       gamesWon: 0,
       lifetimeScore: 0,
@@ -50,7 +49,7 @@ class ProfileContainer extends React.Component {
 
   async componentDidMount() {
     // Get user stats
-    const responses = await axios.post('/api/userInfo', { user: this.props.loggedInUser })
+    const response = await axios.post('/api/userInfo', { user: this.props.loggedInUser })
     this.setState({
       gamesPlayed: response.data.games_played,
       gamesWon: response.data.games_won,
@@ -74,7 +73,7 @@ class ProfileContainer extends React.Component {
         <div className="columns">
           <div className="column is-1 hide-if-small">
           </div>
-          <div className="column is-10">
+          <div className="column is-10 profile">
             <Paper style={{
               backgroundColor: 'rgba(0,0,0,.5)'
             }}>
@@ -100,6 +99,7 @@ class ProfileContainer extends React.Component {
               </SwipeableViews>
             </Paper>
           </div>
+          <div className="column is-1 hide-if-small"></div>
         </div>
       </div>
     );

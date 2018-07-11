@@ -26,9 +26,12 @@ function mapDispatchToProps(dispatch) {
 
 const styles = theme => ({
   button: {
-    minHeight: '50px',
-    // minWidth: '100px',
+    height: '32px !important',
+    padding: '0px'
   },
+  mitsukuLabel: {
+    height: '8px',
+  }
 });
 
 class RoomOptions extends Component {
@@ -42,7 +45,21 @@ class RoomOptions extends Component {
       selectedMode: '',
       selectedBot: '',
       selectedTime: 0,
+
+      width: 0,
+      height: 0,
     };
+  }
+
+  componentDidMount() {
+    this.updateWindowDimensions.call(this);
+  }
+
+  updateWindowDimensions() {
+    this.setState({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    })
   }
 
   handleModeClick(event) {
@@ -58,7 +75,7 @@ class RoomOptions extends Component {
     this.props.chooseRoomMode('Round Robin');
     this.setState({
       modeAnchorEl: null,
-      selectedMode: 'Round Robin',
+      selectedMode: (this.state.height <= 930) ? 'R.R.' : 'Round Robin',
     });
   }
 
@@ -67,7 +84,7 @@ class RoomOptions extends Component {
     this.props.chooseRoomMode('Free For All');
     this.setState({
       modeAnchorEl: null,
-      selectedMode: 'Free For All',
+      selectedMode: (this.state.height <= 930) ? 'F.F.A.' : 'Free For All',
     });
   }
 
@@ -146,6 +163,7 @@ class RoomOptions extends Component {
       if (this.state.selectedBot === 'Mitsuku') {
         return (
           <Button
+            classes={{ label: classes.mitsukuLabel }}
             className={classes.button}
             aria-owns={this.state.botAnchorEl ? 'simple-menu' : null}
             aria-haspopup="true"
@@ -206,8 +224,15 @@ class RoomOptions extends Component {
     }
 
     return (
-      <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '10px' }}>
-        <div>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-around',
+          alignItems: 'center',
+          marginTop: '10px',
+          marginBottom: '5px'
+        }}>
+        <div style={{ flex: 1 }}>
           {modeButton()}
           <Menu
             id="simple-menu"
@@ -219,7 +244,7 @@ class RoomOptions extends Component {
             <MenuItem onClick={this.selectFreeForAll.bind(this)}>Free For All</MenuItem>
           </Menu>
         </div>
-        <div>
+        <div style={{ flex: 1 }}>
           {botButton()}
           <Menu
             id="simple-menu"
@@ -241,7 +266,7 @@ class RoomOptions extends Component {
             </MenuItem>
           </Menu>
         </div>
-        <div>
+        <div style={{ flex: 1 }}>
           {timeButton()}
           <Menu
             id="simple-menu"

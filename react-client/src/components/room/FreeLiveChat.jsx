@@ -9,6 +9,7 @@ import Button from '@material-ui/core/Button';
 import PublishIcon from '@material-ui/icons/Publish';
 import FormControl from '@material-ui/core/FormControl';
 import Input from '@material-ui/core/Input';
+import axios from 'axios'
 import { withStyles } from '@material-ui/core/styles';
 import { connect } from 'react-redux';
 
@@ -42,7 +43,9 @@ class ConnectedFreeLiveChat extends React.Component {
 
   componentDidMount() {
     this.scrollToBottom();
-    this.props.getTimer()
+    // axios.post('/api/startTimer', {roomID: this.props.roomID})
+    // this.props.getTimer()
+
   }
 
   updateMessage(e) {
@@ -131,6 +134,9 @@ class ConnectedFreeLiveChat extends React.Component {
               value={this.state.msg}
               onChange={this.updateMessage.bind(this)}
               onKeyPress={this.handleKeyPress.bind(this)}
+              inputProps={{
+                 maxLength: 100,
+              }}
             />
           </FormControl>
           <Button variant="fab" color="primary" aria-label="add" className={classes.button}

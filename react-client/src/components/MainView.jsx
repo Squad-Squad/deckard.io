@@ -5,6 +5,7 @@ import InviteDialogueModal from './inviteDialogueModal/InviteDialogueModal.jsx'
 import { Route } from 'react-router-dom';
 import ProfileContainer from './profileAndStats/ProfileContainer.jsx';
 import { connect } from 'react-redux';
+import AboutDialogue from './AboutDialogue.jsx'
 
 
 const mapStateToProps = state => {
@@ -23,6 +24,8 @@ class ConnectedMainView extends React.Component {
       inviteHost: null,
       roomHash: null,
       roomMode: "free",
+      messages: [],
+      aboutDialogue: false
 
     };
     this.props.io.on('invitation', (data) => {
@@ -36,11 +39,24 @@ class ConnectedMainView extends React.Component {
           });
         }
       }
-
-      this.freeRoomMode = this.freeRoomMode.bind(this, "free")
-      this.roundRoomMode = this.roundRoomMode.bind(this, "round")
-      this.decline = this.decline.bind(this)
     })
+
+
+    this.props.io.on('return option', (data) => {
+      console.log("RETURN OPTION", data)
+    })
+
+    this.props.io.on('chat', messages => {
+      this.setState({
+        messages: messages
+      });
+    });
+
+
+    this.freeRoomMode = this.freeRoomMode.bind(this, "free")
+    this.roundRoomMode = this.roundRoomMode.bind(this, "round")
+    this.decline = this.decline.bind(this)
+
   }
 
   componentDidMount() {
@@ -66,7 +82,9 @@ class ConnectedMainView extends React.Component {
     })
   }
 
+
   roundRoomMode() {
+    console.log("ARGUMETS", arguments[0])
     this.setState({
       roomMode: arguments[0]
     })
@@ -84,7 +102,10 @@ class ConnectedMainView extends React.Component {
       <div>
         <Route exact path="/" render={
           (props) =>
-            [
+            [ <AboutDialogue 
+                openStatus={this.props.aboutDialogue}
+                handleCloseAbout={this.props.handleCloseAbout}
+                />,
               <InviteDialogueModal
                 handleClose={this.handleClose.bind(this)}
                 addOpen={this.state.invite}
@@ -113,7 +134,12 @@ class ConnectedMainView extends React.Component {
         <Route path="/rooms/:roomID" render={
           (props) =>
             [
+              <AboutDialogue 
+                openStatus={this.props.aboutDialogue}
+                handleCloseAbout={this.props.handleCloseAbout}
+                />,
               <Room key={1}
+                messages={this.state.messages}
                 searchUsers={this.props.searchUsers}
                 searchedUsers={this.props.searchedUsers}
                 loggedIn={this.props.loggedIn}
