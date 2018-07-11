@@ -127,6 +127,7 @@ class UserProfile extends Component {
       config: { headers: { 'Content-Type': 'multipart/form-data' } }
     })
 
+    console.log("RES", res);
     const updateUsername = this.state.newUsername || this.props.username,
       updateEmail = this.state.newEmail || this.props.email,
       updateAvatarURL = res.data || this.props.avatarURL,

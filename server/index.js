@@ -57,12 +57,6 @@ const upload = multer({
   storage: multer.memoryStorage(),
 });
 const s3 = new AWS.S3();
-const s3Params = {
-
-  Bucket: 'deckard-io',
-  Key: `userAvatars/${Date.now()}`,
-
-};
 
 //
 // ─── EXPRESS MIDDLEWARE ─────────────────────────────────────────────────────────
@@ -160,11 +154,15 @@ app.post('/profile/update-profile', upload.single('avatar'), async (req, res) =>
   // Reduce avatar size to 400x400
     Jimp.read(req.file.buffer, (err, data) => {
       if (err) throw err;
-      data.resize(256, Jimp.AUTO)
-        .quality(60)
+      data.resize(Jimp.AUTO, 256)
         .getBuffer(Jimp.AUTO, (err, data2) => {
           // Save smaller image to S3
-          s3Params.Body = data2;
+          const s3Params = {
+            Bucket: 'deckard-io',
+            Key: `userAvatars/${Date.now()}`,
+            Body: data2,
+          };
+          console.log('S3 PARAMS', s3Params);
           s3.upload(s3Params, (err, data3) => {
             if (err) console.log('Error uploading image to S3', err);
             if (data3) {
