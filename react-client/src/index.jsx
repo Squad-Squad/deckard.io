@@ -207,7 +207,7 @@ class ConnectedApp extends React.Component {
     })
   }
 
-  handleCloseAbout = () => {
+  handleCloseAbout(){
     this.setState({ aboutDialogue: false });
   };
 
@@ -360,7 +360,7 @@ class ConnectedApp extends React.Component {
             <Route path="/" render={
               (props) => (loggedIn) ?
                 <MainView
-                  handleCloseAbout={this.handleCloseAbout}
+                  handleCloseAbout={this.handleCloseAbout.bind(this)}
                   aboutDialogue={this.state.aboutDialogue}
                   searchedUsers={this.props.searchedUsers}
                   loggedIn={this.state.loggedIn}
