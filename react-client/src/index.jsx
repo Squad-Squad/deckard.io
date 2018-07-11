@@ -201,17 +201,6 @@ class ConnectedApp extends React.Component {
     this.props.history.push(`/userprofile/${this.props.loggedInUsername}`)
   }
 
-  aboutDialogue() {
-    console.log("ABOUT DIALOGUE HIT!!!")
-    this.setState({
-      aboutDialogue: true
-    })
-  }
-
-  handleCloseAbout() {
-    this.setState({ aboutDialogue: false });
-  };
-
   // ────────────────────────────────────────────────────────────────────────────────
 
 
@@ -349,7 +338,6 @@ class ConnectedApp extends React.Component {
           {(this.props.loggedInUsername) ?
             <div id="navbar-wrapper">
               <Navbar
-                aboutDialogue={this.aboutDialogue.bind(this)}
                 logout={this.logout.bind(this)}
                 wins={this.state.userWins}
                 profile={this.profileRedirect.bind(this)} />
@@ -360,8 +348,6 @@ class ConnectedApp extends React.Component {
             <Route path="/" render={
               (props) => (loggedIn) ?
                 <MainView
-                  handleCloseAbout={this.handleCloseAbout.bind(this)}
-                  aboutDialogue={this.state.aboutDialogue}
                   searchedUsers={this.props.searchedUsers}
                   loggedIn={this.state.loggedIn}
                   loggedInUser={this.state.loggedInUsername}

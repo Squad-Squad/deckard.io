@@ -106,10 +106,7 @@ class ConnectedMainView extends React.Component {
   render() {
     return (
       <div>
-        <AboutDialogue
-          openStatus={this.props.aboutDialogOpen}
-          handleCloseAbout={this.props.closeAboutDialog}
-        />
+        <AboutDialogue />
         <Route exact path="/" render={
           (props) =>
             [

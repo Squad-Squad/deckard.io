@@ -39,9 +39,8 @@ class ConnectedNavbar extends React.Component {
         <UserMenu
           logout={this.props.logout}
           profileRedirect={this.profileRedirect}
-          homeRedirect={this.homeRedirect} 
-          aboutDialogue={this.props.aboutDialogue}
-          />
+          homeRedirect={this.homeRedirect}
+        />
       )
       : (
         <Toolbar style={{
