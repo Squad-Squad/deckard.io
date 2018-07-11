@@ -75,15 +75,20 @@ class ConnectedRoom extends React.Component {
       })
     })
 
-    this.props.io.on('startTimer', ()=>{
-     axios.post('/api/startTimer', {roomID: this.roomID, roomLength: this.props.roomLength}) 
-    })
+    // this.props.io.on('startTimer', ()=>{
+    //   console.log("this.props.ROOMLENGTH", this.props.roomLength)
+    //  axios.post('/api/startTimer', {roomID: this.roomID, roomLength: this.props.roomLength}) 
+    // })
 
     this.props.io.on('roomReady', data => {
+      console.log("+++ROOMREADY SOCKET++++", data)
+      if(this.props.io.id === data.firstTurn){
+        axios.post('/api/startTimer', {roomID: this.roomID, roomLength: data.roomLength}) 
+      }
+      this.getTimer(data.roomLength)
       this.setState({
         waitingForRoomMembers: false
       })
-      this.getTimer()
     })
 
   }
@@ -92,11 +97,12 @@ class ConnectedRoom extends React.Component {
 
   /// Send post request to server to fetch room info when user visits link
   componentDidMount() {
+    console.log("REDUX WHY ARE YOU FUCKING ME :", this.props.roomLength)
     this.getRoomInfo();
-    if(this.props.roomMode === "free"){
-    axios.post('/api/startTimer', {roomID: this.props.roomID}) 
-    this.getTimer()
-    }
+    // if(this.props.roomMode === "free"){
+    // axios.post('/api/startTimer', {roomID: this.props.roomID}) 
+    // this.getTimer()
+    // }
   }
 
 
@@ -117,16 +123,18 @@ class ConnectedRoom extends React.Component {
         memberMap: memberMap,
         members: aliasedMembers,
         roomName: roomMembers.room,
+        roomLength: roomMembers.roomLength
       });
     })
       .then(() => {
-        this.props.io.emit('join', { roomID: this.roomID, user: this.state.memberMap[this.props.loggedInUsername], mitsuku: this.state.memberMap['mitsuku@mitsuku.com'], roomMode: this.state.roomMode });
+        this.props.io.emit('join', { roomLength: this.state.roomLength, roomID: this.roomID, user: this.state.memberMap[this.props.loggedInUsername], mitsuku: this.state.memberMap['mitsuku@mitsuku.com'], roomMode: this.state.roomMode });
       });
 
   }
 
-  getTimer() {
-    $.get(`/api/timer/${this.roomID}`).then(timer => {
+  getTimer(timer) {
+    // $.get(`/api/timer/${this.roomID}`).then(timer => {
+      console.log("GET TIMER IN ROOM.JSX", timer)
       let tock = new Tock({
         countdown: true,
         interval: 100,
@@ -144,8 +152,8 @@ class ConnectedRoom extends React.Component {
       });
 
 
-      tock.start(timer.timeLeft + 1000);
-    });
+      tock.start(timer);
+    // });
   }
 
   sendMessage(msg) {
