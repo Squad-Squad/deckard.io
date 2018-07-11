@@ -14,6 +14,7 @@
 //
 // -------MEDIA QUERIES---------------------------------------
 //
+
 @media screen and (min-width: 1280px) {
   .container {
       max-width: 1000px;
@@ -25,6 +26,8 @@
   .hide-if-small { display: none }
   .columns { display: flex; justify-content: center; }
   .column.is-6 { flex: 2; }
+  .column.is-10 { flex: 2; }
+  .profile { width: 100%; }
 }
 
 @media screen and (min-width: 0px) and (max-width: 700px) {
