@@ -224,7 +224,7 @@ class ConnectedRoom extends React.Component {
 
     return (
       <div>
-        <div className="columns">
+        <div className="columns" style={{ display: 'flex', justifyContent: 'center' }}>
           <div className="column is-8">
             {(() => {
               switch (this.state.roomMode) {

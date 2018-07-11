@@ -5,6 +5,7 @@ import InviteDialogueModal from './inviteDialogueModal/InviteDialogueModal.jsx'
 import { Route } from 'react-router-dom';
 import ProfileContainer from './profileAndStats/ProfileContainer.jsx';
 import { connect } from 'react-redux';
+import AboutDialogue from './AboutDialogue.jsx'
 
 
 const mapStateToProps = state => {
@@ -24,6 +25,7 @@ class ConnectedMainView extends React.Component {
       roomHash: null,
       roomMode: "free",
       messages: [],
+      aboutDialogue: false
 
     };
     this.props.io.on('invitation', (data) => {
@@ -100,7 +102,10 @@ class ConnectedMainView extends React.Component {
       <div>
         <Route exact path="/" render={
           (props) =>
-            [
+            [ <AboutDialogue 
+                openStatus={this.props.aboutDialogue}
+                handleCloseAbout={this.props.handleCloseAbout}
+                />,
               <InviteDialogueModal
                 handleClose={this.handleClose.bind(this)}
                 addOpen={this.state.invite}
@@ -129,6 +134,10 @@ class ConnectedMainView extends React.Component {
         <Route path="/rooms/:roomID" render={
           (props) =>
             [
+              <AboutDialogue 
+                openStatus={this.props.aboutDialogue}
+                handleCloseAbout={this.props.handleCloseAbout}
+                />,
               <Room key={1}
                 messages={this.state.messages}
                 searchUsers={this.props.searchUsers}

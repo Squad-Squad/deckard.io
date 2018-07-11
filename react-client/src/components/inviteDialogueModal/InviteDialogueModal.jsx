@@ -20,11 +20,8 @@ function getModalStyle() {
 const styles = theme => ({
   paper: {
     position: 'absolute',
-
-    width: theme.spacing.unit * 50,
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: (0, 0, 0, .8),
     boxShadow: theme.shadows[5],
-    padding: theme.spacing.unit * 4,
   },
 });
 
@@ -58,8 +55,10 @@ class InviteDialogue extends React.Component {
             <Typography variant="subheading" id="simple-modal-description">
               You've Been Invited to Play with {this.props.host}!
             </Typography>
-            <Button><a href={`/rooms/${this.props.roomHash}`}>Join Room</a></Button>
-            <Button onClick={()=>{this.props.decline()}}>Decline</Button>
+            <span style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <Button><a href={`/rooms/${this.props.roomHash}`}>Join Room</a></Button>
+              <Button onClick={() => { this.props.decline() }}>Decline</Button>
+            </span>
           </div>
         </Modal>
       </div>
