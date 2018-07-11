@@ -134,6 +134,8 @@ class ConnectedRoom extends React.Component {
 
   getTimer(timer) {
     // $.get(`/api/timer/${this.roomID}`).then(timer => {
+      let roomLengthInMilis = timer * 60 * 1000
+      // timer 
       console.log("GET TIMER IN ROOM.JSX", timer)
       let tock = new Tock({
         countdown: true,
@@ -152,7 +154,7 @@ class ConnectedRoom extends React.Component {
       });
 
 
-      tock.start(timer);
+      tock.start(roomLengthInMilis);
     // });
   }
 

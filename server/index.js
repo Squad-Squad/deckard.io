@@ -318,7 +318,7 @@ app.post('/api/saveFreeMode', (req, res) => {
     countdown: true,
   });
 
-  dbHelpers.aliasMembers(roomName, roomMode, members, (results) => {
+  dbHelpers.aliasMembers(roomName, roomMode, members, roomLength, roomUnique, (results) =>{
     client.hmset(`${roomUnique}:members`, results, (err, reply)=>{
       if(err){
         console.error(err)

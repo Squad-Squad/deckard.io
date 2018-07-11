@@ -64,7 +64,8 @@ const saveRoomAndMembers = (roomName, members, id, callback) => {
     '2B',
     'GlaDOS',
     'SHODAN',
-    'Dolores'];
+    'Dolores',
+    'Joseph 0H'];
 
   Promise.all(promisedMembers)
     .then((users) => {
