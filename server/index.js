@@ -409,7 +409,10 @@ db.models.sequelize.sync().then(() => {
     console.log('listening on port', process.env.PORT || 3000);
   });
 
-  // Server-side socket events
+
+  //
+  // ─── SOCKET LOGIC STARTS HERE ───────────────────────────────────────────────────
+  //
   const users = [];
   const rooms = {};
   const connections = [];
@@ -680,8 +683,10 @@ db.models.sequelize.sync().then(() => {
       });
     });
 
-    // handle cases in which an invitation to a room is declined, remove from membersinvited so when compared with who has joined
-    // we know when to start the room
+
+    //
+    // ─── DECLINE ROOM INVITATION ─────────────────────────────────────
+    //
     socket.on('decline', (data) => {
       client.lrem(
         `${data.roomID}:membersInvited`,
@@ -735,7 +740,10 @@ db.models.sequelize.sync().then(() => {
       // });
     });
 
-    // handle cases in which player leaves the room without completely disconnecting from the site
+
+    //
+    // ─── LEAVE ROOM ──────────────────────────────────────────────────
+    //
     socket.on('leaveRoom', (data) => {
       if (socket.room) {
         rooms[socket.room].splice(
@@ -762,6 +770,10 @@ db.models.sequelize.sync().then(() => {
       }
     });
 
+
+    //
+    // ─── DISCONNECT ──────────────────────────────────────────────────
+    //
     socket.on('disconnect', (data) => {
       const thisRoom = rooms[socket.room];
 
@@ -798,6 +810,10 @@ db.models.sequelize.sync().then(() => {
       connections.splice(connections.indexOf(socket), 1);
     });
 
+
+    //
+    // ─── VOTING ──────────────────────────────────────────────────────
+    //
     socket.on('vote', (data) => {
       console.log('SOCKET.ROOM in vote socket:', socket.room, 'and the rooms object:', rooms, 'and data.roomID', data.roomID);
       const userVotes = data.user;
