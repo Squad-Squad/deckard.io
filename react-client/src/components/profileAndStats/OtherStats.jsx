@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import axios from 'axios'
 import { connect } from 'react-redux';
 
 function mapStateToProps(state) {
@@ -8,6 +9,7 @@ function mapStateToProps(state) {
 }
 
 class UserStats extends Component {
+
   render() {
     return (
       <div style={{
