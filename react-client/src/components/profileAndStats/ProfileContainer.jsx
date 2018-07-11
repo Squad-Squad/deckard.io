@@ -99,6 +99,7 @@ class ProfileContainer extends React.Component {
               </SwipeableViews>
             </Paper>
           </div>
+          <div className="column is-1 hide-if-small"></div>
         </div>
       </div>
     );

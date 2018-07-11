@@ -37,6 +37,8 @@ const styles = theme => ({
     textAlign: 'center',
     color: theme.palette.text.secondary,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingBottom: '12px',
+    marginBottom: '30px',
   },
   container: {
     flexGrow: 1,
@@ -160,7 +162,7 @@ class FriendsList extends Component {
           <div>
             <List
               style={{
-                backgroundColor: 'rgba(0, 0, 0, .5)',
+                backgroundColor: 'rgba(0, 0, 0, 0)',
                 maxHeight: '280px',
                 overflow: 'auto'
               }}>
@@ -243,7 +245,7 @@ class FriendsList extends Component {
             style={{
               textAlign: 'center',
               cursor: 'pointer',
-              paddingTop: '15px',
+              paddingTop: '0px',
             }}
             onClick={this.handleClick.bind(this)}>
             Add Friend

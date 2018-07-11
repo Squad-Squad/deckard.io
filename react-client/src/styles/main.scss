@@ -14,17 +14,30 @@
 //
 // -------MEDIA QUERIES---------------------------------------
 //
+@media screen and (min-width: 1280px) {
+  .container {
+      max-width: 1000px;
+      width: 1000px;
+  }
+}
+
+@media screen and (min-width: 0px) and (max-width: 800px) {
+  .hide-if-small { display: none }
+  .columns { display: flex; justify-content: center; }
+  .column.is-6 { flex: 2; }
+}
+
 @media screen and (min-width: 0px) and (max-width: 700px) {
   #image-logo { display: block; padding-left: 10px; }
   #typeface-logo { display: none; }
   #login-prompt { width: auto; }
   .hide-if-small { display: none }
-  #navbar-wrapper { padding-top: 10px; }
+  #navbar-wrapper { padding-top: 6px; }
   .profile-modal { width: 90%; }
   .modal-profile-view { height: 500px; overflow: auto; }
 }
 
-@media screen and (min-width: 701px) {
+@media screen and (min-width: 700px) {
   #image-logo { display: none; }
   #typeface-logo { display: block; }
   #login-prompt { width: 30%; }

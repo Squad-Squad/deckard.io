@@ -56,8 +56,12 @@ class ConnectedNavbar extends React.Component {
     return (
       <AppBar position="static" color="default"
         style={{ backgroundColor: "rgba(0,0,0,.3)" }}>
-        <Toolbar>
-          <div style={{ width: "100%" }}>
+        <Toolbar style={{
+          padding: '0px 7px',
+        }}>
+          <div style={{
+            width: "100%",
+          }}>
             <Typography
               color="inherit"
               className={'title'}>
@@ -67,7 +71,10 @@ class ConnectedNavbar extends React.Component {
                   deckard.io
                 </a>
               </span>
-              <span id="image-logo">
+              <span id="image-logo"
+                style={{
+                  paddingTop: '8px'
+                }}>
                 <a href="/">
                   <img src={UnicornSVG} style={{ height: '3em' }} />
                 </a>

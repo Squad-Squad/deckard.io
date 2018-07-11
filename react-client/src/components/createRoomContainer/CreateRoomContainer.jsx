@@ -77,6 +77,7 @@ class CreateRoomContainer extends React.Component {
             >
             </CreateRoom>
           </div>
+          <div className="column is-1 hide-if-small"></div>
         </div>
       </div>
     )
