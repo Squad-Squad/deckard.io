@@ -205,6 +205,7 @@ class ConnectedApp extends React.Component {
     });
 
     this.socket.emit('leaveRoom', this.props.loggedInUsername)
+    this.socket.disconnect();
   }
 
   profileRedirect() {

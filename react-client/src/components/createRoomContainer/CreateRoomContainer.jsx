@@ -25,6 +25,13 @@ class CreateRoomContainer extends React.Component {
         onlineUsers,
       })
     })
+
+    this.props.io.on('user-disconnected', (onlineUsers) => {
+      console.log('user disconnected..........');
+      this.setState({
+        onlineUsers,
+      })
+    })
   }
 
   async componentDidMount() {

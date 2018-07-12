@@ -133,9 +133,9 @@ app.post(
 );
 
 app.get('/logout', (req, res) => {
-  client.lremAsync('onlineUsers', 0, req.user, (err, reply) => {
-    console.log('removed before adding');
-  });
+  // client.lremAsync('onlineUsers', 0, req.user, (err, reply) => {
+  //   console.log('removed before adding');
+  // });
   req.logout();
   res.redirect('/');
 });
@@ -758,6 +758,7 @@ db.models.sequelize.sync().then(() => {
     // ─── DISCONNECT ──────────────────────────────────────────────────
     //
     socket.on('disconnect', (data) => {
+      console.log('DISCONNECT HIT');
       const thisRoom = rooms[socket.room];
 
       if (rooms[socket.room]) {
@@ -775,6 +776,7 @@ db.models.sequelize.sync().then(() => {
           client.lrangeAsync('onlineUsers', 0, -1)
             .then((reply) => {
               console.log('ONLINE USERS CHECK AFTER REM:', reply);
+              io.sockets.emit('user-disconnected', users);
             })
             .catch((err) => {
               console.error(err);
