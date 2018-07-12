@@ -351,35 +351,39 @@ const getRoomReady = (io, timerObj, client, socket, data, rooms, membersInfo) =>
           );
 
 
-          // ADD A MESSAGE TO ROOM MESSAGES IN REDIS NOTIFYING THAT MITSUKU HAS JOINED
-
-          let mitMessage;
-          if(membersInfo){
-            mitMessage = `${membersInfo['mitsuku@mitsuku.com']} has joined the room` 
-          }else{
-            mitMessage = `${data.mitsuku} has joined the room` 
-          } 
+    // ADD A MESSAGE TO ROOM MESSAGES IN REDIS NOTIFYING THAT MITSUKU HAS JOINED
+          //REMOVED FOR NOW BECAUSE MITSUKU IS ALWAYS ADDED LAST AND RANDOMIZING THIS MAY NOT BE WORTH IT
+              // DON'T DELETE IN CASE WE WANT TO ADD IT BACK THOUGH
 
 
-          client.rpush(
-            `${data.roomID}:messages`,
-            JSON.stringify({ matrixOverLords: mitMessage }),
-            (err, reply) => {
-              console.log("I've pushed to redis:", reply);
-            },
-          );
+          // let mitMessage;
+          // if(membersInfo){
+          //   mitMessage = `${membersInfo['mitsuku@mitsuku.com']} has joined the room` 
+          // }else{
+          //   mitMessage = `${data.mitsuku} has joined the room` 
+          // } 
+
+
+          // client.rpush(
+          //   `${data.roomID}:messages`,
+          //   JSON.stringify({ matrixOverLords: mitMessage }),
+          //   (err, reply) => {
+          //     console.log("I've pushed to redis:", reply);
+          //   },
+          // );
 
 
           // FETCH AND EMIT ALL MESSAGES AFTER MITSUKU'S JOIN MESSAGE HAS PUSHED TO REDIS
 
-          fetchRedisMessages(client, socket, (result) => {
-            io.sockets.in(data.roomID).emit('chat', result);
-          });
-          membersInRoom.push({ mitsuku: 'mitsuku@mitsuku.com' });
+          // fetchRedisMessages(client, socket, (result) => {
+          //   io.sockets.in(data.roomID).emit('chat', result);
+          // });
+
 
 
           // RANDOMIZE THE ORDER OF TURNS FOR ROUNDROBIN MODE AND PUSH RESULTS TO REDIS
 
+          membersInRoom.push({ mitsuku: 'mitsuku@mitsuku.com' });
           const shuffledOrder = _.shuffle(membersInRoom);
 
           shuffledOrder.forEach(player=>{
@@ -523,7 +527,7 @@ const turnOverLogic = (io, client, socket, data, gameOrderArr, mitsuku) => {
   console.log("IN TURNOVER LOGIC STATE OF DATA:", data, gameOrderArr)
   let message;
   if(!data.message){
-    message = "blank*"
+    message = "goodbye***"
   }else{
     message = data.message
   }
@@ -545,9 +549,12 @@ const turnOverLogic = (io, client, socket, data, gameOrderArr, mitsuku) => {
 
 
       if (nextTurnUsername === 'mitsuku') {
-        if(message !== "blank*"){
+
+        //IF THIS ISN'T THE MESSAGE SENT WHEN SOMEONE LEAVES THE ROOM
+        if(message !== "goodbye***"){
           io.sockets.sockets[socket.id].emit('turnOver', socket.username); 
         }
+
         io.sockets.emit('whose turn', 'mitsuku@mitsuku.com');
 
         let extraDelay = 0;
@@ -567,20 +574,18 @@ const turnOverLogic = (io, client, socket, data, gameOrderArr, mitsuku) => {
           console.log('EXTRA DELAY', extraDelay);
 
           setTimeout(async () => {
-            // Save her message to redis
+            //SAVE HER MESSAGE TO REDIS
             client.rpush(
               `${socket.room}:messages`,
               JSON.stringify({ 'mitsuku@mitsuku.com': response }),
             );
 
-            // and retrieve all the messages immediately after
+            // AND RETRIEVE ALL MESSAGES IMMEDIATELY AFTER            
             fetchRedisMessages(client, socket, (result) => {
               io.sockets.in(socket.room).emit('chat', result);
             });
 
-            // after mitsuku's turn onto the next one
-
-            //fetch gameOrderArr again in case someone leaves room in middle of response
+            //FETCH GAMEORDERARR AGAIN IN CASE SOMEONE LEAVES ROOM IN MIDDLE OF MITSUKU RESPONSE            
             let gameOrderArr = [];
             await client.lrangeAsync(`${socket.room}:gameOrder`, 0, -1)
             .then((reply) => {
@@ -592,6 +597,7 @@ const turnOverLogic = (io, client, socket, data, gameOrderArr, mitsuku) => {
               console.error(err);
             });
 
+            // AFTER MITSUKU'S TURN ONTO THE NEXT ONE
 
             if (lastTurnIndex + 1 === gameOrderArr.length - 1) {
               nextTurnUsername = Object.keys(gameOrderArr[0])[0];
@@ -619,7 +625,7 @@ const turnOverLogic = (io, client, socket, data, gameOrderArr, mitsuku) => {
         }
         io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
         console.log()
-        if(message !== "blank*"){
+        if(message !== "goodbye***"){
           io.sockets.sockets[socket.id].emit('turnOver', socket.username); 
         }
         io.sockets.emit('whose turn', nextTurnUsername);
