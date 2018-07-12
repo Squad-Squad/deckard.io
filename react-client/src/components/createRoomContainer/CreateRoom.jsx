@@ -264,7 +264,6 @@ class ConnectedCreateRoom extends React.Component {
       )
     }
   }
-  // }
 
   sendRoomEmail(roomInfo, members) {
     members.forEach(email => {
