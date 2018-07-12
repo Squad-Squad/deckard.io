@@ -504,6 +504,7 @@ db.models.sequelize.sync().then(() => {
           console.error(err);
         });
 
+      turnOverLogic(client, socket, data, gameOrderArr)
 
       const gameOrderArrOfKeys = [];
       let nextTurnUsername;
@@ -584,6 +585,8 @@ db.models.sequelize.sync().then(() => {
         io.sockets.sockets[socket.id].emit('turnOver', socket.username);
         io.sockets.emit('whose turn', nextTurnUsername);
       }
+
+      
     });
 
     // console.log("A DIFFERENT METHOD INDEX", rooms[socket.room]['gameOrder'].indexOf({[data.user]:socket.id}))
@@ -619,7 +622,7 @@ db.models.sequelize.sync().then(() => {
       const message = data.message.message;
       const roomMode = data.roomMode;
 
-      console.log('ROOMMODE WITH CHAT:', roomMode);
+      // console.log('ROOMMODE WITH CHAT:', roomMode);
 
       // push all the messages sent from client to redis room key message list
       client.rpush(
@@ -628,11 +631,6 @@ db.models.sequelize.sync().then(() => {
       );
 
       // Change Mitsuku's response frequency based on the number of room users
-
-      if (roomMode === 'round') {
-
-
-      }
 
 
       let extraDelay = 0;
@@ -700,11 +698,8 @@ db.models.sequelize.sync().then(() => {
 
     // handle cases in which player leaves the room without completely disconnecting from the site
     socket.on('leaveRoom', (data) => {
-      if (socket.room) {
-        rooms[socket.room].splice(
-          rooms[socket.room].indexOf(socket.username),
-          1,
-        );
+      if (socket.room){
+        rooms[socket.room].splice(rooms[socket.room].indexOf(socket.username),1 );
 
         client.rpush(
           `${socket.room}:messages`,

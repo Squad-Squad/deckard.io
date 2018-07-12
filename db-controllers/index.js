@@ -429,7 +429,7 @@ const removeFromMembersList = (client, socket, rooms) => {
   const user = socket.username;
           //UPDATE GAME TURN ORDER WHEN SOMEONE LEAVES THE ROOM
           
-    client.lremAsync(`${socket.room}:gameOrder`, 1, JSON.stringify({ [user]: socket.id }))
+  client.lremAsync(`${socket.room}:gameOrder`, 1, JSON.stringify({ [user]: socket.id }))
     .then((replies) => {
       client.lrangeAsync(`${socket.room}:gameOrder`, 0, -1)
         .then((reply) => {
