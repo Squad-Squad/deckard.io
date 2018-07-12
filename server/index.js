@@ -27,7 +27,7 @@ const email = require('../lib/nodemailerHelpers');
 
 const { Op } = db;
 
-const timerObj = {};
+var timerObj = {};
 
 
 //
@@ -355,19 +355,6 @@ app.post('/api/saveFreeMode', (req, res) => {
 
   timerObj[roomUnique].start(roomLengthInMilis);
 
-
-  // dbHelpers.saveRoomAndMembers(
-  //   roomName,
-  //   members,
-  //   roomUnique,
-  //   (err, room, users) => {
-  //     if (err) {
-  //       console.log('Error saving room and members', err);
-  //     } else {
-  //       res.send(room[0].dataValues);
-  //     }
-  //   },
-  // );
 });
 
 
@@ -432,7 +419,6 @@ app.get('/verify/:hashID', (req, res) => {
 app.get('/userz/:user', (req, res) => {
   // TODO Testing Function, remove in production
   const { user } = req.params;
-  // const {email} = dbHelpers.getUser(user).dataValues;
 
   dbHelpers
     .getUserEmail(user)
@@ -489,7 +475,6 @@ db.models.sequelize.sync().then(() => {
   //
   const users = [];
   const rooms = {};
-  const connections = [];
   const userSockets = {};
 
   const io = socket(server);
@@ -499,7 +484,6 @@ db.models.sequelize.sync().then(() => {
     //
     socket.on('username connect', (data) => {
       socket.username = data;
-      console.log('++++++USERNAME CONNECT++++++:', data);
 
       client.lremAsync('onlineUsers', 0, socket.username)
         .then((reply) => {
@@ -569,9 +553,12 @@ db.models.sequelize.sync().then(() => {
       // NOTIFY EVERYONE WHEN SOMEONE HAS JOINED THE ROOM
       const user_id = socket.username;
       const name = socket.username;
-      const message = `${data.user} has joined the room!`;
 
-      client.rpush(`${socket.room}:messages`, JSON.stringify({ matrixOverLords: message }));
+      if(socket.roomMode === "free"){
+        const message = `${data.user} has joined the room!`;
+        client.rpush(`${socket.room}:messages`, JSON.stringify({ matrixOverLords: message })); 
+      }
+
 
       // SET 1 HOUR EXPIRATION ON MESSAGE DATA FOR THIS ROOM
       client.expire(`${socket.room}:messages`, 3600);
@@ -590,7 +577,7 @@ db.models.sequelize.sync().then(() => {
     // ─── ROUND ROBIN LOGIC ───────────────────────────────────────────
     //
     socket.on('turn done', async (data) => {
-      const gameOrderArr = [];
+      let gameOrderArr = [];
       await client.lrangeAsync(`${socket.room}:gameOrder`, 0, -1)
         .then((reply) => {
           reply.forEach((user) => {
@@ -604,7 +591,6 @@ db.models.sequelize.sync().then(() => {
       dbHelpers.turnOverLogic(io, client, socket, data, gameOrderArr, mitsuku);
     });
 
-    // console.log("A DIFFERENT METHOD INDEX", rooms[socket.room]['gameOrder'].indexOf({[data.user]:socket.id}))
 
     //
     // ─── INVITE ──────────────────────────────────────────────────────
@@ -619,7 +605,6 @@ db.models.sequelize.sync().then(() => {
       });
 
       // send invitation to all online users (whether they are invited or not is sorted on front end), except inviter
-
       socket.broadcast.emit('invitation', {
         users: data.users,
         roomHash: data.roomHash,
@@ -638,14 +623,12 @@ db.models.sequelize.sync().then(() => {
       const message = data.message.message;
       const roomMode = data.roomMode;
 
-      // console.log('ROOMMODE WITH CHAT:', roomMode);
 
       // push all the messages sent from client to redis room key message list
       client.rpush(`${socket.room}:messages`, JSON.stringify({ [user]: message }));
 
+
       // Change Mitsuku's response frequency based on the number of room users
-
-
       let extraDelay = 0;
       if (roomMode === 'free') {
         if (Math.ceil(Math.random() * (data.numUsers - 1)) === data.numUsers - 1) {
@@ -719,11 +702,6 @@ db.models.sequelize.sync().then(() => {
           JSON.stringify({ matrixOverLords: `${socket.alias} left the room` }),
         );
 
-        // io.sockets.sockets[socket.id].emit('return option', socket.room, (err, response) => {
-        //   console.log('DID I HAPPEN');
-        // });
-
-
         await dbHelpers.removeFromMembersList(client, socket, rooms);
 
         const gameOrderArr = [];
@@ -741,7 +719,6 @@ db.models.sequelize.sync().then(() => {
           data.message = '';
         }
 
-        console.log('DOES GAME ORDERARR HAPPEN:', gameOrderArr);
 
         if (gameOrderArr.length > 1) {
           dbHelpers.turnOverLogic(io, client, socket, data, gameOrderArr, mitsuku);
@@ -762,9 +739,7 @@ db.models.sequelize.sync().then(() => {
       const thisRoom = rooms[socket.room];
 
       if (rooms[socket.room]) {
-        // users.splice(users.indexOf(socket.username), 1);
-        // rooms[socket.room].splice(thisRoom.indexOf(socket.username), 1);
-        // console.log('this users has disconnected:', socket.username, 'AND ROOMS[SOCKET.ROOM] AFTER DISCONNECT:', rooms[socket.room]);
+
         client.rpush(
           `${socket.room}:messages`,
           JSON.stringify({ matrixOverLords: `${socket.alias} left the room` }),
@@ -803,7 +778,6 @@ db.models.sequelize.sync().then(() => {
         data.message = '';
       }
 
-      // console.log("DOES GAME ORDERARR HAPPEN:", gameOrderArr)
       if (gameOrderArr.length > 1) {
         dbHelpers.turnOverLogic(io, client, socket, data, gameOrderArr, mitsuku);
       }
@@ -812,7 +786,6 @@ db.models.sequelize.sync().then(() => {
         io.sockets.in(socket.room).emit('chat', result);
       });
 
-      // connections.splice(connections.indexOf(socket), 1);
     });
 
 
@@ -824,7 +797,6 @@ db.models.sequelize.sync().then(() => {
       const userVotes = data.user;
       let roomMembers;
       let roomScores;
-      // rooms[data.roomID][0][userVotes] = data.votes;
 
       client.rpush(`${data.roomID}:votes`, JSON.stringify({ [userVotes]: data.votes }), (err, replies) => {
         console.log('added users votes to redis', replies);
@@ -846,10 +818,9 @@ db.models.sequelize.sync().then(() => {
               if (roomMembers.length - 1 <= roomScores.length) {
                 gameLogic.calcScores(roomScores)
                   .then((scoresArr) => {
-                    console.log('SCOREARR IN SERVER:', scoresArr);
                     const [scores, winners] = scoresArr;
 
-                    console.log('OUR RETURNED GOODSSSS', scores, winners);
+                    console.log('SCORESOBJ AFTER CALCULATION', scores, winners);
 
 
                     if (winners.length > 1) {
@@ -901,4 +872,3 @@ db.models.sequelize.sync().then(() => {
   });
 });
 
-// let timerObj = {};
