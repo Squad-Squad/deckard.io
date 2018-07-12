@@ -6,7 +6,9 @@ import { Route } from 'react-router-dom';
 import ProfileContainer from './profileAndStats/ProfileContainer.jsx';
 import { closeAboutDialog } from '../../../redux/actions';
 import { connect } from 'react-redux';
+import axios from 'axios';
 import AboutDialogue from './AboutDialogue.jsx'
+import { login } from '../../../redux/actions';
 
 
 const mapStateToProps = state => {
@@ -19,6 +21,9 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
+    login: (username, email, isGoogleAccount, avatarURL, description) => {
+      return dispatch(login(username, email, isGoogleAccount, avatarURL, description));
+    },
     closeAboutDialog: () => dispatch(closeAboutDialog()),
   };
 };
@@ -47,7 +52,6 @@ class ConnectedMainView extends React.Component {
       }
     })
 
-
     this.props.io.on('return option', (data) => {
       console.log("RETURN OPTION", data)
     })
@@ -65,12 +69,24 @@ class ConnectedMainView extends React.Component {
 
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     this.setState({
       loggedInUser: this.props.loggedInUsername
     });
     this.props.io.emit('username connect', this.props.loggedInUsername)
     this.props.io.emit('leaveRoom', this.props.loggedInUsername)
+    console.log("THINGS");
+
+    const res = await axios.get('/checklogin');
+    console.log('RES', res);
+    if (res.data.user) {
+      this.props.login(res.data.user.username,
+        res.data.user.email,
+        res.data.user.is_google_account,
+        res.data.user.avatar,
+        res.data.user.description,
+        res.data.user.friends);
+    }
   }
 
   handleOpen = () => {

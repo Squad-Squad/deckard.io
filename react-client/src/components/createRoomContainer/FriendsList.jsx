@@ -99,6 +99,11 @@ class FriendsList extends Component {
     })
   }
 
+  scrollToBottom() {
+    console.log('SCROLLING');
+    this.messagesEnd.scrollIntoView({ behavior: "smooth" });
+  }
+
   handleClick() {
     this.setState({
       addFriend: true,
@@ -172,6 +177,7 @@ class FriendsList extends Component {
           query: '',
           snackbarOpen: true,
         });
+        this.scrollToBottom();
       } else {
         this.setState({
           addFriendError: error.data,
@@ -201,6 +207,8 @@ class FriendsList extends Component {
                 overflow: 'auto'
               }}>
               {list()}
+              <div ref={(el) => { this.messagesEnd = el; }}>
+              </div>
             </List>
             {addFriend()}
           </div>
