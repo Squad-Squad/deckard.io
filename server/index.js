@@ -273,44 +273,30 @@ app.post('/api/save', (req, res) => {
 
   const { roomName, roomMode, members, roomLength } = req.body;
   const roomUnique = uniqueString().slice(0, 6);
-  // timerObj[roomUnique] = new Tock({
-  //   countdown: true,
-  // });
+  if(roomMode === "free"){
+    timerObj[roomUnique] = new Tock({
+      countdown: true,
+    });
+    let roomLengthInMilis = roomLength * 60 * 1000
+    timerObj[roomUnique].start(roomLengthInMilis);
+  }
 
   dbHelpers.aliasMembers(roomName, roomMode, members, roomLength, roomUnique, (results) => {
-    console.log("AM I HAPPENING", results)
     client.hmset(`${roomUnique}:members`, results, (err, reply)=>{
       if(err){
         console.error(err)
       }else{
-        console.log("reply setting members", reply)
         res.send(results)
+        client.expire(`${roomUnique}:members`, 3600)
       }
     })
   });
 
-  // CHANGE THE ROOM TIMER LENGTH HERE
-  // timerObj[roomUnique].start(30000);
-
-  // dbHelpers.saveRoomAndMembers(
-  //   roomName,
-  //   members,
-  //   roomUnique,
-  //   (err, room, users) => {
-  //     if (err) {
-  //       console.log('Error saving room and members', err);
-  //     } else {
-  //       console.log(`Saved room: ${roomName}`);
-  //       res.send(room[0].dataValues);
-  //     }
-  //   },
-  // );
 });
 
 
 
 app.post('/api/saveFreeMode', (req, res) => {
-  console.log('NEW ROOM DATA', req.body);
 
   const { roomName, roomMode, members, roomLength } = req.body;
   const roomUnique = uniqueString().slice(0, 6);
@@ -323,7 +309,7 @@ app.post('/api/saveFreeMode', (req, res) => {
       if(err){
         console.error(err)
       }else{
-        console.log("reply setting members", reply)
+        res.send(results)
         client.expire(`${roomUnique}:members`, 3600)
       }
     })
@@ -334,24 +320,22 @@ app.post('/api/saveFreeMode', (req, res) => {
   // CHANGE THE ROOM TIMER LENGTH HERE
 
   let roomLengthInMilis = roomLength * 60 * 1000
-  console.log("ROOMLENGTHIN MILIS", roomLengthInMilis)
 
   timerObj[roomUnique].start(roomLengthInMilis);
 
 
-  dbHelpers.saveRoomAndMembers(
-    roomName,
-    members,
-    roomUnique,
-    (err, room, users) => {
-      if (err) {
-        console.log('Error saving room and members', err);
-      } else {
-        console.log(`Saved room: ${roomName}`);
-        res.send(room[0].dataValues);
-      }
-    },
-  );
+  // dbHelpers.saveRoomAndMembers(
+  //   roomName,
+  //   members,
+  //   roomUnique,
+  //   (err, room, users) => {
+  //     if (err) {
+  //       console.log('Error saving room and members', err);
+  //     } else {
+  //       res.send(room[0].dataValues);
+  //     }
+  //   },
+  // );
 });
 
 

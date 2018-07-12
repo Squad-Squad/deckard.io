@@ -97,12 +97,12 @@ class ConnectedRoom extends React.Component {
 
   /// Send post request to server to fetch room info when user visits link
   componentDidMount() {
-    console.log("REDUX WHY ARE YOU FUCKING ME :", this.props.roomLength)
     this.getRoomInfo();
-    // if(this.props.roomMode === "free"){
+    console.log("THIS.PROPS.ROOMMODE IN componentDidMount", this.props.roomMode)
+    if(this.props.roomMode === "free"){
     // axios.post('/api/startTimer', {roomID: this.props.roomID}) 
-    // this.getTimer()
-    // }
+    this.getTimer()
+    }
   }
 
 
@@ -153,9 +153,15 @@ class ConnectedRoom extends React.Component {
         },
       });
 
-
-      tock.start(roomLengthInMilis);
-    // });
+      if(this.state.roomMode === 'round'){
+        console.log("I'm ROUND MODE IN GET TIMER")
+        tock.start(roomLengthInMilis); 
+      }else{
+        console.log("STUFFFFFF HAPPPPPENNNNINNNNGGGG HERER")
+        $.get(`/api/timer/${this.roomID}`).then(communalTime => {
+          tock.start(communalTime.timeLeft + 1000)
+        })
+      }
   }
 
   sendMessage(msg) {

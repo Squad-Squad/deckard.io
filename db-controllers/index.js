@@ -321,6 +321,7 @@ const getRoomReady = (io, timerObj, client, socket, data, rooms, membersInfo) =>
         });
       }, Math.random() * 5000);
     }
+
   }
 
 
