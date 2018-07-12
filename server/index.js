@@ -52,8 +52,8 @@ const AWS = require('aws-sdk');
 const multer = require('multer');
 
 AWS.config.update({
-  accessKeyId: 'AKIAILGRIDM2NALR2ELA',
-  secretAccessKey: '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',
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
 });
 
 const upload = multer({

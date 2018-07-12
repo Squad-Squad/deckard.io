@@ -49,11 +49,19 @@ class ConnectedUserMenu extends React.Component {
           aria-owns={anchorEl ? 'simple-menu' : null}
           aria-haspopup="true"
           onClick={this.handleClick.bind(this)}>
-          <span style={{ marginRight: '10px' }}>
-            {this.props.username}
-          </span>
-          <img id='navbar-avatar'
-            src={this.props.avatarURL} />
+          {
+            (this.props.avatarURL === './assets/roboheadwhite.png') ?
+              <span>
+                {this.props.username}
+              </span>
+              : [
+                <span style={{ marginRight: '10px' }}>
+                  {this.props.username}
+                </span>,
+                <img id='navbar-avatar'
+                  src={this.props.avatarURL} />
+              ]
+          }
         </Button>
 
         <Menu
