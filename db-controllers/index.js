@@ -495,7 +495,6 @@ const turnOverLogic = (io, client, socket, data, gameOrderArr, mitsuku) => {
 
       if (nextTurnUsername === 'mitsuku') {
         if(message !== "blank*"){
-          console.log("_______WHY DO I HIT_______")
           io.sockets.sockets[socket.id].emit('turnOver', socket.username); 
         }
         io.sockets.emit('whose turn', 'mitsuku@mitsuku.com');
@@ -516,7 +515,7 @@ const turnOverLogic = (io, client, socket, data, gameOrderArr, mitsuku) => {
           extraDelay = response.length * 40;
           console.log('EXTRA DELAY', extraDelay);
 
-          setTimeout(() => {
+          setTimeout(async () => {
             // Save her message to redis
             client.rpush(
               `${socket.room}:messages`,
@@ -530,6 +529,19 @@ const turnOverLogic = (io, client, socket, data, gameOrderArr, mitsuku) => {
 
             // after mitsuku's turn onto the next one
 
+            //fetch gameOrderArr again in case someone leaves room in middle of response
+            let gameOrderArr = [];
+            await client.lrangeAsync(`${socket.room}:gameOrder`, 0, -1)
+            .then((reply) => {
+              reply.forEach(user=>{
+                gameOrderArr.push(JSON.parse(user))
+              })
+            })
+            .catch((err) => {
+              console.error(err);
+            });
+
+
             if (lastTurnIndex + 1 === gameOrderArr.length - 1) {
               nextTurnUsername = Object.keys(gameOrderArr[0])[0];
               nextTurnUserSocketId = gameOrderArr[0][nextTurnUsername];
@@ -540,11 +552,12 @@ const turnOverLogic = (io, client, socket, data, gameOrderArr, mitsuku) => {
               nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 2])[0];
               nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 2][nextTurnUsername];
             }
-            if(nextTurnUserSocketId && socket.id){
+            if(nextTurnUserSocketId){
               io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
               io.sockets.emit('whose turn', nextTurnUsername);
             }
           }, Math.random() * 5000 + 2000 + extraDelay);
+
         });
       } else {
         if (lastTurnIndex === gameOrderArr.length - 1) {

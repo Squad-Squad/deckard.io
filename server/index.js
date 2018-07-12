@@ -730,7 +730,9 @@ db.models.sequelize.sync().then(() => {
 
         console.log("DOES GAME ORDERARR HAPPEN:", gameOrderArr)
 
-        dbHelpers.turnOverLogic(io, client, socket, data, gameOrderArr, mitsuku)
+        if(gameOrderArr.length > 1){
+        dbHelpers.turnOverLogic(io, client, socket, data, gameOrderArr, mitsuku) 
+      }
 
         dbHelpers.fetchRedisMessages(client, socket, (result) => {
           io.sockets.in(socket.room).emit('chat', result);
@@ -783,8 +785,9 @@ db.models.sequelize.sync().then(() => {
         }
 
         // console.log("DOES GAME ORDERARR HAPPEN:", gameOrderArr)
-
-      dbHelpers.turnOverLogic(io, client, socket, data, gameOrderArr, mitsuku)
+      if(gameOrderArr.length > 1){
+        dbHelpers.turnOverLogic(io, client, socket, data, gameOrderArr, mitsuku) 
+      }
 
       dbHelpers.fetchRedisMessages(client, socket, (result) => {
         io.sockets.in(socket.room).emit('chat', result);
