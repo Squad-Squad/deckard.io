@@ -3,7 +3,6 @@ import io from 'socket.io-client';
 import $ from 'jquery';
 import Tock from 'tocktimer';
 import sizeMe from 'react-sizeme';
-import Confetti from 'react-confetti';
 import FreeLiveChat from './FreeLiveChat.jsx';
 import RoundLiveChat from './RoundLiveChat.jsx';
 import VotePanel from './VotePanel.jsx';
@@ -79,6 +78,7 @@ class ConnectedRoom extends React.Component {
     //   console.log("this.props.ROOMLENGTH", this.props.roomLength)
     //  axios.post('/api/startTimer', {roomID: this.roomID, roomLength: this.props.roomLength}) 
     // })
+
 
     this.props.io.on('roomReady', data => {
       console.log("+++ROOMREADY SOCKET++++", data)
@@ -187,7 +187,7 @@ class ConnectedRoom extends React.Component {
       // this.getTimer();
       if (this.state.timer === "00:00" && !this.state.scores) {
         return (<VotePanel members={this.state.members}
-          roomID={this.roomID} 
+          roomID={this.roomID}
           memberMap={this.state.memberMap} io={this.props.io} />);
       } else if (!this.state.scores) {
         return (<FreeLiveChat
@@ -213,7 +213,7 @@ class ConnectedRoom extends React.Component {
       } else {
         if (this.state.timer === "00:00" && !this.state.scores) {
           return (<VotePanel members={this.state.members}
-            roomID={this.roomID} 
+            roomID={this.roomID}
             memberMap={this.state.memberMap} io={this.props.io} />);
         } else if (!this.state.scores) {
           return (<RoundLiveChat
@@ -240,8 +240,7 @@ class ConnectedRoom extends React.Component {
 
     return (
       <div>
-        <div className="columns">
-          <div className="column is-2 hide-if-small"></div>
+        <div className="columns" style={{ display: 'flex', justifyContent: 'center' }}>
           <div className="column is-8">
             {(() => {
               switch (this.state.roomMode) {

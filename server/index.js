@@ -14,7 +14,7 @@ const Tock = require('tocktimer');
 const mitsuku = require('../lib/mitsukuHelper')();
 const gameLogic = require('../lib/gameLogic');
 const _ = require('underscore');
-const bluebird = require('bluebird')
+const bluebird = require('bluebird');
 const Mailjet = require('node-mailjet').connect(
   process.env.MAILJET_API_KEY,
   process.env.MAILJET_API_SECRET,
@@ -34,6 +34,7 @@ var timerObj = {};
 
 
 const redis = require('redis');
+
 bluebird.promisifyAll(redis.RedisClient.prototype);
 
 
@@ -212,7 +213,7 @@ app.post('/profile/add-friend', async (req, res) => {
 // ─── USER SEARCH AND INVITE ─────────────────────────────────────────────────────
 //
 app.post('/searchUsers', (req, res) => {
-  client.lrange('onlineUsers', 0, -1, (err, users)=>{
+  client.lrange('onlineUsers', 0, -1, (err, users) => {
     console.log('DESE DA ONLINE USERS', users);
     res.status(200).send(users);
   });
@@ -289,16 +290,17 @@ app.post('/api/save', (req, res) => {
         res.send(results)
         client.expire(`${roomUnique}:members`, 3600)
       }
-    })
+    });
   });
 
 });
 
 
-
 app.post('/api/saveFreeMode', (req, res) => {
 
-  const { roomName, roomMode, members, roomLength } = req.body;
+  const {
+    roomName, roomMode, members, roomLength,
+  } = req.body;
   const roomUnique = uniqueString().slice(0, 6);
   timerObj[roomUnique] = new Tock({
     countdown: true,
@@ -312,11 +314,10 @@ app.post('/api/saveFreeMode', (req, res) => {
         res.send(results)
         client.expire(`${roomUnique}:members`, 3600)
       }
-    })
+    });
   });
 
-  
-  
+
   // CHANGE THE ROOM TIMER LENGTH HERE
 
   let roomLengthInMilis = roomLength * 60 * 1000
@@ -339,29 +340,29 @@ app.post('/api/saveFreeMode', (req, res) => {
 });
 
 
-
-app.post('/api/startTimer', (req, res)=>{
-  const { roomID, roomLength } = req.body
-  console.log("ROOOM ID IN START TIME API CALLL:", roomID)
+app.post('/api/startTimer', (req, res) => {
+  const { roomID, roomLength } = req.body;
+  console.log('ROOOM ID IN START TIME API CALLL:', roomID);
   timerObj[roomID] = new Tock({
     countdown: true,
   });
+
   let roomLengthInMilis = roomLength * 60 * 1000
   console.log("+++++++ROOMLENGTHIN MILIS++++++", roomLengthInMilis)
   timerObj[roomID].start(roomLengthInMilis);
 
-})
+});
 
 // Get room members here
 app.get('/api/rooms/:roomID', (req, res) => {
   const { roomID } = req.params;
 
   client.hgetallAsync(`${roomID}:members`)
-  .then(replies => { 
-    console.log('REPLIES', replies)
+    .then((replies) => {
+      console.log('REPLIES', replies);
       res.send(replies);
-    })
-  });
+    });
+});
 
 app.get('/api/timer/:roomID', (req, res) => {
   const { roomID } = req.params;
@@ -410,20 +411,20 @@ db.models.sequelize.sync().then(() => {
       console.log('++++++USERNAME CONNECT++++++:', data);
 
       client.lremAsync('onlineUsers', 0, socket.username)
-      .then((reply) => {
-        console.log(socket.username, 'removed before adding', reply);
-      })
-      .catch(err=>{
-      console.error(err)
-      });
+        .then((reply) => {
+          console.log(socket.username, 'removed before adding', reply);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
 
       client.rpushAsync('onlineUsers', socket.username)
-      .then((reply) => {
-        console.log("userAdded to onlineUsers", reply);
-      })
-      .catch(err=>{
-      console.error(err)
-      });
+        .then((reply) => {
+          console.log('userAdded to onlineUsers', reply);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
       userSockets[socket.username] = socket;
     });
 
@@ -455,18 +456,19 @@ db.models.sequelize.sync().then(() => {
       const user = socket.username;
       client.rpushAsync(
         `${socket.room}:membersList`,
-        JSON.stringify({ [user]: socket.id }))
-        .then(reply=>{
-          console.log("user pushed to room in redis", reply)
+        JSON.stringify({ [user]: socket.id }),
+      )
+        .then((reply) => {
+          console.log('user pushed to room in redis', reply);
         })
-        .catch(err=>{
-          console.error(err)
+        .catch((err) => {
+          console.error(err);
         });
 
-      //SET 1 HOUR EXPIRATION ON MEMBERSLIST DATA FOR THIS ROOM
-        client.expire(`${socket.room}:membersList`, 3600)
+      // SET 1 HOUR EXPIRATION ON MEMBERSLIST DATA FOR THIS ROOM
+      client.expire(`${socket.room}:membersList`, 3600);
 
-      //NOTIFY EVERYONE WHEN SOMEONE HAS JOINED THE ROOM
+      // NOTIFY EVERYONE WHEN SOMEONE HAS JOINED THE ROOM
       const user_id = socket.username;
       const name = socket.username;
       const message = `${data.user} has joined the room!`;
@@ -476,8 +478,8 @@ db.models.sequelize.sync().then(() => {
         JSON.stringify({ matrixOverLords: message }),
       );
 
-      //SET 1 HOUR EXPIRATION ON MESSAGE DATA FOR THIS ROOM
-       client.expire(`${socket.room}:messages`, 3600)
+      // SET 1 HOUR EXPIRATION ON MESSAGE DATA FOR THIS ROOM
+      client.expire(`${socket.room}:messages`, 3600);
 
        console.log("STATE OF DATAAAA HEREEEE:", data)
 
@@ -512,7 +514,7 @@ db.models.sequelize.sync().then(() => {
 
       if (nextTurnUsername === 'mitsuku') {
         io.sockets.sockets[socket.id].emit('turnOver', socket.username);
-        io.sockets.emit('whose turn', 'mitsuku@mitsuku.com')
+        io.sockets.emit('whose turn', 'mitsuku@mitsuku.com');
 
         console.log('LAST MESSAGE that mitsuku will respond to:', data.message);
         let extraDelay = 0;
@@ -559,7 +561,7 @@ db.models.sequelize.sync().then(() => {
               nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 2][nextTurnUsername];
             }
             io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
-            io.sockets.emit('whose turn', nextTurnUsername)
+            io.sockets.emit('whose turn', nextTurnUsername);
           }, Math.random() * 5000 + 2000 + extraDelay);
         });
       } else {
@@ -573,7 +575,7 @@ db.models.sequelize.sync().then(() => {
         io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
         console.log('socket.id in next turn', socket.id);
         io.sockets.sockets[socket.id].emit('turnOver', socket.username);
-        io.sockets.emit('whose turn', nextTurnUsername)
+        io.sockets.emit('whose turn', nextTurnUsername);
       }
     });
 
@@ -687,10 +689,9 @@ db.models.sequelize.sync().then(() => {
       client.hgetallAsync(`${data.roomID}:members`)
       .then(replies => { 
         console.log('GET MEMBERS INFO IN DECLINE SOCKET', replies)
+        dbHelpers.getRoomReady(io, timerObj, client, socket, data, rooms, replies);
 
-      dbHelpers.getRoomReady(io, timerObj, client, socket, data, rooms, replies);
-
-      })
+        });
 
       dbHelpers.fetchRedisMessages(client, socket, (result) => {
         io.sockets.in(data.roomID).emit('chat', result);
@@ -730,7 +731,7 @@ db.models.sequelize.sync().then(() => {
       if (socket.room) {
         rooms[socket.room].splice(
           rooms[socket.room].indexOf(socket.username),
-          1
+          1,
         );
 
         client.rpush(
@@ -738,12 +739,12 @@ db.models.sequelize.sync().then(() => {
           JSON.stringify({ matrixOverLords: `${socket.alias} left the room` }),
         );
 
-        console.log("SOCKET ID WHEN LEAVE:", socket.id)
-        io.sockets.sockets[socket.id].emit('return option', socket.room, (err, response)=>{
-          console.log("DID I HAPPEN")
-        })
+        console.log('SOCKET ID WHEN LEAVE:', socket.id);
+        io.sockets.sockets[socket.id].emit('return option', socket.room, (err, response) => {
+          console.log('DID I HAPPEN');
+        });
 
-        dbHelpers.removeFromMembersList(client, socket)
+        dbHelpers.removeFromMembersList(client, socket);
 
 
         dbHelpers.fetchRedisMessages(client, socket, (result) => {
@@ -758,30 +759,28 @@ db.models.sequelize.sync().then(() => {
       if (rooms[socket.room]) {
         users.splice(users.indexOf(socket.username), 1);
         rooms[socket.room].splice(thisRoom.indexOf(socket.username), 1);
-        console.log('this users has disconnected:', socket.username, 'AND ROOMS[SOCKET.ROOM] AFTER DISCONNECT:',rooms[socket.room],
-        );
+        console.log('this users has disconnected:', socket.username, 'AND ROOMS[SOCKET.ROOM] AFTER DISCONNECT:', rooms[socket.room]);
         client.rpush(
           `${socket.room}:messages`,
-          JSON.stringify({ matrixOverLords:`${socket.alias} left the room`}),
+          JSON.stringify({ matrixOverLords: `${socket.alias} left the room` }),
         );
       }
 
       client.lremAsync('onlineUsers', 1, socket.username)
-      .then((replies) => {
-        console.log('REMOVE FROM ONLINE USERS REPLY', replies);
-        client.lrangeAsync('onlineUsers', 0, -1)
-        .then((reply) => {
-          console.log('ONLINE USERS CHECK AFTER REM:', reply);
+        .then((replies) => {
+          client.lrangeAsync('onlineUsers', 0, -1)
+            .then((reply) => {
+              console.log('ONLINE USERS CHECK AFTER REM:', reply);
+            })
+            .catch((err) => {
+              console.error(err);
+            });
         })
-        .catch(err=>{
-          console.error(err)
-        })
-      })
-      .catch(err=>{
-        console.error(err)
-      })
+        .catch((err) => {
+          console.error(err);
+        });
 
-      dbHelpers.removeFromMembersList(client, socket)
+      dbHelpers.removeFromMembersList(client, socket);
 
       dbHelpers.fetchRedisMessages(client, socket, (result) => {
         io.sockets.in(socket.room).emit('chat', result);
@@ -792,88 +791,82 @@ db.models.sequelize.sync().then(() => {
 
     socket.on('vote', (data) => {
       console.log('SOCKET.ROOM in vote socket:', socket.room, 'and the rooms object:', rooms, 'and data.roomID', data.roomID);
-      let userVotes = data.user
+      const userVotes = data.user;
       let roomMembers;
       let roomScores;
       // rooms[data.roomID][0][userVotes] = data.votes;
 
-      client.rpush(`${data.roomID}:votes`,JSON.stringify({[userVotes]: data.votes}), (err, replies)=>{
-        console.log('added users votes to redis', replies)
-      })
+      client.rpush(`${data.roomID}:votes`, JSON.stringify({ [userVotes]: data.votes }), (err, replies) => {
+        console.log('added users votes to redis', replies);
+      });
 
       client.lrangeAsync(`${data.roomID}:votes`, 0, -1)
-      .then((replies)=>{
-        let retrieveBucket = []
-        for(reply of replies){
-          retrieveBucket.push(JSON.parse(reply))
-        }
-        roomScores = retrieveBucket
-        client.lrangeAsync(`${data.roomID}:membersList`, 0, -1)
-        .then((replies)=>{
-        
-            roomMembers = replies
+        .then((replies) => {
+          const retrieveBucket = [];
+          for (reply of replies) {
+            retrieveBucket.push(JSON.parse(reply));
+          }
+          roomScores = retrieveBucket;
+          client.lrangeAsync(`${data.roomID}:membersList`, 0, -1)
+            .then((replies) => {
+              roomMembers = replies;
 
-            // DETERMINE IF EVERYONE HAS SUBMITTED THER VOTES
+              // DETERMINE IF EVERYONE HAS SUBMITTED THER VOTES
 
-            if(roomMembers.length - 1 <= roomScores.length){
-              gameLogic.calcScores(roomScores)
-              .then(scoresArr=>{
-                console.log("SCOREARR IN SERVER:", scoresArr)
-                var [scores, winners] = scoresArr
-         
-              console.log("OUR RETURNED GOODSSSS", scores, winners)
-              
+              if (roomMembers.length - 1 <= roomScores.length) {
+                gameLogic.calcScores(roomScores)
+                  .then((scoresArr) => {
+                    console.log('SCOREARR IN SERVER:', scoresArr);
+                    const [scores, winners] = scoresArr;
 
-              if(winners.length > 1){
-                for (var user of winners){
-                  db.models.User.findOne({ where: { username: user } })
-                  .then((instance) => {
-                    var prevGamesWon = instance.get('games_won');
-                      instance.updateAttributes({
-                        games_won: prevGamesWon += 1,
-                      });
-                    });
-                }              
-              }else{
-                db.models.User.findOne({ where: { username: winners[0]} })
-                  .then((instance) => {
-                    var prevGamesWon = instance.get('games_won');
-                      instance.updateAttributes({
-                        games_won: prevGamesWon += 1,
-                      });
-                    });
-              }
+                    console.log('OUR RETURNED GOODSSSS', scores, winners);
 
-                for (var user in scores) {
-                  db.models.User.findOne({ where: { username: user } })
-                  .then((instance) => {
-                    var oldScore = instance.get('lifetime_score');
-                    var prevGamesPlayed = instance.get('games_played');
-                    if(!isNaN(scores[user])){
-                      instance.updateAttributes({
-                        lifetime_score: oldScore + scores[user],
-                        games_played: prevGamesPlayed += 1,
-                      });
+
+                    if (winners.length > 1) {
+                      for (var user of winners) {
+                        db.models.User.findOne({ where: { username: user } })
+                          .then((instance) => {
+                            let prevGamesWon = instance.get('games_won');
+                            instance.updateAttributes({
+                              games_won: prevGamesWon += 1,
+                            });
+                          });
+                      }
+                    } else {
+                      db.models.User.findOne({ where: { username: winners[0] } })
+                        .then((instance) => {
+                          let prevGamesWon = instance.get('games_won');
+                          instance.updateAttributes({
+                            games_won: prevGamesWon += 1,
+                          });
+                        });
                     }
+
+                    for (var user in scores) {
+                      db.models.User.findOne({ where: { username: user } })
+                        .then((instance) => {
+                          const oldScore = instance.get('lifetime_score');
+                          let prevGamesPlayed = instance.get('games_played');
+                          if (!isNaN(scores[user])) {
+                            instance.updateAttributes({
+                              lifetime_score: oldScore + scores[user],
+                              games_played: prevGamesPlayed += 1,
+                            });
+                          }
+                        });
+                    }
+
+                    io.sockets.in(socket.room).emit('scores', scores);
                   });
-                }
-
-                io.sockets.in(socket.room).emit('scores', scores);
-
-              });
-
-            }
-          
+              }
+            })
+            .catch((err) => {
+              console.error(err);
+            });
         })
-        .catch(err=>{
-          console.error(err)
-        })
-        
-      })
-      .catch(err=>{
-        console.error(err)
-      })
-
+        .catch((err) => {
+          console.error(err);
+        });
     });
   });
 });

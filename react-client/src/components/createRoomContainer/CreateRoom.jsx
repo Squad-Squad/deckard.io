@@ -144,6 +144,7 @@ class ConnectedCreateRoom extends React.Component {
       <MenuItem selected={isHighlighted}
         component="div"
         onClick={() => {
+          console.log(this.props.onlineUsers, suggestion);
           if (this.props.usersForNewRoom.length <= 7) {
             props.addUserToNewRoom(suggestion);
             this.setState({
@@ -241,6 +242,7 @@ class ConnectedCreateRoom extends React.Component {
         nameError: true,
       });
     } else {
+
       // if(this.props.roomModeSelection === "free"){
 
       //   console.log("I'm FREE MODE IN CREATE ROOM")
@@ -283,7 +285,7 @@ class ConnectedCreateRoom extends React.Component {
               this.props.io.emit('invite', { users: this.props.usersForNewRoom, roomHash: response.roomID, roomName: this.state.roomName, roomMode: this.props.roomModeSelection })
             });
           }
-        ) 
+        )
       }
     }
   // }
@@ -315,7 +317,8 @@ class ConnectedCreateRoom extends React.Component {
   handleAutoSuggestKeyPress(event) {
     if (event.key == 'Enter') {
       if (this.state.query.length &&
-        this.props.usersForNewRoom.length <= 7) {
+        this.props.usersForNewRoom.length <= 7 &&
+        this.props.onlineUsers.includes(this.state.query)) {
         this.props.addUserToNewRoom(this.state.currSuggestions[0]);
         this.setState({
           currSuggestions: [],

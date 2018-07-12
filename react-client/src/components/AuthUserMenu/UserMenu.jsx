@@ -17,6 +17,7 @@ class ConnectedUserMenu extends React.Component {
     this.state = {
       anchorEl: null,
     };
+    this.handleClose = this.handleClose.bind(this);
   }
 
   handleClick(event) {
@@ -57,10 +58,10 @@ class ConnectedUserMenu extends React.Component {
           }}
           open={Boolean(anchorEl)}
           onClose={this.handleClose.bind(this)}>
-          <MenuItem onClick={this.props.homeRedirect}>Home</MenuItem>
-          <MenuItem onClick={this.props.profileRedirect}>Profile</MenuItem>
-          <MenuItem onClick={this.props.aboutDialogue}>About/Rules</MenuItem>
-          <MenuItem onClick={this.handleLogout.bind(this)}>Logout</MenuItem>
+          <MenuItem onClick={() => { this.props.homeRedirect(); this.handleClose(); }}>Home</MenuItem>
+          <MenuItem onClick={() => { this.props.profileRedirect(); this.handleClose(); }}>Profile</MenuItem>
+          <MenuItem onClick={() => { this.props.aboutDialogue(); this.handleClose(); }}>About/Rules</MenuItem>
+          <MenuItem onClick={() => { this.handleLogout.call(this); this.handleClose(); }}>Logout</MenuItem>
         </Menu>
       </div>
     );

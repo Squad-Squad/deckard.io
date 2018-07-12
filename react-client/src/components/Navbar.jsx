@@ -5,6 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import LoginDialog from './AuthUserMenu/LoginDialog.jsx';
 import SubscribeDialog from './AuthUserMenu/SubscribeDialog.jsx';
 import UserMenu from './AuthUserMenu/UserMenu.jsx';
+import UnicornSVG from '../../dist/assets/unicorn2.svg';
 import logo from '../../dist/assets/unicorn.png';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
@@ -57,8 +58,12 @@ class ConnectedNavbar extends React.Component {
     return (
       <AppBar position="static" color="default"
         style={{ backgroundColor: "rgba(0,0,0,.3)" }}>
-        <Toolbar>
-          <div style={{ width: "100%" }}>
+        <Toolbar style={{
+          padding: '0px 7px',
+        }}>
+          <div style={{
+            width: "100%",
+          }}>
             <Typography
               color="inherit"
               className={'title'}>
@@ -68,9 +73,12 @@ class ConnectedNavbar extends React.Component {
                   deckard.io
                 </a>
               </span>
-              <span id="image-logo">
+              <span id="image-logo"
+                style={{
+                  paddingTop: '8px'
+                }}>
                 <a href="/">
-                  <img src={logo} style={{ height: '3em' }} />
+                  <img src={UnicornSVG} style={{ height: '3em' }} />
                 </a>
               </span>
             </Typography>

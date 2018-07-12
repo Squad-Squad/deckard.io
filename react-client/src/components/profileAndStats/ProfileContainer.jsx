@@ -73,7 +73,7 @@ class ProfileContainer extends React.Component {
         <div className="columns">
           <div className="column is-1 hide-if-small">
           </div>
-          <div className="column is-10">
+          <div className="column is-10 profile">
             <Paper style={{
               backgroundColor: 'rgba(0,0,0,.5)'
             }}>
@@ -99,6 +99,7 @@ class ProfileContainer extends React.Component {
               </SwipeableViews>
             </Paper>
           </div>
+          <div className="column is-1 hide-if-small"></div>
         </div>
       </div>
     );

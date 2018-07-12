@@ -6,6 +6,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import Divider from '@material-ui/core/Divider';
 import Icon from '@material-ui/core/Icon';
 import { withStyles } from '@material-ui/core/styles';
 
@@ -96,24 +97,49 @@ class LoginDialog extends React.Component {
             open={this.state.open}
             onClose={this.handleClose}
             aria-labelledby="form-dialog-title"
+            maxWidth='xs'
+            overlayStyle={{ backgroundColor: 'red' }}
+            PaperProps={{
+              style: {
+                backgroundColor: 'rgba(0, 0, 0, .9)',
+              },
+            }}
           >
             <DialogTitle>
-              <div id="login-form-dialog-title">
-                <span className="login-title">
-                  Login
-                </span>
+              Login
+            </DialogTitle>
+            <DialogContent>
+              {loginError}
+              <div style={{ display: 'flex', flexWrap: 'wrap' }}>
                 <Button
                   id="google-login-button"
                   variant="raised"
-                  style={{ backgroundColor: '#4285f4', color: 'white' }}
+                  style={{
+                    backgroundColor: '#4285f4',
+                    color: 'white',
+                    width: '100%',
+                    marginBottom: '10px',
+                  }}
                   href='/auth/google'>
                   <i className="fab fa-google"></i>
                   <p style={{ paddingLeft: '15px' }}>Login With Google</p>
                 </Button>
+                <Button
+                  id="github-login-button"
+                  variant="raised"
+                  style={{
+                    backgroundColor: '#111111',
+                    color: 'white',
+                    width: '100%',
+                  }}
+                  href=''>
+                  <i className="fab fa-github"></i>
+                  <p style={{ paddingLeft: '15px' }}>Login With Github</p>
+                </Button>
               </div>
-            </DialogTitle>
-            <DialogContent>
-              {loginError}
+              <div style={{ textAlign: 'center', margin: '15px 0px' }}>
+                <Divider />
+              </div>
               <TextField
                 label="Username / Email"
                 // InputLabelProps={{
@@ -137,10 +163,10 @@ class LoginDialog extends React.Component {
             <DialogActions>
               <Button onClick={this.handleClose}>
                 Cancel
-          </Button>
+              </Button>
               <Button onClick={this.handleLogin}>
                 Login
-          </Button>
+              </Button>
             </DialogActions>
           </Dialog>
         </div>

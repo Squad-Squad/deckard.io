@@ -42,20 +42,20 @@ class ConnectedMainView extends React.Component {
     })
 
 
-    this.props.io.on('return option', (data)=>{
+    this.props.io.on('return option', (data) => {
       console.log("RETURN OPTION", data)
     })
 
-     this.props.io.on('chat', messages => {
+    this.props.io.on('chat', messages => {
       this.setState({
         messages: messages
       });
     });
 
 
-      this.freeRoomMode = this.freeRoomMode.bind(this, "free")
-      this.roundRoomMode = this.roundRoomMode.bind(this, "round")
-      this.decline = this.decline.bind(this)
+    this.freeRoomMode = this.freeRoomMode.bind(this, "free")
+    this.roundRoomMode = this.roundRoomMode.bind(this, "round")
+    this.decline = this.decline.bind(this)
 
   }
 
@@ -83,7 +83,7 @@ class ConnectedMainView extends React.Component {
   }
 
 
-  roundRoomMode(){
+  roundRoomMode() {
     console.log("ARGUMETS", arguments[0])
     this.setState({
       roomMode: arguments[0]

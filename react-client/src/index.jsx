@@ -75,6 +75,7 @@ const theme = createMuiTheme({
     }
   },
   typography: {
+    fontFamily: '"Montserrat", sans-serif',
     title: {
       fontFamily: '"Titillium Web", sans-serif',
       fontWeight: 500,
@@ -200,14 +201,14 @@ class ConnectedApp extends React.Component {
     this.props.history.push(`/userprofile/${this.props.loggedInUsername}`)
   }
 
-  aboutDialogue(){
+  aboutDialogue() {
     console.log("ABOUT DIALOGUE HIT!!!")
     this.setState({
-      aboutDialogue:true
+      aboutDialogue: true
     })
   }
 
-  handleCloseAbout(){
+  handleCloseAbout() {
     this.setState({ aboutDialogue: false });
   };
 
@@ -345,17 +346,16 @@ class ConnectedApp extends React.Component {
 
 
           {/* MAIN */}
-          <div id="navbar-wrapper">
-            <Navbar
-              aboutDialogue={this.aboutDialogue.bind(this)}
-              login={this.login.bind(this)}
-              logout={this.logout.bind(this)}
-              subscribe={this.subscribe.bind(this)}
-              error={this.state.loginError}
-              subscribeError={this.state.subscribeError}
-              wins={this.state.userWins}
-              profile={this.profileRedirect.bind(this)} />
-          </div>
+          {(this.props.loggedInUsername) ?
+            <div id="navbar-wrapper">
+              <Navbar
+                aboutDialogue={this.aboutDialogue.bind(this)}
+                logout={this.logout.bind(this)}
+                wins={this.state.userWins}
+                profile={this.profileRedirect.bind(this)} />
+            </div>
+            : null
+          }
           <div className="container">
             <Route path="/" render={
               (props) => (loggedIn) ?
@@ -368,7 +368,11 @@ class ConnectedApp extends React.Component {
                   userRooms={this.state.userRooms}
                   io={this.socket}
                   {...props} /> :
-                <Splash />
+                <Splash
+                  subscribe={this.subscribe.bind(this)}
+                  login={this.login.bind(this)}
+                  error={this.state.loginError}
+                  subscribeError={this.state.subscribeError} />
             } />
             <Route exact path="/signup" render={
               (props) => <SignupPage

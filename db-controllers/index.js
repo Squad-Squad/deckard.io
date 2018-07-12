@@ -4,6 +4,7 @@ const _ = require('underscore')
 const Tock = require('tocktimer');
 
 
+
 // db.sequelize.query('SELECT * FROM users').spread((results) => {
 //   console.log('AAAAAAAAAAAAAAA', results[0]);
 // })
@@ -279,7 +280,6 @@ const fetchRedisMessages = (client, socket, callback) => {
         }
         outputArray.push(msgObj);
       });
-      console.log('AM I GETTING A FULL ARRAY OF MESSAGES', outputArray);
       callback(outputArray);
     }
   });
@@ -303,8 +303,8 @@ const getRoomReady = (io, timerObj, client, socket, data, rooms, membersInfo) =>
         );
 
         // add a message to room messages in redis notifying that mitsuku has joined
-        
-       const mitMessage = `${data.mitsuku} has joined the room` 
+
+        const mitMessage = `${data.mitsuku} has joined the room`;
 
 
         client.rpush(
@@ -328,7 +328,7 @@ const getRoomReady = (io, timerObj, client, socket, data, rooms, membersInfo) =>
   let membersInRoom;
   let membersInvitedtoRoom;
   client.lrangeAsync(`${data.roomID}:membersList`, 0, -1)
-  .then((replies) => {
+    .then((replies) => {
       membersInRoom = replies.map(reply => JSON.parse(reply));
 
   client.lrangeAsync(`${data.roomID}:membersInvited`, 0, -1)
@@ -428,30 +428,28 @@ const getRoomReady = (io, timerObj, client, socket, data, rooms, membersInfo) =>
 }
 
 
-const removeFromMembersList = (client, socket) =>{
-  let user = socket.username
-      console.log("WHO I'mTRYING TO REMOVE", JSON.stringify({[user]: socket.id}))
-      client.lremAsync(`${socket.room}:membersList`, 1, JSON.stringify({[user]: socket.id}))
-      .then((replies) => {
-      console.log('REMOVE FROM MEMBERSLIST REPLY', replies);
+
+const removeFromMembersList = (client, socket) => {
+  const user = socket.username;
+  console.log("WHO I'mTRYING TO REMOVE", JSON.stringify({ [user]: socket.id }));
+  client.lremAsync(`${socket.room}:membersList`, 1, JSON.stringify({ [user]: socket.id }))
+    .then((replies) => {
       client.lrangeAsync(`${socket.room}:membersList`, 0, -1)
         .then((reply) => {
           console.log(`ROOM MEMmbers of ${socket.room} CHECK AFTER REM:`, reply);
 
 
-          //LEAVE ROOM ASYNCHRONOUSLY HERE
+          // LEAVE ROOM ASYNCHRONOUSLY HERE
           socket.leave(socket.room);
-
         })
-        .catch(err=>{
-          console.error(err)
-        })
-      })
-      .catch(err=>{
-        console.error(err)
-      })
-}
-        
+        .catch((err) => {
+          console.error(err);
+        });
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+};
 
 
 module.exports = {
