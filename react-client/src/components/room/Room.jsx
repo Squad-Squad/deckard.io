@@ -98,10 +98,8 @@ class ConnectedRoom extends React.Component {
   /// Send post request to server to fetch room info when user visits link
   componentDidMount() {
     this.getRoomInfo();
-    console.log("THIS.PROPS.ROOMMODE IN componentDidMount", this.props.roomMode)
     if(this.props.roomMode === "free"){
-    // axios.post('/api/startTimer', {roomID: this.props.roomID}) 
-    this.getTimer()
+      this.getTimer()
     }
   }
 
@@ -128,15 +126,16 @@ class ConnectedRoom extends React.Component {
     })
       .then(() => {
         this.props.io.emit('join', { roomLength: this.state.roomLength, roomID: this.roomID, user: this.state.memberMap[this.props.loggedInUsername], mitsuku: this.state.memberMap['mitsuku@mitsuku.com'], roomMode: this.state.roomMode });
+        console.log("MEMBERMAP IN ROOM.JSX:", this.state.memberMap)
       });
 
   }
 
   getTimer(timer) {
-    // $.get(`/api/timer/${this.roomID}`).then(timer => {
-      let roomLengthInMilis = timer * 60 * 1000
-      // timer 
-      console.log("GET TIMER IN ROOM.JSX", timer)
+
+      // let roomLengthInMilis = timer * 60 * 1000
+      let roomLengthInMilis = timer * 60 
+    
       let tock = new Tock({
         countdown: true,
         interval: 100,
@@ -154,10 +153,8 @@ class ConnectedRoom extends React.Component {
       });
 
       if(this.state.roomMode === 'round'){
-        console.log("I'm ROUND MODE IN GET TIMER")
         tock.start(roomLengthInMilis); 
       }else{
-        console.log("STUFFFFFF HAPPPPPENNNNINNNNGGGG HERER")
         $.get(`/api/timer/${this.roomID}`).then(communalTime => {
           tock.start(communalTime.timeLeft + 1000)
         })
