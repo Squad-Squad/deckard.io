@@ -1,6 +1,7 @@
 const db = require('../database-postgresql/models');
 const bcrypt = require('bcrypt');
-const _ = require('underscore')
+const crypto = require('crypto');
+const _ = require('underscore');
 const Tock = require('tocktimer');
 
 
@@ -35,16 +36,18 @@ const saveMember = (username, email, password, isGoogle, callback) => {
 const saveRoomAndMembers = (roomName, members, id, callback) => {
   members.push('mitsuku@mitsuku.com');
 
-  const promisedMembers = members.map(memberEmail => db.models.User.findOne({
-    where: {
-      email: memberEmail,
-    },
-  }));
+  const promisedMembers = members.map(memberEmail =>
+    db.models.User.findOne({
+      where: {
+        email: memberEmail,
+      },
+    }));
   let foundUsers = [];
   let newRoom = '';
 
   // User aliases
-  const aliases = ['HAL 9000',
+  const aliases = [
+    'HAL 9000',
     'Android 18',
     'AM',
     'Marvin',
@@ -119,7 +122,8 @@ const aliasMembers = (roomName, roomMode, members, roomLength, roomUnique, callb
     '2B',
     'GlaDOS',
     'SHODAN',
-    'Dolores'];
+    'Dolores',
+  ];
 
   // const randomAlias = Math.floor(Math.random() * aliases.length);
   const randomForAI = Math.floor(Math.random() * aliases.length);
@@ -134,27 +138,24 @@ const aliasMembers = (roomName, roomMode, members, roomLength, roomUnique, callb
 };
 
 const updateUser = (updateData) => {
-  db.models.User.findOne({ username: updateData.username })
-    .then((user) => {
-      if (user) {
-        if (updateData.username) user.updateAttributes({ username: updateData.username });
-        if (updateData.email) user.updateAttributes({ email: updateData.email });
-        if (updateData.imageURL) user.updateAttributes({ imageURL: updateData.imageURL });
-      } else {
-        console.log('ERROR UPDATING THE USER');
-      }
-    });
+  db.models.User.findOne({ username: updateData.username }).then((user) => {
+    if (user) {
+      if (updateData.username) user.updateAttributes({ username: updateData.username });
+      if (updateData.email) user.updateAttributes({ email: updateData.email });
+      if (updateData.imageURL) user.updateAttributes({ imageURL: updateData.imageURL });
+    } else {
+      console.log('ERROR UPDATING THE USER');
+    }
+  });
 };
-
 
 // Add Mitsuku user to table if she doesn't already exist
 const addMitsuku = () => {
-  db.models.User.findAll({ where: { email: 'mitsuku@mitsuku.com' } })
-    .then((res) => {
-      if (!res.length) {
-        db.models.User.create({ username: 'Mitsuku', email: 'mitsuku@mitsuku.com' });
-      }
-    });
+  db.models.User.findAll({ where: { email: 'mitsuku@mitsuku.com' } }).then((res) => {
+    if (!res.length) {
+      db.models.User.create({ username: 'Mitsuku', email: 'mitsuku@mitsuku.com' });
+    }
+  });
 };
 
 //
@@ -189,11 +190,13 @@ const saveMessage = (user_id, name, message, roomID, callback) => {
 const getMessages = (roomID, callback) => {
   db.models.Message.findAll({
     attributes: ['user_id', 'name', 'message'],
-    include: [{
-      model: db.models.Room,
-      where: { uniqueid: roomID },
-      attributes: [],
-    }],
+    include: [
+      {
+        model: db.models.Room,
+        where: { uniqueid: roomID },
+        attributes: [],
+      },
+    ],
     raw: true,
   })
     .then((fetchedMessage) => {
@@ -210,26 +213,31 @@ const getMessages = (roomID, callback) => {
 const getRoomMembers = (roomID, callback) => {
   db.models.User.findAll({
     attributes: ['email', 'id'],
-    include: [{
-      model: db.models.Room,
-      where: { uniqueid: roomID },
-      attributes: ['name', 'id'],
-      through: { attributes: [] },
-    }],
+    include: [
+      {
+        model: db.models.Room,
+        where: { uniqueid: roomID },
+        attributes: ['name', 'id'],
+        through: { attributes: [] },
+      },
+    ],
   })
     // Get aliases, this code sucks, ugh
     .then((users) => {
-      Promise.all(users.map(user => db.models.RoomUsers.findAll({
-        attributes: ['alias'],
-        where: {
-          userId: user.id,
-          roomId: user.rooms[0].id,
-        },
-      })))
-        .then((res) => {
-          const aliases = JSON.parse(JSON.stringify(res)).map(el => el[0]);
-          callback(null, JSON.parse(JSON.stringify(users)).map((user, i) => Object.assign(user, aliases[i])));
-        });
+      Promise.all(users.map(user =>
+        db.models.RoomUsers.findAll({
+          attributes: ['alias'],
+          where: {
+            userId: user.id,
+            roomId: user.rooms[0].id,
+          },
+        }))).then((res) => {
+        const aliases = JSON.parse(JSON.stringify(res)).map(el => el[0]);
+        callback(
+          null,
+          JSON.parse(JSON.stringify(users)).map((user, i) => Object.assign(user, aliases[i])),
+        );
+      });
     })
     .catch((error) => {
       callback(error);
@@ -252,16 +260,13 @@ const getRooms = (email, callback) => {
 };
 
 const getWins = (email, callback) => {
-  db.models.User
-    .findOne({
-      where: { email },
-      attributes: ['wins'],
-    })
-    .then((res) => {
-      callback(null, `${res.dataValues.wins}`);
-    });
+  db.models.User.findOne({
+    where: { email },
+    attributes: ['wins'],
+  }).then((res) => {
+    callback(null, `${res.dataValues.wins}`);
+  });
 };
-
 
 const fetchRedisMessages = (client, socket, callback) => {
   const outputArray = [];
@@ -465,6 +470,52 @@ const removeFromMembersList = (client, socket, rooms) => {
     });
 };
 
+const saveVerificationHash = (client, hash, username) => {
+  client.set(hash, username, 'EX', 86400); //  expires after 24 hours
+};
+
+const lookupVerificationHash = (client, hash, username) => {};
+
+const setVerified = (username) => {
+  db.models.User.findOne({
+    where: { username },
+  })
+    .then((user) => {
+      if (user) {
+        user.updateAttributes({ is_verified: true });
+        console.log('Verified User ', username);
+      } else {
+        console.log('Error updating user');
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};
+
+const hashUsername = (username) => {
+  const secret = 'abcdefg';
+  const hash = crypto
+    .createHash('md5', secret)
+    .update(username)
+    .digest('hex');
+  return hash;
+};
+
+const getUser = username =>
+  db.models.User.findOne({ where: { username } })
+    .then(user => user)
+    .catch((err) => {
+      console.log('ERROR getUser Function', err);
+    });
+
+const getUserEmail = username =>
+  getUser(username)
+    .then((user) => {
+      const { email } = user.dataValues;
+      return email;
+    })
+    .catch(err => console.log('error', err));
 
 
 const turnOverLogic = (io, client, socket, data, gameOrderArr, mitsuku) => {
@@ -588,6 +639,12 @@ module.exports = {
   getWins,
   aliasMembers,
   fetchRedisMessages,
+  saveVerificationHash,
+  lookupVerificationHash,
+  setVerified,
+  hashUsername,
+  getUser,
+  getUserEmail,
   getRoomReady,
   removeFromMembersList,
   turnOverLogic,
