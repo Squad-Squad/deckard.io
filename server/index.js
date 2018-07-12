@@ -550,86 +550,9 @@ db.models.sequelize.sync().then(() => {
         .catch((err) => {
           console.error(err);
         });
-      
-      const gameOrderArrOfKeys = [];
-      let nextTurnUsername;
-      let nextTurnUserSocketId;
-      gameOrderArr.forEach((player) => {
-        const username = Object.keys(player);
-        gameOrderArrOfKeys.push(username[0]);
-      });
-      const lastTurnIndex = gameOrderArrOfKeys.indexOf(data.user);
 
-      if (lastTurnIndex === gameOrderArr.length - 1) {
-        nextTurnUsername = Object.keys(gameOrderArr[0])[0];
-      } else {
-        nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 1])[0];
-      }
+      dbHelpers.turnOverLogic(io, client, socket, data, gameOrderArr, mitsuku)
 
-
-      if (nextTurnUsername === 'mitsuku') {
-        io.sockets.sockets[socket.id].emit('turnOver', socket.username);
-        io.sockets.emit('whose turn', 'mitsuku@mitsuku.com');
-
-        let extraDelay = 0;
-        let response;
-        mitsuku.send(data.message).then((reply) => {
-          response = reply
-          if (response === undefined) {
-            mitsuku.send(data.message).then((reply) => {
-              response = reply
-            });
-          }
-          if (/here\sin\sleeds/g.test(response)) {
-            response = response.slice(0, response.indexOf('here in leeds'));
-          }
-          // Add delay based on response length
-          extraDelay = response.length * 40;
-          console.log('EXTRA DELAY', extraDelay);
-
-          setTimeout(() => {
-            // Save her message to redis
-            client.rpush(
-              `${socket.room}:messages`,
-              JSON.stringify({ 'mitsuku@mitsuku.com': response }),
-            );
-
-            // and retrieve all the messages immediately after
-            dbHelpers.fetchRedisMessages(client, socket, (result) => {
-              io.sockets.in(socket.room).emit('chat', result);
-            });
-
-            // after mitsuku's turn onto the next one
-
-            if (lastTurnIndex + 1 === gameOrderArr.length - 1) {
-              nextTurnUsername = Object.keys(gameOrderArr[0])[0];
-              nextTurnUserSocketId = gameOrderArr[0][nextTurnUsername];
-            } else if (nextTurnUsername === Object.keys(gameOrderArr[0])[0]) {
-              nextTurnUsername = Object.keys(gameOrderArr[1])[0];
-              nextTurnUserSocketId = gameOrderArr[1][nextTurnUsername];
-            } else {
-              nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 2])[0];
-              nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 2][nextTurnUsername];
-            }
-            if(nextTurnUserSocketId){
-              io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
-              io.sockets.emit('whose turn', nextTurnUsername);
-            }
-          }, Math.random() * 5000 + 2000 + extraDelay);
-        });
-      } else {
-        if (lastTurnIndex === gameOrderArr.length - 1) {
-          nextTurnUsername = Object.keys(gameOrderArr[0])[0];
-          nextTurnUserSocketId = gameOrderArr[0][nextTurnUsername];
-        } else {
-          nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 1][nextTurnUsername];
-        }
-        console.log('NEXT TURN data.USER SOCEKT ID:', nextTurnUserSocketId);
-        io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
-        console.log('socket.id in next turn', socket.id);
-        io.sockets.sockets[socket.id].emit('turnOver', socket.username);
-        io.sockets.emit('whose turn', nextTurnUsername);
-      }
     });
 
     // console.log("A DIFFERENT METHOD INDEX", rooms[socket.room]['gameOrder'].indexOf({[data.user]:socket.id}))
@@ -659,15 +582,13 @@ db.models.sequelize.sync().then(() => {
       const message = data.message.message;
       const roomMode = data.roomMode;
 
-      console.log('ROOMMODE WITH CHAT:', roomMode);
+      // console.log('ROOMMODE WITH CHAT:', roomMode);
 
       // push all the messages sent from client to redis room key message list
       client.rpush(`${socket.room}:messages`, JSON.stringify({ [user]: message }));
 
       // Change Mitsuku's response frequency based on the number of room users
 
-      if (roomMode === 'round') {
-      }
 
       let extraDelay = 0;
       if (roomMode === 'free') {
@@ -728,22 +649,43 @@ db.models.sequelize.sync().then(() => {
     });
 
     // handle cases in which player leaves the room without completely disconnecting from the site
-    socket.on('leaveRoom', (data) => {
-      if (socket.room) {
-        rooms[socket.room].splice(rooms[socket.room].indexOf(socket.username), 1);
+    socket.on('leaveRoom', async data => {
+      if (socket.room){
+        rooms[socket.room].splice(rooms[socket.room].indexOf(socket.username),1 );
+
 
         client.rpush(
           `${socket.room}:messages`,
           JSON.stringify({ matrixOverLords: `${socket.alias} left the room` }),
         );
 
-        console.log('SOCKET ID WHEN LEAVE:', socket.id);
-        io.sockets.sockets[socket.id].emit('return option', socket.room, (err, response) => {
-          console.log('DID I HAPPEN');
+        // io.sockets.sockets[socket.id].emit('return option', socket.room, (err, response) => {
+        //   console.log('DID I HAPPEN');
+        // });
+
+
+        await dbHelpers.removeFromMembersList(client, socket, rooms);
+
+        let gameOrderArr = [];
+        await client.lrangeAsync(`${socket.room}:gameOrder`, 0, -1)
+        .then((reply) => {
+          reply.forEach(user=>{
+            gameOrderArr.push(JSON.parse(user))
+          })
+        })
+        .catch((err) => {
+          console.error(err);
         });
 
-        dbHelpers.removeFromMembersList(client, socket, rooms);
+        if(!data.message){
+          data.message = ""
+        }
 
+        console.log("DOES GAME ORDERARR HAPPEN:", gameOrderArr)
+
+        if(gameOrderArr.length > 1){
+        dbHelpers.turnOverLogic(io, client, socket, data, gameOrderArr, mitsuku) 
+      }
 
         dbHelpers.fetchRedisMessages(client, socket, (result) => {
           io.sockets.in(socket.room).emit('chat', result);
@@ -751,13 +693,13 @@ db.models.sequelize.sync().then(() => {
       }
     });
 
-    socket.on('disconnect', (data) => {
+    socket.on('disconnect', async data => {
       const thisRoom = rooms[socket.room];
 
       if (rooms[socket.room]) {
-        users.splice(users.indexOf(socket.username), 1);
-        rooms[socket.room].splice(thisRoom.indexOf(socket.username), 1);
-        console.log('this users has disconnected:', socket.username, 'AND ROOMS[SOCKET.ROOM] AFTER DISCONNECT:', rooms[socket.room]);
+        // users.splice(users.indexOf(socket.username), 1);
+        // rooms[socket.room].splice(thisRoom.indexOf(socket.username), 1);
+        // console.log('this users has disconnected:', socket.username, 'AND ROOMS[SOCKET.ROOM] AFTER DISCONNECT:', rooms[socket.room]);
         client.rpush(
           `${socket.room}:messages`,
           JSON.stringify({ matrixOverLords: `${socket.alias} left the room` }),
@@ -778,13 +720,33 @@ db.models.sequelize.sync().then(() => {
           console.error(err);
         });
 
-      dbHelpers.removeFromMembersList(client, socket, rooms);
+      await dbHelpers.removeFromMembersList(client, socket, rooms);
+
+        let gameOrderArr = [];
+        await client.lrangeAsync(`${socket.room}:gameOrder`, 0, -1)
+        .then((reply) => {
+          reply.forEach(user=>{
+            gameOrderArr.push(JSON.parse(user))
+          })
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+
+        if(!data.message){
+          data.message = ""
+        }
+
+        // console.log("DOES GAME ORDERARR HAPPEN:", gameOrderArr)
+      if(gameOrderArr.length > 1){
+        dbHelpers.turnOverLogic(io, client, socket, data, gameOrderArr, mitsuku) 
+      }
 
       dbHelpers.fetchRedisMessages(client, socket, (result) => {
         io.sockets.in(socket.room).emit('chat', result);
       });
 
-      connections.splice(connections.indexOf(socket), 1);
+      // connections.splice(connections.indexOf(socket), 1);
     });
 
     socket.on('vote', (data) => {

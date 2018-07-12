@@ -434,7 +434,7 @@ const removeFromMembersList = (client, socket, rooms) => {
   const user = socket.username;
           //UPDATE GAME TURN ORDER WHEN SOMEONE LEAVES THE ROOM
           
-    client.lremAsync(`${socket.room}:gameOrder`, 1, JSON.stringify({ [user]: socket.id }))
+  client.lremAsync(`${socket.room}:gameOrder`, 1, JSON.stringify({ [user]: socket.id }))
     .then((replies) => {
       client.lrangeAsync(`${socket.room}:gameOrder`, 0, -1)
         .then((reply) => {
@@ -452,6 +452,12 @@ const removeFromMembersList = (client, socket, rooms) => {
     .then((replies) => {
       client.lrangeAsync(`${socket.room}:membersList`, 0, -1)
         .then((reply) => {
+          console.log("MEMBERS LIST AFTER REMOVEFROMMEMBERSLIST:", reply)
+          // client.rpush(
+          //   `${socket.room}:messages`,
+          //   JSON.stringify({ matrixOverLords: `${socket.alias} left the room` }),
+          // );
+
           // LEAVE ROOM ASYNCHRONOUSLY HERE
           socket.leave(socket.room);
         })
@@ -511,6 +517,116 @@ const getUserEmail = username =>
     })
     .catch(err => console.log('error', err));
 
+
+const turnOverLogic = (io, client, socket, data, gameOrderArr, mitsuku) => {
+
+  console.log("IN TURNOVER LOGIC STATE OF DATA:", data, gameOrderArr)
+  let message;
+  if(!data.message){
+    message = "blank*"
+  }else{
+    message = data.message
+  }
+
+  const gameOrderArrOfKeys = [];
+      let nextTurnUsername;
+      let nextTurnUserSocketId;
+      gameOrderArr.forEach((player) => {
+        const username = Object.keys(player);
+        gameOrderArrOfKeys.push(username[0]);
+      });
+      const lastTurnIndex = gameOrderArrOfKeys.indexOf(data.user);
+
+      if (lastTurnIndex === gameOrderArr.length - 1) {
+        nextTurnUsername = Object.keys(gameOrderArr[0])[0];
+      } else {
+        nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 1])[0];
+      }
+
+
+      if (nextTurnUsername === 'mitsuku') {
+        if(message !== "blank*"){
+          io.sockets.sockets[socket.id].emit('turnOver', socket.username); 
+        }
+        io.sockets.emit('whose turn', 'mitsuku@mitsuku.com');
+
+        let extraDelay = 0;
+        let response;
+        mitsuku.send(message).then((reply) => {
+          response = reply
+          if (response === undefined) {
+            mitsuku.send(message).then((reply) => {
+              response = reply
+            });
+          }
+          if (/here\sin\sleeds/g.test(response)) {
+            response = response.slice(0, response.indexOf('here in leeds'));
+          }
+          // Add delay based on response length
+          extraDelay = response.length * 40;
+          console.log('EXTRA DELAY', extraDelay);
+
+          setTimeout(async () => {
+            // Save her message to redis
+            client.rpush(
+              `${socket.room}:messages`,
+              JSON.stringify({ 'mitsuku@mitsuku.com': response }),
+            );
+
+            // and retrieve all the messages immediately after
+            fetchRedisMessages(client, socket, (result) => {
+              io.sockets.in(socket.room).emit('chat', result);
+            });
+
+            // after mitsuku's turn onto the next one
+
+            //fetch gameOrderArr again in case someone leaves room in middle of response
+            let gameOrderArr = [];
+            await client.lrangeAsync(`${socket.room}:gameOrder`, 0, -1)
+            .then((reply) => {
+              reply.forEach(user=>{
+                gameOrderArr.push(JSON.parse(user))
+              })
+            })
+            .catch((err) => {
+              console.error(err);
+            });
+
+
+            if (lastTurnIndex + 1 === gameOrderArr.length - 1) {
+              nextTurnUsername = Object.keys(gameOrderArr[0])[0];
+              nextTurnUserSocketId = gameOrderArr[0][nextTurnUsername];
+            } else if (nextTurnUsername === Object.keys(gameOrderArr[0])[0]) {
+              nextTurnUsername = Object.keys(gameOrderArr[1])[0];
+              nextTurnUserSocketId = gameOrderArr[1][nextTurnUsername];
+            } else {
+              nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 2])[0];
+              nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 2][nextTurnUsername];
+            }
+            if(nextTurnUserSocketId){
+              io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
+              io.sockets.emit('whose turn', nextTurnUsername);
+            }
+          }, Math.random() * 5000 + 2000 + extraDelay);
+
+        });
+      } else {
+        if (lastTurnIndex === gameOrderArr.length - 1) {
+          nextTurnUsername = Object.keys(gameOrderArr[0])[0];
+          nextTurnUserSocketId = gameOrderArr[0][nextTurnUsername];
+        } else {
+          nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 1][nextTurnUsername];
+        }
+        io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
+        console.log()
+        if(message !== "blank*"){
+          io.sockets.sockets[socket.id].emit('turnOver', socket.username); 
+        }
+        io.sockets.emit('whose turn', nextTurnUsername);
+    }
+}
+
+
 module.exports = {
   saveMember,
   saveRoomAndMembers,
@@ -531,4 +647,5 @@ module.exports = {
   getUserEmail,
   getRoomReady,
   removeFromMembersList,
+  turnOverLogic,
 };
