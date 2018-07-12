@@ -112,6 +112,22 @@ app.get(
   },
 );
 
+//
+// ─── GITHUB OAUTH ENDPOINTS ─────────────────────────────────────────────────────
+//
+app.get(
+  '/auth/github',
+  passport.authenticate('github'),
+);
+
+app.get(
+  '/auth/github/callback',
+  passport.authenticate('github', { failureRedirect: '/login' }),
+  (req, res) => {
+    res.redirect('/');
+  },
+);
+
 
 //
 // ─── LOCAL AUTH ENDPOINTS ───────────────────────────────────────────────────────

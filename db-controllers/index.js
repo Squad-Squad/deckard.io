@@ -12,7 +12,15 @@ const Tock = require('tocktimer');
 //
 // ─── USER TABLE HELPERS ─────────────────────────────────────────────────────────
 //
-const saveMember = (username, email, password, isGoogle, callback) => {
+const saveMember = (
+  username,
+  email,
+  password,
+  isGoogle,
+  isGithub,
+  githubID,
+  callback,
+) => {
   let hashedPW;
   if (password) {
     const salt = bcrypt.genSaltSync(3);
@@ -23,6 +31,8 @@ const saveMember = (username, email, password, isGoogle, callback) => {
     email,
     password: hashedPW,
     is_google_account: isGoogle,
+    is_github_account: isGithub,
+    github_id: githubID,
   })
     .then((result) => {
       callback(result);

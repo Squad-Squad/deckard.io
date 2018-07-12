@@ -52,7 +52,6 @@ const User = sequelize.define('user', {
   },
   email: {
     type: Sequelize.STRING,
-    allowNull: false,
     validate: {
       isEmail: true,
     },
@@ -60,6 +59,13 @@ const User = sequelize.define('user', {
   is_google_account: {
     type: Sequelize.BOOLEAN,
     defaultValue: false,
+  },
+  is_github_account: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false,
+  },
+  github_id: {
+    type: Sequelize.INTEGER(8),
   },
   password: {
     type: Sequelize.STRING,
