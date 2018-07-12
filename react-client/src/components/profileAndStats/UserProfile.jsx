@@ -10,7 +10,7 @@ import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
 import placeholder from './../../../dist/assets/profile-placeholder.jpg';
 import { connect } from 'react-redux';
-import { login } from '../../../../redux/actions';
+import { login, removeAllUsersFromNewRoom } from '../../../../redux/actions';
 import axios from 'axios';
 
 function mapStateToProps(state) {
@@ -29,6 +29,7 @@ function mapDispatchToProps(dispatch) {
     login: (username, email, isGoogleAccount, avatarURL, description, friends) => {
       return dispatch(login(username, email, isGoogleAccount, avatarURL, description, friends));
     },
+    removeAllUsersFromNewRoom: () => dispatch(removeAllUsersFromNewRoom()),
   };
 }
 
@@ -140,6 +141,7 @@ class UserProfile extends Component {
       updateAvatarURL,
       updateDescription,
       this.props.friends);
+    this.props.removeAllUsersFromNewRoom();
     this.setState({
       open: true,
 
