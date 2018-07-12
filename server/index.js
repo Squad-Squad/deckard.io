@@ -492,8 +492,10 @@ db.models.sequelize.sync().then(() => {
 
 
     socket.on('turn done', (data) => {
-      console.log('TURN DONE for Me:', data.user, socket.room);
+      // console.log('TURN DONE for Me:', data.user, socket.room);
       console.log("I'm the room order", rooms[socket.room].gameOrder);
+
+
       const gameOrderArr = rooms[socket.room].gameOrder;
       const gameOrderArrOfKeys = [];
       let nextTurnUsername;
@@ -518,22 +520,25 @@ db.models.sequelize.sync().then(() => {
 
         console.log('LAST MESSAGE that mitsuku will respond to:', data.message);
         let extraDelay = 0;
-        mitsuku.send(data.message).then((response) => {
-          console.log('GETTING MESSAGE BACKFIRST', response);
+        let response;
+        mitsuku.send(data.message).then((reply) => {
+          console.log('GETTING MESSAGE BACKFIRST', reply);
+          response = reply
           if (response === undefined) {
-            mitsuku.send(data.message).then((response) => {
-              console.log('GETTING MESSAGE BACKSECOND', response);
-              client.rpush(
-                `${socket.room}:messages`,
-                JSON.stringify({ 'mitsuku@mitsuku.com': response }),
-              );
+            mitsuku.send(data.message).then((reply) => {
+              console.log('GETTING MESSAGE BACKSECOND', reply);
+              response = reply
+              // client.rpush(
+              //   `${socket.room}:messages`,
+              //   JSON.stringify({ 'mitsuku@mitsuku.com': response }),
+              // );
             });
           }
           if (/here\sin\sleeds/g.test(response)) {
             response = response.slice(0, response.indexOf('here in leeds'));
           }
           // Add delay based on response length
-          extraDelay = response.length * 25;
+          extraDelay = response.length * 40;
           console.log('EXTRA DELAY', extraDelay);
 
           setTimeout(() => {
@@ -556,12 +561,17 @@ db.models.sequelize.sync().then(() => {
             } else if (nextTurnUsername === Object.keys(gameOrderArr[0])[0]) {
               nextTurnUsername = Object.keys(gameOrderArr[1])[0];
               nextTurnUserSocketId = gameOrderArr[1][nextTurnUsername];
+              console.log("NEXT TURN USER SOCKET ID IN SOMETHING", nextTurnUserSocketId)
             } else {
               nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 2])[0];
               nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 2][nextTurnUsername];
+              console.log("NEXT TURN USER SOCKET ID IN SOMETHING", nextTurnUserSocketId)
             }
-            io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
-            io.sockets.emit('whose turn', nextTurnUsername);
+            if(nextTurnUserSocketId){
+              console.log("NEXT TURN USER SOCKET ID IN ACCEPTED", nextTurnUserSocketId)              
+              io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
+              io.sockets.emit('whose turn', nextTurnUsername);
+            }
           }, Math.random() * 5000 + 2000 + extraDelay);
         });
       } else {
@@ -744,7 +754,7 @@ db.models.sequelize.sync().then(() => {
           console.log('DID I HAPPEN');
         });
 
-        dbHelpers.removeFromMembersList(client, socket);
+        dbHelpers.removeFromMembersList(client, socket, rooms);
 
 
         dbHelpers.fetchRedisMessages(client, socket, (result) => {
@@ -780,7 +790,7 @@ db.models.sequelize.sync().then(() => {
           console.error(err);
         });
 
-      dbHelpers.removeFromMembersList(client, socket);
+      dbHelpers.removeFromMembersList(client, socket, rooms);
 
       dbHelpers.fetchRedisMessages(client, socket, (result) => {
         io.sockets.in(socket.room).emit('chat', result);

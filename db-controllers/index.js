@@ -379,9 +379,20 @@ const getRoomReady = (io, timerObj, client, socket, data, rooms, membersInfo) =>
           // RANDOMIZE THE ORDER OF TURNS FOR ROUNDROBIN MODE
 
           const shuffledOrder = _.shuffle(membersInRoom);
-          console.log('SHUFFLED ORDER FOR PLAY:', shuffledOrder);
+          // console.log('SHUFFLED ORDER FOR PLAY:', shuffledOrder);
           rooms[data.roomID].gameOrder = shuffledOrder;
-          var fixedKey;
+          shuffledOrder.forEach(player=>{
+            client.rpushAsync(`${data.roomID}:gameOrder`, JSON.stringify(player))
+            .then(()=>{
+                client.lrangeAsync(`${data.roomID}:gameOrder`, 0, -1)
+                .then(replies=>{
+                  console.log("GAMEORDER LIST IN REDIS", replies)
+                }) 
+            })
+          })
+
+
+          // var fixedKey;
 
           // WHEN ITS MITSUKU'S TURN
 
@@ -429,15 +440,21 @@ const getRoomReady = (io, timerObj, client, socket, data, rooms, membersInfo) =>
 
 
 
-const removeFromMembersList = (client, socket) => {
+const removeFromMembersList = (client, socket, rooms) => {
   const user = socket.username;
-  console.log("WHO I'mTRYING TO REMOVE", JSON.stringify({ [user]: socket.id }));
+  // console.log("WHO I'mTRYING TO REMOVE", JSON.stringify({ [user]: socket.id }));
   client.lremAsync(`${socket.room}:membersList`, 1, JSON.stringify({ [user]: socket.id }))
     .then((replies) => {
       client.lrangeAsync(`${socket.room}:membersList`, 0, -1)
         .then((reply) => {
-          console.log(`ROOM MEMmbers of ${socket.room} CHECK AFTER REM:`, reply);
+          // console.log(`ROOM MEMmbers of ${socket.room} CHECK AFTER REM:`, reply);
 
+          //UPDATE GAME TURN ORDER WHEN SOMEONE LEAVES THE ROOM
+          let turnIndexForRemoval = rooms[socket.room].gameOrder.indexOf({[user]:socket.id})
+          console.log("TURN INDEX FOR REMOVAL", turnIndexForRemoval, {[user]:socket.id})
+          console.log("gameOrder BEFORE:", rooms[socket.room].gameOrder)
+          rooms[socket.room].gameOrder.splice(turnIndexForRemoval, 1)
+          console.log("gameOrder AFTER:", rooms[socket.room].gameOrder)
 
           // LEAVE ROOM ASYNCHRONOUSLY HERE
           socket.leave(socket.room);
