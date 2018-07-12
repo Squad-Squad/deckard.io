@@ -696,34 +696,6 @@ db.models.sequelize.sync().then(() => {
       dbHelpers.fetchRedisMessages(client, socket, (result) => {
         io.sockets.in(data.roomID).emit('chat', result);
       });
-      // let membersInRoomDECLINE;
-      // let membersInvitedtoRoomDECLINE;
-      // client.lrange(`${data.roomID}:membersList`, 0, -1, (err, replies) => {
-      //   if (err) {
-      //     console.log(err);
-      //   } else {
-      //     membersInRoomDECLINE = replies;
-      //   }
-
-      //   client.lrange(
-      //     `${data.roomID}:membersInvited`, 0, -1,
-      //     (err, replies) => {
-      //       if (err) {
-      //         console.log(err);
-      //       } else {
-      //         membersInvitedtoRoomDECLINE = replies;
-      //         if (data.roomMode === 'round') {
-      //           if (
-      //             membersInRoomDECLINE.length >=
-      //             membersInvitedtoRoomDECLINE.length
-      //           ) {
-      //             io.sockets.in(data.roomID).emit('roomReady', true);
-      //           }
-      //         }
-      //       }
-      //     },
-      //   );
-      // });
     });
 
     // handle cases in which player leaves the room without completely disconnecting from the site
