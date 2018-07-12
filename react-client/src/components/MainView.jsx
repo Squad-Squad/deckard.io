@@ -5,6 +5,7 @@ import InviteDialogueModal from './inviteDialogueModal/InviteDialogueModal.jsx'
 import { Route } from 'react-router-dom';
 import ProfileContainer from './profileAndStats/ProfileContainer.jsx';
 import { connect } from 'react-redux';
+import $ from 'jquery'
 import AboutDialogue from './AboutDialogue.jsx'
 
 
@@ -91,8 +92,11 @@ class ConnectedMainView extends React.Component {
   }
 
   decline() {
-    this.props.io.emit('decline', { user: this.props.loggedInUsername, roomID: this.state.roomHash, roomMode: this.state.roomMode })
-    this.setState({ invite: false })
+    $.get(`/api/rooms/${this.state.roomHash}`).then(roomInfo => {
+      console.log("ROOMINFO IN DECLINE MAINVIEW:", roomInfo)
+      this.props.io.emit('decline', { user: this.props.loggedInUsername, roomLength: roomInfo.roomLength, roomID: this.state.roomHash, roomMode: this.state.roomMode })
+      this.setState({ invite: false })
+    })
 
   }
 

@@ -264,7 +264,6 @@ const getWins = (email, callback) => {
 
 
 const fetchRedisMessages = (client, socket, callback) => {
-  console.log('SOCKET.ROOOM in the DBCONTROLLERS', socket.room);
   const outputArray = [];
   client.lrange(`${socket.room}:messages`, 0, -1, (err, replies) => {
     if (err) {
@@ -288,7 +287,6 @@ const fetchRedisMessages = (client, socket, callback) => {
 
 const getRoomReady = (io, timerObj, client, socket, data, rooms, membersInfo) => {
 
-  console.log("++++++++++DATA.roomLENGTHHHHH++++++++++", data)
   // notify everyone when mitsuku's joined the room (but only with her alias)
   if (socket.roomMode === 'free') {
     if (rooms[socket.room].length === 2) {
@@ -352,7 +350,6 @@ const getRoomReady = (io, timerObj, client, socket, data, rooms, membersInfo) =>
 
           let mitMessage;
           if(membersInfo){
-            console.log("MEMBERSINFOLENGTH")
             mitMessage = `${membersInfo['mitsuku@mitsuku.com']} has joined the room` 
           }else{
             mitMessage = `${data.mitsuku} has joined the room` 
@@ -376,12 +373,22 @@ const getRoomReady = (io, timerObj, client, socket, data, rooms, membersInfo) =>
           membersInRoom.push({ mitsuku: 'mitsuku@mitsuku.com' });
 
 
-          // RANDOMIZE THE ORDER OF TURNS FOR ROUNDROBIN MODE
+          // RANDOMIZE THE ORDER OF TURNS FOR ROUNDROBIN MODE AND PUSH RESULTS TO REDIS
 
           const shuffledOrder = _.shuffle(membersInRoom);
-          console.log('SHUFFLED ORDER FOR PLAY:', shuffledOrder);
-          rooms[data.roomID].gameOrder = shuffledOrder;
-          var fixedKey;
+
+          shuffledOrder.forEach(player=>{
+            client.rpushAsync(`${data.roomID}:gameOrder`, JSON.stringify(player))
+            .then(()=>{
+                client.lrangeAsync(`${data.roomID}:gameOrder`, 0, -1)
+                .then(replies=>{
+                  console.log("GAMEORDER LIST IN REDIS", replies)
+                  client.expire(`${data.roomID}:gameOrder`, 3600)
+                }) 
+            })
+          })
+
+
 
           // WHEN ITS MITSUKU'S TURN
 
@@ -389,29 +396,18 @@ const getRoomReady = (io, timerObj, client, socket, data, rooms, membersInfo) =>
             const key = Object.keys(shuffledOrder[1]);
             const fixKey = key[0];
             const firstTurnSocketId = shuffledOrder[1][fixKey];
-            console.log("WHOSE TURN IN DBCONTROLLERS", fixKey)
             io.sockets.in(data.room).emit('whose turn', fixKey)
             io.sockets.sockets[firstTurnSocketId].emit('yourTurn', key[0]);
-            // io.sockets.sockets[firstTurnSocketId].emit('startTimer')
             io.sockets.in(data.roomID).emit('roomReady', {roomLength:data.roomLength, firstTurn: firstTurnSocketId})
           } else {
             const key = Object.keys(shuffledOrder[0]);
             const fixKey = key[0];
             const firstTurnSocketId = shuffledOrder[0][fixKey];
-            console.log("WHOSE TURN IN DBCONTROLLERS2", fixKey)
             io.sockets.in(data.room).emit('whose turn', fixKey)
             io.sockets.sockets[firstTurnSocketId].emit('yourTurn', key[0]);
-            // io.sockets.sockets[firstTurnSocketId].emit('startTimer')
             io.sockets.in(data.roomID).emit('roomReady', {roomLength:data.roomLength, firstTurn: firstTurnSocketId})
 
           }
-          // timerObj[data.roomID] = new Tock({
-          //     countdown: true,
-          //   });
-          //   let roomLengthInMilis = data.roomLength * 60 * 1000
-          //   console.log("+++++++ROOMLENGTHIN MILIS++++++", roomLengthInMilis)
-          //   timerObj[data.roomID].start(roomLengthInMilis);
-          // io.sockets.in(data.roomID).emit('roomReady', true);
         }
       }
       
@@ -429,16 +425,28 @@ const getRoomReady = (io, timerObj, client, socket, data, rooms, membersInfo) =>
 
 
 
-const removeFromMembersList = (client, socket) => {
+const removeFromMembersList = (client, socket, rooms) => {
   const user = socket.username;
-  console.log("WHO I'mTRYING TO REMOVE", JSON.stringify({ [user]: socket.id }));
+          //UPDATE GAME TURN ORDER WHEN SOMEONE LEAVES THE ROOM
+          
+    client.lremAsync(`${socket.room}:gameOrder`, 1, JSON.stringify({ [user]: socket.id }))
+    .then((replies) => {
+      client.lrangeAsync(`${socket.room}:gameOrder`, 0, -1)
+        .then((reply) => {
+          console.log(`GAMEORDER of ${socket.room} CHECK AFTER REM:`, reply);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+
   client.lremAsync(`${socket.room}:membersList`, 1, JSON.stringify({ [user]: socket.id }))
     .then((replies) => {
       client.lrangeAsync(`${socket.room}:membersList`, 0, -1)
         .then((reply) => {
-          console.log(`ROOM MEMmbers of ${socket.room} CHECK AFTER REM:`, reply);
-
-
           // LEAVE ROOM ASYNCHRONOUSLY HERE
           socket.leave(socket.room);
         })
