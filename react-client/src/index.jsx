@@ -194,8 +194,11 @@ class ConnectedApp extends React.Component {
 
     if (res.config.data) {
       console.log("THISSSSS", res.config.data)
-      this.props.login(JSON.parse(res.config.data).username);
-      io.connect();
+      const username = JSON.parse(res.config.data).username
+      this.props.login(username);
+      this.socket.connect();
+      console.log('EMMITTING', this.socket.emit);
+      this.socket.emit('username connect', username);
     }
   }
 

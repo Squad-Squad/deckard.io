@@ -774,8 +774,8 @@ db.models.sequelize.sync().then(() => {
       client.lremAsync('onlineUsers', 1, socket.username)
         .then((replies) => {
           client.lrangeAsync('onlineUsers', 0, -1)
-            .then((reply) => {
-              console.log('ONLINE USERS CHECK AFTER REM:', reply);
+            .then((users) => {
+              console.log('ONLINE USERS CHECK AFTER REM:', users);
               io.sockets.emit('user-disconnected', users);
             })
             .catch((err) => {
