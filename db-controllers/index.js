@@ -1,5 +1,6 @@
 const db = require('../database-postgresql/models');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const _ = require('underscore');
 const Tock = require('tocktimer');
 
@@ -34,16 +35,18 @@ const saveMember = (username, email, password, isGoogle, callback) => {
 const saveRoomAndMembers = (roomName, members, id, callback) => {
   members.push('mitsuku@mitsuku.com');
 
-  const promisedMembers = members.map(memberEmail => db.models.User.findOne({
-    where: {
-      email: memberEmail,
-    },
-  }));
+  const promisedMembers = members.map(memberEmail =>
+    db.models.User.findOne({
+      where: {
+        email: memberEmail,
+      },
+    }));
   let foundUsers = [];
   let newRoom = '';
 
   // User aliases
-  const aliases = ['HAL 9000',
+  const aliases = [
+    'HAL 9000',
     'Android 18',
     'AM',
     'Marvin',
@@ -118,7 +121,8 @@ const aliasMembers = (roomName, roomMode, members, roomLength, roomUnique, callb
     '2B',
     'GlaDOS',
     'SHODAN',
-    'Dolores'];
+    'Dolores',
+  ];
 
   // const randomAlias = Math.floor(Math.random() * aliases.length);
   const randomForAI = Math.floor(Math.random() * aliases.length);
@@ -135,27 +139,24 @@ const aliasMembers = (roomName, roomMode, members, roomLength, roomUnique, callb
 };
 
 const updateUser = (updateData) => {
-  db.models.User.findOne({ username: updateData.username })
-    .then((user) => {
-      if (user) {
-        if (updateData.username) user.updateAttributes({ username: updateData.username });
-        if (updateData.email) user.updateAttributes({ email: updateData.email });
-        if (updateData.imageURL) user.updateAttributes({ imageURL: updateData.imageURL });
-      } else {
-        console.log('ERROR UPDATING THE USER');
-      }
-    });
+  db.models.User.findOne({ username: updateData.username }).then((user) => {
+    if (user) {
+      if (updateData.username) user.updateAttributes({ username: updateData.username });
+      if (updateData.email) user.updateAttributes({ email: updateData.email });
+      if (updateData.imageURL) user.updateAttributes({ imageURL: updateData.imageURL });
+    } else {
+      console.log('ERROR UPDATING THE USER');
+    }
+  });
 };
-
 
 // Add Mitsuku user to table if she doesn't already exist
 const addMitsuku = () => {
-  db.models.User.findAll({ where: { email: 'mitsuku@mitsuku.com' } })
-    .then((res) => {
-      if (!res.length) {
-        db.models.User.create({ username: 'Mitsuku', email: 'mitsuku@mitsuku.com' });
-      }
-    });
+  db.models.User.findAll({ where: { email: 'mitsuku@mitsuku.com' } }).then((res) => {
+    if (!res.length) {
+      db.models.User.create({ username: 'Mitsuku', email: 'mitsuku@mitsuku.com' });
+    }
+  });
 };
 
 //
@@ -190,11 +191,13 @@ const saveMessage = (user_id, name, message, roomID, callback) => {
 const getMessages = (roomID, callback) => {
   db.models.Message.findAll({
     attributes: ['user_id', 'name', 'message'],
-    include: [{
-      model: db.models.Room,
-      where: { uniqueid: roomID },
-      attributes: [],
-    }],
+    include: [
+      {
+        model: db.models.Room,
+        where: { uniqueid: roomID },
+        attributes: [],
+      },
+    ],
     raw: true,
   })
     .then((fetchedMessage) => {
@@ -211,26 +214,31 @@ const getMessages = (roomID, callback) => {
 const getRoomMembers = (roomID, callback) => {
   db.models.User.findAll({
     attributes: ['email', 'id'],
-    include: [{
-      model: db.models.Room,
-      where: { uniqueid: roomID },
-      attributes: ['name', 'id'],
-      through: { attributes: [] },
-    }],
+    include: [
+      {
+        model: db.models.Room,
+        where: { uniqueid: roomID },
+        attributes: ['name', 'id'],
+        through: { attributes: [] },
+      },
+    ],
   })
     // Get aliases, this code sucks, ugh
     .then((users) => {
-      Promise.all(users.map(user => db.models.RoomUsers.findAll({
-        attributes: ['alias'],
-        where: {
-          userId: user.id,
-          roomId: user.rooms[0].id,
-        },
-      })))
-        .then((res) => {
-          const aliases = JSON.parse(JSON.stringify(res)).map(el => el[0]);
-          callback(null, JSON.parse(JSON.stringify(users)).map((user, i) => Object.assign(user, aliases[i])));
-        });
+      Promise.all(users.map(user =>
+        db.models.RoomUsers.findAll({
+          attributes: ['alias'],
+          where: {
+            userId: user.id,
+            roomId: user.rooms[0].id,
+          },
+        }))).then((res) => {
+        const aliases = JSON.parse(JSON.stringify(res)).map(el => el[0]);
+        callback(
+          null,
+          JSON.parse(JSON.stringify(users)).map((user, i) => Object.assign(user, aliases[i])),
+        );
+      });
     })
     .catch((error) => {
       callback(error);
@@ -253,16 +261,13 @@ const getRooms = (email, callback) => {
 };
 
 const getWins = (email, callback) => {
-  db.models.User
-    .findOne({
-      where: { email },
-      attributes: ['wins'],
-    })
-    .then((res) => {
-      callback(null, `${res.dataValues.wins}`);
-    });
+  db.models.User.findOne({
+    where: { email },
+    attributes: ['wins'],
+  }).then((res) => {
+    callback(null, `${res.dataValues.wins}`);
+  });
 };
-
 
 const fetchRedisMessages = (client, socket, callback) => {
   const outputArray = [];
@@ -350,7 +355,7 @@ const getRoomReady = (io, timerObj, client, socket, data, rooms, membersInfo) =>
               let mitMessage;
               if (membersInfo) {
                 mitMessage = `${membersInfo['mitsuku@mitsuku.com']} has joined the room`;
-              } else{
+              } else {
                 mitMessage = `${data.mitsuku} has joined the room`;
               }
 
@@ -440,6 +445,12 @@ const removeFromMembersList = (client, socket, rooms) => {
     .then((replies) => {
       client.lrangeAsync(`${socket.room}:membersList`, 0, -1)
         .then((reply) => {
+          console.log('MEMBERS LIST AFTER REMOVEFROMMEMBERSLIST:', reply);
+          // client.rpush(
+          //   `${socket.room}:messages`,
+          //   JSON.stringify({ matrixOverLords: `${socket.alias} left the room` }),
+          // );
+
           // LEAVE ROOM ASYNCHRONOUSLY HERE
           socket.leave(socket.room);
         })
@@ -450,6 +461,160 @@ const removeFromMembersList = (client, socket, rooms) => {
     .catch((err) => {
       console.error(err);
     });
+};
+
+const saveVerificationHash = (client, hash, username) => {
+  client.set(hash, username, 'EX', 86400); //  expires after 24 hours
+};
+
+const lookupVerificationHash = (client, hash, username) => {};
+
+const setVerified = (username) => {
+  db.models.User.findOne({
+    where: { username },
+  })
+    .then((user) => {
+      if (user) {
+        user.updateAttributes({ is_verified: true });
+        console.log('Verified User ', username);
+      } else {
+        console.log('Error updating user');
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};
+
+const hashUsername = (username) => {
+  const secret = 'abcdefg';
+  const hash = crypto
+    .createHash('md5', secret)
+    .update(username)
+    .digest('hex');
+  return hash;
+};
+
+const getUser = username =>
+  db.models.User.findOne({ where: { username } })
+    .then(user => user)
+    .catch((err) => {
+      console.log('ERROR getUser Function', err);
+    });
+
+const getUserEmail = username =>
+  getUser(username)
+    .then((user) => {
+      const { email } = user.dataValues;
+      return email;
+    })
+    .catch(err => console.log('error', err));
+
+
+const turnOverLogic = (io, client, socket, data, gameOrderArr, mitsuku) => {
+  console.log('IN TURNOVER LOGIC STATE OF DATA:', data, gameOrderArr);
+  let message;
+  if (!data.message) {
+    message = 'blank*';
+  } else {
+    message = data.message;
+  }
+
+  const gameOrderArrOfKeys = [];
+  let nextTurnUsername;
+  let nextTurnUserSocketId;
+  gameOrderArr.forEach((player) => {
+    const username = Object.keys(player);
+    gameOrderArrOfKeys.push(username[0]);
+  });
+  const lastTurnIndex = gameOrderArrOfKeys.indexOf(data.user);
+
+  if (lastTurnIndex === gameOrderArr.length - 1) {
+    nextTurnUsername = Object.keys(gameOrderArr[0])[0];
+  } else {
+    nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 1])[0];
+  }
+
+
+  if (nextTurnUsername === 'mitsuku') {
+    if (message !== 'blank*') {
+      io.sockets.sockets[socket.id].emit('turnOver', socket.username);
+    }
+    io.sockets.emit('whose turn', 'mitsuku@mitsuku.com');
+
+    let extraDelay = 0;
+    let response;
+    mitsuku.send(message).then((reply) => {
+      response = reply;
+      if (response === undefined) {
+        mitsuku.send(message).then((reply) => {
+          response = reply;
+        });
+      }
+      if (/here\sin\sleeds/g.test(response)) {
+        response = response.slice(0, response.indexOf('here in leeds'));
+      }
+      // Add delay based on response length
+      extraDelay = response.length * 40;
+      console.log('EXTRA DELAY', extraDelay);
+
+      setTimeout(async () => {
+        // Save her message to redis
+        client.rpush(
+          `${socket.room}:messages`,
+          JSON.stringify({ 'mitsuku@mitsuku.com': response }),
+        );
+
+        // and retrieve all the messages immediately after
+        fetchRedisMessages(client, socket, (result) => {
+          io.sockets.in(socket.room).emit('chat', result);
+        });
+
+        // after mitsuku's turn onto the next one
+
+        // fetch gameOrderArr again in case someone leaves room in middle of response
+        const gameOrderArr = [];
+        await client.lrangeAsync(`${socket.room}:gameOrder`, 0, -1)
+          .then((reply) => {
+            reply.forEach((user) => {
+              gameOrderArr.push(JSON.parse(user));
+            });
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+
+
+        if (lastTurnIndex + 1 === gameOrderArr.length - 1) {
+          nextTurnUsername = Object.keys(gameOrderArr[0])[0];
+          nextTurnUserSocketId = gameOrderArr[0][nextTurnUsername];
+        } else if (nextTurnUsername === Object.keys(gameOrderArr[0])[0]) {
+          nextTurnUsername = Object.keys(gameOrderArr[1])[0];
+          nextTurnUserSocketId = gameOrderArr[1][nextTurnUsername];
+        } else {
+          nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 2])[0];
+          nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 2][nextTurnUsername];
+        }
+        if (nextTurnUserSocketId) {
+          io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
+          io.sockets.emit('whose turn', nextTurnUsername);
+        }
+      }, Math.random() * 5000 + 2000 + extraDelay);
+    });
+  } else {
+    if (lastTurnIndex === gameOrderArr.length - 1) {
+      nextTurnUsername = Object.keys(gameOrderArr[0])[0];
+      nextTurnUserSocketId = gameOrderArr[0][nextTurnUsername];
+    } else {
+      nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 1][nextTurnUsername];
+    }
+    io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
+    console.log();
+    if (message !== 'blank*') {
+      io.sockets.sockets[socket.id].emit('turnOver', socket.username);
+    }
+    io.sockets.emit('whose turn', nextTurnUsername);
+  }
 };
 
 
@@ -465,6 +630,13 @@ module.exports = {
   getWins,
   aliasMembers,
   fetchRedisMessages,
+  saveVerificationHash,
+  lookupVerificationHash,
+  setVerified,
+  hashUsername,
+  getUser,
+  getUserEmail,
   getRoomReady,
   removeFromMembersList,
+  turnOverLogic,
 };
