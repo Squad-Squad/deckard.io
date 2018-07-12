@@ -26,7 +26,7 @@ const { sequelize } = require('../database-postgresql/models/index');
 
 const { Op } = db;
 
-var timerObj = {};
+let timerObj = {};
 
 
 //
@@ -284,32 +284,32 @@ app.post('/api/roomEmail', (req, res) => {
 app.post('/api/save', (req, res) => {
   console.log('NEW ROOM DATA', req.body);
 
-  const { roomName, roomMode, members, roomLength } = req.body;
+  const {
+ roomName, roomMode, members, roomLength 
+} = req.body;
   const roomUnique = uniqueString().slice(0, 6);
-  if(roomMode === "free"){
+  if (roomMode === 'free') {
     timerObj[roomUnique] = new Tock({
       countdown: true,
     });
-    let roomLengthInMilis = roomLength * 60 * 1000
+    const roomLengthInMilis = roomLength * 60 * 1000;
     timerObj[roomUnique].start(roomLengthInMilis);
   }
 
   dbHelpers.aliasMembers(roomName, roomMode, members, roomLength, roomUnique, (results) => {
-    client.hmset(`${roomUnique}:members`, results, (err, reply)=>{
-      if(err){
-        console.error(err)
-      }else{
-        res.send(results)
-        client.expire(`${roomUnique}:members`, 3600)
+    client.hmset(`${roomUnique}:members`, results, (err, reply) => {
+      if (err) {
+        console.error(err);
+      }else {
+        res.send(results);
+        client.expire(`${roomUnique}:members`, 3600);
       }
     });
   });
-
 });
 
 
 app.post('/api/saveFreeMode', (req, res) => {
-
   const {
     roomName, roomMode, members, roomLength,
   } = req.body;
@@ -318,13 +318,13 @@ app.post('/api/saveFreeMode', (req, res) => {
     countdown: true,
   });
 
-  dbHelpers.aliasMembers(roomName, roomMode, members, roomLength, roomUnique, (results) =>{
-    client.hmset(`${roomUnique}:members`, results, (err, reply)=>{
-      if(err){
-        console.error(err)
-      }else{
-        res.send(results)
-        client.expire(`${roomUnique}:members`, 3600)
+  dbHelpers.aliasMembers(roomName, roomMode, members, roomLength, roomUnique, (results) => {
+    client.hmset(`${roomUnique}:members`, results, (err, reply) => {
+      if (err) {
+        console.error(err);
+      } else{
+        res.send(results);
+        client.expire(`${roomUnique}:members`, 3600);
       }
     });
   });
@@ -332,7 +332,7 @@ app.post('/api/saveFreeMode', (req, res) => {
 
   // CHANGE THE ROOM TIMER LENGTH HERE
 
-  let roomLengthInMilis = roomLength * 60 * 1000
+  const roomLengthInMilis = roomLength * 60 * 1000;
 
   timerObj[roomUnique].start(roomLengthInMilis);
 
@@ -359,10 +359,9 @@ app.post('/api/startTimer', (req, res) => {
     countdown: true,
   });
 
-  let roomLengthInMilis = roomLength * 60 * 1000
-  console.log("+++++++ROOMLENGTHIN MILIS++++++", roomLengthInMilis)
+  const roomLengthInMilis = roomLength * 60 * 1000;
+  console.log('+++++++ROOMLENGTHIN MILIS++++++', roomLengthInMilis);
   timerObj[roomID].start(roomLengthInMilis);
-
 });
 
 // Get room members here
@@ -447,7 +446,7 @@ db.models.sequelize.sync().then(() => {
       socket.room = data.roomID;
       socket.alias = data.user;
       socket.roomMode = data.roomMode;
-      socket.roomLength = data.roomLength
+      socket.roomLength = data.roomLength;
       console.log(
         'JOIN ROOM IN SOCKETRS:',
         socket.room,
@@ -496,7 +495,7 @@ db.models.sequelize.sync().then(() => {
       // SET 1 HOUR EXPIRATION ON MESSAGE DATA FOR THIS ROOM
       client.expire(`${socket.room}:messages`, 3600);
 
-       console.log("STATE OF DATAAAA HEREEEE:", data)
+      console.log('STATE OF DATAAAA HEREEEE:', data);
 
       dbHelpers.getRoomReady(io, timerObj, client, socket, data, rooms);
 
@@ -506,10 +505,19 @@ db.models.sequelize.sync().then(() => {
     });
 
 
-    socket.on('turn done', (data) => {
-      console.log('TURN DONE for Me:', data.user, socket.room);
-      console.log("I'm the room order", rooms[socket.room].gameOrder);
-      const gameOrderArr = rooms[socket.room].gameOrder;
+    socket.on('turn done', async (data) => {
+      const gameOrderArr = [];
+      await client.lrangeAsync(`${socket.room}:gameOrder`, 0, -1)
+        .then((reply) => {
+          reply.forEach((user) => {
+            gameOrderArr.push(JSON.parse(user));
+          });
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+
+
       const gameOrderArrOfKeys = [];
       let nextTurnUsername;
       let nextTurnUserSocketId;
@@ -525,30 +533,25 @@ db.models.sequelize.sync().then(() => {
         nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 1])[0];
       }
 
-      console.log('NEXT TURN USERNAME IN TURN DONE:', nextTurnUsername);
 
       if (nextTurnUsername === 'mitsuku') {
         io.sockets.sockets[socket.id].emit('turnOver', socket.username);
         io.sockets.emit('whose turn', 'mitsuku@mitsuku.com');
 
-        console.log('LAST MESSAGE that mitsuku will respond to:', data.message);
         let extraDelay = 0;
-        mitsuku.send(data.message).then((response) => {
-          console.log('GETTING MESSAGE BACKFIRST', response);
+        let response;
+        mitsuku.send(data.message).then((reply) => {
+          response = reply;
           if (response === undefined) {
-            mitsuku.send(data.message).then((response) => {
-              console.log('GETTING MESSAGE BACKSECOND', response);
-              client.rpush(
-                `${socket.room}:messages`,
-                JSON.stringify({ 'mitsuku@mitsuku.com': response }),
-              );
+            mitsuku.send(data.message).then((reply) => {
+              response = reply;
             });
           }
           if (/here\sin\sleeds/g.test(response)) {
             response = response.slice(0, response.indexOf('here in leeds'));
           }
           // Add delay based on response length
-          extraDelay = response.length * 25;
+          extraDelay = response.length * 40;
           console.log('EXTRA DELAY', extraDelay);
 
           setTimeout(() => {
@@ -575,8 +578,10 @@ db.models.sequelize.sync().then(() => {
               nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 2])[0];
               nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 2][nextTurnUsername];
             }
-            io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
-            io.sockets.emit('whose turn', nextTurnUsername);
+            if (nextTurnUserSocketId) {
+              io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
+              io.sockets.emit('whose turn', nextTurnUsername);
+            }
           }, Math.random() * 5000 + 2000 + extraDelay);
         });
       } else {
@@ -599,14 +604,7 @@ db.models.sequelize.sync().then(() => {
 
     socket.on('invite', (data) => {
       data.users.forEach((user) => {
-        console.log(
-          'userINvites in socket',
-          user,
-          'and dataHash',
-          data.roomHash,
-        );
         client.rpush(`${data.roomHash}:membersInvited`, user, (err, reply) => {
-          console.log('replies from membersInvited', reply);
         });
         client.lrange(
           `${data.roomHash}:membersInvited`,
@@ -704,43 +702,14 @@ db.models.sequelize.sync().then(() => {
       });
 
       client.hgetallAsync(`${data.roomID}:members`)
-      .then(replies => { 
-        console.log('GET MEMBERS INFO IN DECLINE SOCKET', replies)
-        dbHelpers.getRoomReady(io, timerObj, client, socket, data, rooms, replies);
-
+        .then((replies) => {
+          console.log('GET MEMBERS INFO IN DECLINE SOCKET', replies);
+          dbHelpers.getRoomReady(io, timerObj, client, socket, data, rooms, replies);
         });
 
       dbHelpers.fetchRedisMessages(client, socket, (result) => {
         io.sockets.in(data.roomID).emit('chat', result);
       });
-      // let membersInRoomDECLINE;
-      // let membersInvitedtoRoomDECLINE;
-      // client.lrange(`${data.roomID}:membersList`, 0, -1, (err, replies) => {
-      //   if (err) {
-      //     console.log(err);
-      //   } else {
-      //     membersInRoomDECLINE = replies;
-      //   }
-
-      //   client.lrange(
-      //     `${data.roomID}:membersInvited`, 0, -1,
-      //     (err, replies) => {
-      //       if (err) {
-      //         console.log(err);
-      //       } else {
-      //         membersInvitedtoRoomDECLINE = replies;
-      //         if (data.roomMode === 'round') {
-      //           if (
-      //             membersInRoomDECLINE.length >=
-      //             membersInvitedtoRoomDECLINE.length
-      //           ) {
-      //             io.sockets.in(data.roomID).emit('roomReady', true);
-      //           }
-      //         }
-      //       }
-      //     },
-      //   );
-      // });
     });
 
 
@@ -764,7 +733,7 @@ db.models.sequelize.sync().then(() => {
           console.log('DID I HAPPEN');
         });
 
-        dbHelpers.removeFromMembersList(client, socket);
+        dbHelpers.removeFromMembersList(client, socket, rooms);
 
 
         dbHelpers.fetchRedisMessages(client, socket, (result) => {
@@ -804,7 +773,7 @@ db.models.sequelize.sync().then(() => {
           console.error(err);
         });
 
-      dbHelpers.removeFromMembersList(client, socket);
+      dbHelpers.removeFromMembersList(client, socket, rooms);
 
       dbHelpers.fetchRedisMessages(client, socket, (result) => {
         io.sockets.in(socket.room).emit('chat', result);

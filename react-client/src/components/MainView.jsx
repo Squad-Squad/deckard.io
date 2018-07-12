@@ -7,6 +7,7 @@ import ProfileContainer from './profileAndStats/ProfileContainer.jsx';
 import { closeAboutDialog } from '../../../redux/actions';
 import { connect } from 'react-redux';
 import axios from 'axios';
+import $ from 'jquery'
 import AboutDialogue from './AboutDialogue.jsx'
 import { login } from '../../../redux/actions';
 
@@ -113,8 +114,11 @@ class ConnectedMainView extends React.Component {
   }
 
   decline() {
-    this.props.io.emit('decline', { user: this.props.loggedInUsername, roomID: this.state.roomHash, roomMode: this.state.roomMode })
-    this.setState({ invite: false })
+    $.get(`/api/rooms/${this.state.roomHash}`).then(roomInfo => {
+      console.log("ROOMINFO IN DECLINE MAINVIEW:", roomInfo)
+      this.props.io.emit('decline', { user: this.props.loggedInUsername, roomLength: roomInfo.roomLength, roomID: this.state.roomHash, roomMode: this.state.roomMode })
+      this.setState({ invite: false })
+    })
 
   }
 
