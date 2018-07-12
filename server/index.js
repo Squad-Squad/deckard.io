@@ -26,6 +26,9 @@ const email = require('../lib/nodemailerHelpers');
 
 const { Op } = db;
 
+var timerObj = {};
+
+
 //
 // ─── REDIS ──────────────────────────────────────────────────────────────────────
 //
@@ -266,44 +269,31 @@ app.post('/api/roomEmail', (req, res) => {
 app.post('/api/save', (req, res) => {
   console.log('NEW ROOM DATA', req.body);
 
-  const { roomName, roomMode, members } = req.body;
+  const { roomName, roomMode, members, roomLength } = req.body;
   const roomUnique = uniqueString().slice(0, 6);
-  // timerObj[roomUnique] = new Tock({
-  //   countdown: true,
-  // });
+  if(roomMode === "free"){
+    timerObj[roomUnique] = new Tock({
+      countdown: true,
+    });
+    let roomLengthInMilis = roomLength * 60 * 1000
+    timerObj[roomUnique].start(roomLengthInMilis);
+  }
 
-  dbHelpers.aliasMembers(roomName, roomMode, members, (results) => {
-    console.log('AM I HAPPENING', results);
-    client.hmset(`${roomUnique}:members`, results, (err, reply) => {
-      if (err) {
-        console.error(err);
-      } else {
-        console.log('reply setting members', reply);
+  dbHelpers.aliasMembers(roomName, roomMode, members, roomLength, roomUnique, (results) => {
+    client.hmset(`${roomUnique}:members`, results, (err, reply)=>{
+      if(err){
+        console.error(err)
+      }else{
+        res.send(results)
+        client.expire(`${roomUnique}:members`, 3600)
       }
     });
   });
 
-  // CHANGE THE ROOM TIMER LENGTH HERE
-  // timerObj[roomUnique].start(30000);
-
-  dbHelpers.saveRoomAndMembers(
-    roomName,
-    members,
-    roomUnique,
-    (err, room, users) => {
-      if (err) {
-        console.log('Error saving room and members', err);
-      } else {
-        console.log(`Saved room: ${roomName}`);
-        res.send(room[0].dataValues);
-      }
-    },
-  );
 });
 
 
 app.post('/api/saveFreeMode', (req, res) => {
-  console.log('NEW ROOM DATA', req.body);
 
   const {
     roomName, roomMode, members, roomLength,
@@ -313,13 +303,13 @@ app.post('/api/saveFreeMode', (req, res) => {
     countdown: true,
   });
 
-  dbHelpers.aliasMembers(roomName, roomMode, members, (results) => {
-    client.hmset(`${roomUnique}:members`, results, (err, reply) => {
-      if (err) {
-        console.error(err);
-      } else {
-        console.log('reply setting members', reply);
-        client.expire(`${roomUnique}:members`, 3600);
+  dbHelpers.aliasMembers(roomName, roomMode, members, roomLength, roomUnique, (results) =>{
+    client.hmset(`${roomUnique}:members`, results, (err, reply)=>{
+      if(err){
+        console.error(err)
+      }else{
+        res.send(results)
+        client.expire(`${roomUnique}:members`, 3600)
       }
     });
   });
@@ -327,20 +317,23 @@ app.post('/api/saveFreeMode', (req, res) => {
 
   // CHANGE THE ROOM TIMER LENGTH HERE
 
-  const roomLengthInMilis = roomLength * 60 * 1000;
-  console.log('ROOMLENGTHIN MILIS', roomLengthInMilis);
+  let roomLengthInMilis = roomLength * 60 * 1000
 
   timerObj[roomUnique].start(roomLengthInMilis);
 
 
-  dbHelpers.saveRoomAndMembers(roomName, members, roomUnique, (err, room, users) => {
-    if (err) {
-      console.log('Error saving room and members', err);
-    } else {
-      console.log(`Saved room: ${roomName}`);
-      res.send(room[0].dataValues);
-    }
-  });
+  // dbHelpers.saveRoomAndMembers(
+  //   roomName,
+  //   members,
+  //   roomUnique,
+  //   (err, room, users) => {
+  //     if (err) {
+  //       console.log('Error saving room and members', err);
+  //     } else {
+  //       res.send(room[0].dataValues);
+  //     }
+  //   },
+  // );
 });
 
 
@@ -351,9 +344,10 @@ app.post('/api/startTimer', (req, res) => {
     countdown: true,
   });
 
-  const roomLengthInMilis = roomLength * 60 * 1000;
-
+  let roomLengthInMilis = roomLength * 60 * 1000
+  console.log("+++++++ROOMLENGTHIN MILIS++++++", roomLengthInMilis)
   timerObj[roomID].start(roomLengthInMilis);
+
 });
 
 // Get room members here
@@ -489,6 +483,7 @@ db.models.sequelize.sync().then(() => {
       socket.room = data.roomID;
       socket.alias = data.user;
       socket.roomMode = data.roomMode;
+      socket.roomLength = data.roomLength
       console.log(
         'JOIN ROOM IN SOCKETRS:',
         socket.room,
@@ -534,8 +529,9 @@ db.models.sequelize.sync().then(() => {
       // SET 1 HOUR EXPIRATION ON MESSAGE DATA FOR THIS ROOM
       client.expire(`${socket.room}:messages`, 3600);
 
+       console.log("STATE OF DATAAAA HEREEEE:", data)
 
-      dbHelpers.getRoomReady(io, client, socket, data, rooms);
+      dbHelpers.getRoomReady(io, timerObj, client, socket, data, rooms);
 
       dbHelpers.fetchRedisMessages(client, socket, (result) => {
         io.sockets.in(socket.room).emit('chat', result);
@@ -716,10 +712,10 @@ db.models.sequelize.sync().then(() => {
       });
 
       client.hgetallAsync(`${data.roomID}:members`)
-        .then((replies) => {
-          console.log('GET MEMBERS INFO IN DECLINE SOCKET', replies);
+      .then(replies => { 
+        console.log('GET MEMBERS INFO IN DECLINE SOCKET', replies)
+        dbHelpers.getRoomReady(io, timerObj, client, socket, data, rooms, replies);
 
-          dbHelpers.getRoomReady(io, client, socket, data, rooms, replies);
         });
 
       dbHelpers.fetchRedisMessages(client, socket, (result) => {
@@ -897,4 +893,4 @@ db.models.sequelize.sync().then(() => {
   });
 });
 
-let timerObj = {};
+// let timerObj = {};

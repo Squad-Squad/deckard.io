@@ -2,6 +2,9 @@ const db = require('../database-postgresql/models');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const _ = require('underscore');
+const Tock = require('tocktimer');
+
+
 
 // db.sequelize.query('SELECT * FROM users').spread((results) => {
 //   console.log('AAAAAAAAAAAAAAA', results[0]);
@@ -66,7 +69,7 @@ const saveRoomAndMembers = (roomName, members, id, callback) => {
     'GlaDOS',
     'SHODAN',
     'Dolores',
-  ];
+    'Joseph 0H'];
 
   Promise.all(promisedMembers)
     .then((users) => {
@@ -97,9 +100,8 @@ const saveRoomAndMembers = (roomName, members, id, callback) => {
     });
 };
 
-const aliasMembers = (roomName, roomMode, members, callback) => {
-  const aliases = [
-    'HAL 9000',
+const aliasMembers = (roomName, roomMode, members, roomLength, roomUnique, callback) => {
+  const aliases = ['HAL 9000',
     'Android 18',
     'AM',
     'Marvin',
@@ -125,7 +127,7 @@ const aliasMembers = (roomName, roomMode, members, callback) => {
 
   // const randomAlias = Math.floor(Math.random() * aliases.length);
   const randomForAI = Math.floor(Math.random() * aliases.length);
-  const membersObj = { room: roomName, roomMode, 'mitsuku@mitsuku.com': aliases[randomForAI] };
+  const membersObj = { room: roomName, roomMode: roomMode, roomLength: roomLength, roomID: roomUnique, 'mitsuku@mitsuku.com': aliases[randomForAI] };
   aliases.splice(randomForAI, 1);
   members.forEach((member) => {
     const randomAlias = Math.floor(Math.random() * aliases.length);
@@ -289,7 +291,9 @@ const fetchRedisMessages = (client, socket, callback) => {
 };
 
 
-const getRoomReady = (io, client, socket, data, rooms, membersInfo) => {
+const getRoomReady = (io, timerObj, client, socket, data, rooms, membersInfo) => {
+
+  console.log("++++++++++DATA.roomLENGTHHHHH++++++++++", data)
   // notify everyone when mitsuku's joined the room (but only with her alias)
   if (socket.roomMode === 'free') {
     if (rooms[socket.room].length === 2) {
@@ -322,6 +326,7 @@ const getRoomReady = (io, client, socket, data, rooms, membersInfo) => {
         });
       }, Math.random() * 5000);
     }
+
   }
 
 
@@ -331,88 +336,102 @@ const getRoomReady = (io, client, socket, data, rooms, membersInfo) => {
     .then((replies) => {
       membersInRoom = replies.map(reply => JSON.parse(reply));
 
-      client.lrangeAsync(`${data.roomID}:membersInvited`, 0, -1)
-        .then((replies) => {
-          membersInvitedtoRoom = replies;
+  client.lrangeAsync(`${data.roomID}:membersInvited`, 0, -1)
+  .then((replies) => {
+      membersInvitedtoRoom = replies;
 
-          if (data.roomMode === 'round') {
-            if (membersInRoom.length === membersInvitedtoRoom.length) {
-              // PUSH MITSUKU TO ROOM'S MEMBERLIST IN REDIS
+      if (data.roomMode === 'round') {
+        if (membersInRoom.length === membersInvitedtoRoom.length) {
+          // PUSH MITSUKU TO ROOM'S MEMBERLIST IN REDIS
 
-              client.rpush(
-                `${data.roomID}:membersList`,
-                JSON.stringify({ mitsuku: 'mitsuku@mitsuku.com' }),
-                (err, replies) => {
-                  console.log('mitsuku added to redis db', replies);
-                },
-              );
-
-
-              // ADD A MESSAGE TO ROOM MESSAGES IN REDIS NOTIFYING THAT MITSUKU HAS JOINED
-
-              let mitMessage;
-              if (membersInfo) {
-                console.log('MEMBERSINFOLENGTH');
-                mitMessage = `${membersInfo['mitsuku@mitsuku.com']} has joined the room`;
-              } else {
-                mitMessage = `${data.mitsuku} has joined the room`;
-              }
+          client.rpush(
+            `${data.roomID}:membersList`,
+            JSON.stringify({ mitsuku: 'mitsuku@mitsuku.com' }),
+            (err, replies) => {
+              console.log('mitsuku added to redis db', replies);
+            },
+          );
 
 
-              client.rpush(
-                `${data.roomID}:messages`,
-                JSON.stringify({ matrixOverLords: mitMessage }),
-                (err, reply) => {
-                  console.log("I've pushed to redis:", reply);
-                },
-              );
+          // ADD A MESSAGE TO ROOM MESSAGES IN REDIS NOTIFYING THAT MITSUKU HAS JOINED
+
+          let mitMessage;
+          if(membersInfo){
+            console.log("MEMBERSINFOLENGTH")
+            mitMessage = `${membersInfo['mitsuku@mitsuku.com']} has joined the room` 
+          }else{
+            mitMessage = `${data.mitsuku} has joined the room` 
+          } 
 
 
-              // FETCH AND EMIT ALL MESSAGES AFTER MITSUKU'S JOIN MESSAGE HAS PUSHED TO REDIS
+          client.rpush(
+            `${data.roomID}:messages`,
+            JSON.stringify({ matrixOverLords: mitMessage }),
+            (err, reply) => {
+              console.log("I've pushed to redis:", reply);
+            },
+          );
 
-              fetchRedisMessages(client, socket, (result) => {
-                io.sockets.in(data.roomID).emit('chat', result);
-              });
-              membersInRoom.push({ mitsuku: 'mitsuku@mitsuku.com' });
+
+          // FETCH AND EMIT ALL MESSAGES AFTER MITSUKU'S JOIN MESSAGE HAS PUSHED TO REDIS
+
+          fetchRedisMessages(client, socket, (result) => {
+            io.sockets.in(data.roomID).emit('chat', result);
+          });
+          membersInRoom.push({ mitsuku: 'mitsuku@mitsuku.com' });
 
 
-              // RANDOMIZE THE ORDER OF TURNS FOR ROUNDROBIN MODE
+          // RANDOMIZE THE ORDER OF TURNS FOR ROUNDROBIN MODE
 
-              const shuffledOrder = _.shuffle(membersInRoom);
-              console.log('SHUFFLED ORDER FOR PLAY:', shuffledOrder);
-              rooms[data.roomID].gameOrder = shuffledOrder;
-              let fixedKey;
+          const shuffledOrder = _.shuffle(membersInRoom);
+          console.log('SHUFFLED ORDER FOR PLAY:', shuffledOrder);
+          rooms[data.roomID].gameOrder = shuffledOrder;
+          var fixedKey;
 
-              // WHEN ITS MITSUKU'S TURN
+          // WHEN ITS MITSUKU'S TURN
 
-              if (Object.keys(shuffledOrder[0])[0] === 'mitsuku') {
-                const key = Object.keys(shuffledOrder[1]);
-                const fixKey = key[0];
-                const firstTurnSocketId = shuffledOrder[1][fixKey];
-                console.log('WHOSE TURN IN DBCONTROLLERS', fixKey);
-                io.sockets.emit('whose turn', fixKey);
-                io.sockets.sockets[firstTurnSocketId].emit('yourTurn', key[0]);
-                io.sockets.sockets[firstTurnSocketId].emit('startTimer');
-              } else {
-                const key = Object.keys(shuffledOrder[0]);
-                const fixKey = key[0];
-                const firstTurnSocketId = shuffledOrder[0][fixKey];
-                console.log('WHOSE TURN IN DBCONTROLLERS2', fixKey);
-                io.sockets.emit('whose turn', fixKey);
-                io.sockets.sockets[firstTurnSocketId].emit('yourTurn', key[0]);
-                io.sockets.sockets[firstTurnSocketId].emit('startTimer');
-              }
-            }
+          if (Object.keys(shuffledOrder[0])[0] === 'mitsuku') {
+            const key = Object.keys(shuffledOrder[1]);
+            const fixKey = key[0];
+            const firstTurnSocketId = shuffledOrder[1][fixKey];
+            console.log("WHOSE TURN IN DBCONTROLLERS", fixKey)
+            io.sockets.in(data.room).emit('whose turn', fixKey)
+            io.sockets.sockets[firstTurnSocketId].emit('yourTurn', key[0]);
+            // io.sockets.sockets[firstTurnSocketId].emit('startTimer')
+            io.sockets.in(data.roomID).emit('roomReady', {roomLength:data.roomLength, firstTurn: firstTurnSocketId})
+          } else {
+            const key = Object.keys(shuffledOrder[0]);
+            const fixKey = key[0];
+            const firstTurnSocketId = shuffledOrder[0][fixKey];
+            console.log("WHOSE TURN IN DBCONTROLLERS2", fixKey)
+            io.sockets.in(data.room).emit('whose turn', fixKey)
+            io.sockets.sockets[firstTurnSocketId].emit('yourTurn', key[0]);
+            // io.sockets.sockets[firstTurnSocketId].emit('startTimer')
+            io.sockets.in(data.roomID).emit('roomReady', {roomLength:data.roomLength, firstTurn: firstTurnSocketId})
+
           }
-        })
-        .catch((err) => {
-          console.error(err);
-        });
-    })
-    .catch((err) => {
-      console.error(err);
-    });
-};
+          // timerObj[data.roomID] = new Tock({
+          //     countdown: true,
+          //   });
+          //   let roomLengthInMilis = data.roomLength * 60 * 1000
+          //   console.log("+++++++ROOMLENGTHIN MILIS++++++", roomLengthInMilis)
+          //   timerObj[data.roomID].start(roomLengthInMilis);
+          // io.sockets.in(data.roomID).emit('roomReady', true);
+        }
+      }
+      
+  })
+  .catch(err=>{
+    console.error(err)
+  })
+
+  })
+  .catch(err=>{
+    console.error(err)
+  })
+
+}
+
 
 
 const removeFromMembersList = (client, socket) => {

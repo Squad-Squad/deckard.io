@@ -3,7 +3,6 @@ import io from 'socket.io-client';
 import $ from 'jquery';
 import Tock from 'tocktimer';
 import sizeMe from 'react-sizeme';
-import Confetti from 'react-confetti';
 import FreeLiveChat from './FreeLiveChat.jsx';
 import RoundLiveChat from './RoundLiveChat.jsx';
 import VotePanel from './VotePanel.jsx';
@@ -75,15 +74,21 @@ class ConnectedRoom extends React.Component {
       })
     })
 
-    this.props.io.on('startTimer', () => {
-      axios.post('/api/startTimer', { roomID: this.roomID, roomLength: this.props.roomLength })
-    })
+    // this.props.io.on('startTimer', ()=>{
+    //   console.log("this.props.ROOMLENGTH", this.props.roomLength)
+    //  axios.post('/api/startTimer', {roomID: this.roomID, roomLength: this.props.roomLength}) 
+    // })
+
 
     this.props.io.on('roomReady', data => {
+      console.log("+++ROOMREADY SOCKET++++", data)
+      if(this.props.io.id === data.firstTurn){
+        axios.post('/api/startTimer', {roomID: this.roomID, roomLength: data.roomLength}) 
+      }
+      this.getTimer(data.roomLength)
       this.setState({
         waitingForRoomMembers: false
       })
-      this.getTimer()
     })
 
   }
@@ -93,8 +98,7 @@ class ConnectedRoom extends React.Component {
   /// Send post request to server to fetch room info when user visits link
   componentDidMount() {
     this.getRoomInfo();
-    if (this.props.roomMode === "free") {
-      axios.post('/api/startTimer', { roomID: this.props.roomID })
+    if(this.props.roomMode === "free"){
       this.getTimer()
     }
   }
@@ -117,16 +121,24 @@ class ConnectedRoom extends React.Component {
         memberMap: memberMap,
         members: aliasedMembers,
         roomName: roomMembers.room,
+        roomLength: roomMembers.roomLength
       });
     })
       .then(() => {
-        this.props.io.emit('join', { roomID: this.roomID, user: this.state.memberMap[this.props.loggedInUsername], mitsuku: this.state.memberMap['mitsuku@mitsuku.com'], roomMode: this.state.roomMode });
+        this.props.io.emit('join', { roomLength: this.state.roomLength, roomID: this.roomID, user: this.state.memberMap[this.props.loggedInUsername], mitsuku: this.state.memberMap['mitsuku@mitsuku.com'], roomMode: this.state.roomMode });
+        console.log("MEMBERMAP IN ROOM.JSX:", this.state.memberMap)
       });
 
   }
 
-  getTimer() {
-    $.get(`/api/timer/${this.roomID}`).then(timer => {
+  getTimer(timer) {
+
+      let roomLengthInMilis = timer * 60 * 1000
+
+      //CHANGE TO BELOW FOR TESTING VOTING PANEL
+      
+      // let roomLengthInMilis = timer * 60 
+    
       let tock = new Tock({
         countdown: true,
         interval: 100,
@@ -143,9 +155,13 @@ class ConnectedRoom extends React.Component {
         },
       });
 
-
-      tock.start(timer.timeLeft + 1000);
-    });
+      if(this.state.roomMode === 'round'){
+        tock.start(roomLengthInMilis); 
+      }else{
+        $.get(`/api/timer/${this.roomID}`).then(communalTime => {
+          tock.start(communalTime.timeLeft + 1000)
+        })
+      }
   }
 
   sendMessage(msg) {
