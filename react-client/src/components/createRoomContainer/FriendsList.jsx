@@ -8,6 +8,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import LensIcon from '@material-ui/icons/Lens';
 import FormControl from '@material-ui/core/FormControl';
+import FormHelperText from '@material-ui/core/FormHelperText';
 import Input from '@material-ui/core/Input';
 import axios from 'axios';
 import Modal from '@material-ui/core/Modal';
@@ -67,6 +68,8 @@ class FriendsList extends Component {
       height: 0,
 
       expanded: false,
+
+      addFriendError: '',
     };
 
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
@@ -139,17 +142,24 @@ class FriendsList extends Component {
 
   async addUser(e) {
     if (e.key === 'Enter') {
-      await axios.post('/profile/add-friend',
+      const error = await axios.post('/profile/add-friend',
         {
           username: this.props.username,
           friend: this.state.query,
         }
       );
-      this.props.addFriend(this.state.query);
-      this.setState({
-        addFriend: false,
-        query: '',
-      });
+      console.log("ERROR", error);
+      if (!error.data.length) {
+        this.props.addFriend(this.state.query);
+        this.setState({
+          addFriend: false,
+          query: '',
+        });
+      } else {
+        this.setState({
+          addFriendError: error.data,
+        })
+      }
     }
   }
 
@@ -227,7 +237,22 @@ class FriendsList extends Component {
     };
 
     const addFriend = () => {
-      if (this.state.addFriend) {
+      if (this.state.addFriendError) {
+        return (
+          <FormControl style={{ width: '100%' }} error>
+            <Input
+              style={{ fontSize: '16px' }}
+              value={this.state.query}
+              onChange={this.updateQuery.bind(this)}
+              placeholder="Add Friend"
+              onKeyUp={this.addUser.bind(this)}
+            />
+            <FormHelperText id="name-error-text">
+              {this.state.addFriendError}
+            </FormHelperText>
+          </FormControl>
+        )
+      } else if (this.state.addFriend) {
         return (
           <FormControl style={{ width: '100%' }} >
             <Input

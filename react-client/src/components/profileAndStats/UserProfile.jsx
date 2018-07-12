@@ -125,7 +125,7 @@ class UserProfile extends Component {
       url: '/profile/update-profile',
       data,
       config: { headers: { 'Content-Type': 'multipart/form-data' } }
-    })
+    });
 
     console.log("RES", res);
     const updateUsername = this.state.newUsername || this.props.username,
