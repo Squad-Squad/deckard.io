@@ -15,6 +15,10 @@ import Modal from '@material-ui/core/Modal';
 import KeyboardArrowDown from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowUp from '@material-ui/icons/KeyboardArrowUp';
 import OtherProfileContainer from '../profileAndStats/OtherProfileContainer.jsx';
+import Snackbar from '@material-ui/core/Snackbar';
+import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
+import CloseIcon from '@material-ui/icons/Close';
 import { addFriend } from '../../../../redux/actions';
 import { connect } from 'react-redux';
 import { withStyles } from '@material-ui/core/styles';
@@ -56,6 +60,7 @@ class FriendsList extends Component {
     super(props);
     this.state = {
       open: false,
+      snackbarOpen: false,
 
       addFriend: false,
       query: '',
@@ -78,20 +83,7 @@ class FriendsList extends Component {
   componentDidMount() {
     this.updateWindowDimensions();
     window.addEventListener('resize', this.updateWindowDimensions);
-
-    // Add avatars to users who have set them
-    if (this.props.friends) {
-      Promise.all(this.props.friends.map(friend => {
-        return axios.post('/api/userInfo', { user: friend });
-      }))
-        .then(res => {
-          const avatars = res.map(data => data.data.avatar);
-          const map = this.props.friends.map((friend, i) => {
-            return [friend, avatars[i]];
-          });
-          this.setState({ userAvatarMap: map });
-        });
-    }
+    this.mapAvatars();
   }
 
   updateWindowDimensions() {
@@ -141,6 +133,29 @@ class FriendsList extends Component {
     }))
   }
 
+  handleSnackbarClose(event, reason) {
+    if (reason === 'clickaway') {
+      return;
+    }
+    this.setState({ snackbarOpen: false });
+  };
+
+  mapAvatars() {
+    // Add avatars to users who have set them
+    if (this.props.friends) {
+      Promise.all(this.props.friends.map(friend => {
+        return axios.post('/api/userInfo', { user: friend });
+      }))
+        .then(res => {
+          const avatars = res.map(data => data.data.avatar);
+          const map = this.props.friends.map((friend, i) => {
+            return [friend, avatars[i]];
+          });
+          this.setState({ userAvatarMap: map });
+        });
+    }
+  }
+
   async addUser(e) {
     if (e.key === 'Enter') {
       const error = await axios.post('/profile/add-friend',
@@ -155,17 +170,25 @@ class FriendsList extends Component {
         this.setState({
           addFriend: false,
           query: '',
+          snackbarOpen: true,
         });
       } else {
         this.setState({
           addFriendError: error.data,
         })
       }
+      this.mapAvatars();
     }
   }
 
+
+  //
+  // ─── RENDER ─────────────────────────────────────────────────────────────────────
+  //
   render() {
     const { classes } = this.props;
+
+    console.log('FRIENDS', this.props.friends);
 
     const expandList = () => {
       if (this.state.expanded) {
@@ -317,6 +340,30 @@ class FriendsList extends Component {
           <OtherProfileContainer friend={this.state.clickedFriend} />
         </div>
       </Modal>
+      // <Snackbar
+      //   anchorOrigin={{
+      //     vertical: 'bottom',
+      //     horizontal: 'left',
+      //   }}
+      //   open={this.state.snackbarOpen}
+      //   autoHideDuration={2000}
+      //   onClose={this.handleSnackbarClose.bind(this)}
+      //   ContentProps={{
+      //     'aria-describedby': 'message-id',
+      //   }}
+      //   message={<span id="message-id">Friend added.</span>}
+      //   action={[
+      //     <IconButton
+      //       key="close"
+      //       aria-label="Close"
+      //       color="inherit"
+      //       className={classes.close}
+      //       onClick={this.handleSnackbarClose.bind(this)}
+      //     >
+      //       <CloseIcon />
+      //     </IconButton>,
+      //   ]}
+      // />
     ]);
   }
 }
