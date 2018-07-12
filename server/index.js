@@ -537,11 +537,20 @@ db.models.sequelize.sync().then(() => {
         io.sockets.in(socket.room).emit('chat', result);
       });
     });
-
-    socket.on('turn done', (data) => {
-      console.log('TURN DONE for Me:', data.user, socket.room);
-      console.log("I'm the room order", rooms[socket.room].gameOrder);
-      const gameOrderArr = rooms[socket.room].gameOrder;
+    
+    socket.on('turn done', async data => {
+    
+      let gameOrderArr = [];
+       await client.lrangeAsync(`${socket.room}:gameOrder`, 0, -1)
+        .then((reply) => {
+          reply.forEach(user=>{
+            gameOrderArr.push(JSON.parse(user))
+          })
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+      
       const gameOrderArrOfKeys = [];
       let nextTurnUsername;
       let nextTurnUserSocketId;
@@ -557,30 +566,25 @@ db.models.sequelize.sync().then(() => {
         nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 1])[0];
       }
 
-      console.log('NEXT TURN USERNAME IN TURN DONE:', nextTurnUsername);
 
       if (nextTurnUsername === 'mitsuku') {
         io.sockets.sockets[socket.id].emit('turnOver', socket.username);
         io.sockets.emit('whose turn', 'mitsuku@mitsuku.com');
 
-        console.log('LAST MESSAGE that mitsuku will respond to:', data.message);
         let extraDelay = 0;
-        mitsuku.send(data.message).then((response) => {
-          console.log('GETTING MESSAGE BACKFIRST', response);
+        let response;
+        mitsuku.send(data.message).then((reply) => {
+          response = reply
           if (response === undefined) {
-            mitsuku.send(data.message).then((response) => {
-              console.log('GETTING MESSAGE BACKSECOND', response);
-              client.rpush(
-                `${socket.room}:messages`,
-                JSON.stringify({ 'mitsuku@mitsuku.com': response }),
-              );
+            mitsuku.send(data.message).then((reply) => {
+              response = reply
             });
           }
           if (/here\sin\sleeds/g.test(response)) {
             response = response.slice(0, response.indexOf('here in leeds'));
           }
           // Add delay based on response length
-          extraDelay = response.length * 25;
+          extraDelay = response.length * 40;
           console.log('EXTRA DELAY', extraDelay);
 
           setTimeout(() => {
@@ -607,8 +611,10 @@ db.models.sequelize.sync().then(() => {
               nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 2])[0];
               nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 2][nextTurnUsername];
             }
-            io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
-            io.sockets.emit('whose turn', nextTurnUsername);
+            if(nextTurnUserSocketId){
+              io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
+              io.sockets.emit('whose turn', nextTurnUsername);
+            }
           }, Math.random() * 5000 + 2000 + extraDelay);
         });
       } else {
@@ -630,9 +636,7 @@ db.models.sequelize.sync().then(() => {
 
     socket.on('invite', (data) => {
       data.users.forEach((user) => {
-        console.log('userINvites in socket', user, 'and dataHash', data.roomHash);
         client.rpush(`${data.roomHash}:membersInvited`, user, (err, reply) => {
-          console.log('replies from membersInvited', reply);
         });
         client.lrange(`${data.roomHash}:membersInvited`, 0, -1, (err, reply) => {
           console.log('updated members in membersInvited', reply);
@@ -721,34 +725,6 @@ db.models.sequelize.sync().then(() => {
       dbHelpers.fetchRedisMessages(client, socket, (result) => {
         io.sockets.in(data.roomID).emit('chat', result);
       });
-      // let membersInRoomDECLINE;
-      // let membersInvitedtoRoomDECLINE;
-      // client.lrange(`${data.roomID}:membersList`, 0, -1, (err, replies) => {
-      //   if (err) {
-      //     console.log(err);
-      //   } else {
-      //     membersInRoomDECLINE = replies;
-      //   }
-
-      //   client.lrange(
-      //     `${data.roomID}:membersInvited`, 0, -1,
-      //     (err, replies) => {
-      //       if (err) {
-      //         console.log(err);
-      //       } else {
-      //         membersInvitedtoRoomDECLINE = replies;
-      //         if (data.roomMode === 'round') {
-      //           if (
-      //             membersInRoomDECLINE.length >=
-      //             membersInvitedtoRoomDECLINE.length
-      //           ) {
-      //             io.sockets.in(data.roomID).emit('roomReady', true);
-      //           }
-      //         }
-      //       }
-      //     },
-      //   );
-      // });
     });
 
     // handle cases in which player leaves the room without completely disconnecting from the site
@@ -766,7 +742,7 @@ db.models.sequelize.sync().then(() => {
           console.log('DID I HAPPEN');
         });
 
-        dbHelpers.removeFromMembersList(client, socket);
+        dbHelpers.removeFromMembersList(client, socket, rooms);
 
 
         dbHelpers.fetchRedisMessages(client, socket, (result) => {
@@ -802,7 +778,7 @@ db.models.sequelize.sync().then(() => {
           console.error(err);
         });
 
-      dbHelpers.removeFromMembersList(client, socket);
+      dbHelpers.removeFromMembersList(client, socket, rooms);
 
       dbHelpers.fetchRedisMessages(client, socket, (result) => {
         io.sockets.in(socket.room).emit('chat', result);
