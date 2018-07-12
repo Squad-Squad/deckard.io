@@ -67,7 +67,7 @@ class ConnectedUserMenu extends React.Component {
           onClose={this.handleClose.bind(this)}>
           <MenuItem onClick={() => { this.props.homeRedirect(); this.handleClose(); }}>Home</MenuItem>
           <MenuItem onClick={() => { this.props.profileRedirect(); this.handleClose(); }}>Profile</MenuItem>
-          <MenuItem onClick={() => { this.props.openAboutDialog(); this.handleClose(); }}>About/Rules</MenuItem>
+          <MenuItem onClick={() => { this.props.openAboutDialog(); this.handleClose(); }}>About</MenuItem>
           <MenuItem onClick={() => { this.handleLogout.call(this); this.handleClose(); }}>Logout</MenuItem>
         </Menu>
       </div>

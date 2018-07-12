@@ -285,7 +285,7 @@ app.post('/api/save', (req, res) => {
   console.log('NEW ROOM DATA', req.body);
 
   const {
- roomName, roomMode, members, roomLength 
+ roomName, roomMode, members, roomLength
 } = req.body;
   const roomUnique = uniqueString().slice(0, 6);
   if (roomMode === 'free') {

@@ -20,13 +20,14 @@ function mapStateToProps(state) {
     isGoogleAccount: state.isGoogleAccount,
     avatarURL: state.avatarURL,
     description: state.description,
+    friends: state.friends,
   };
 }
 
 function mapDispatchToProps(dispatch) {
   return {
-    login: (username, email, isGoogleAccount, avatarURL, description) => {
-      return dispatch(login(username, email, isGoogleAccount, avatarURL, description));
+    login: (username, email, isGoogleAccount, avatarURL, description, friends) => {
+      return dispatch(login(username, email, isGoogleAccount, avatarURL, description, friends));
     },
   };
 }
@@ -137,7 +138,8 @@ class UserProfile extends Component {
       updateEmail,
       this.props.isGoogleAccount,
       updateAvatarURL,
-      updateDescription);
+      updateDescription,
+      this.props.friends);
     this.setState({
       open: true,
 
