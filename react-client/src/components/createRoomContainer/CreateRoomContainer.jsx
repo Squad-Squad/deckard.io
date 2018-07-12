@@ -18,6 +18,20 @@ class CreateRoomContainer extends React.Component {
       combatants: Array(0),
       onlineUsers: [],
     };
+
+    this.props.io.on('new-user-online', (onlineUsers) => {
+      console.log('new user online..........');
+      this.setState({
+        onlineUsers,
+      })
+    })
+
+    this.props.io.on('user-disconnected', (onlineUsers) => {
+      console.log('user disconnected..........');
+      this.setState({
+        onlineUsers,
+      })
+    })
   }
 
   async componentDidMount() {

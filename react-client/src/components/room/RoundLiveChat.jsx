@@ -36,12 +36,12 @@ const styles = {
   currentTurnBar: {
     height: '40px',
     fontSize: '20px',
-    fontWeight: 600,
+    fontWeight: 400,
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    backgroundColor: '#424242',
+    backgroundColor: '#202020',
     padding: '0px 60px'
   },
   currentTurnText: {
@@ -67,11 +67,11 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
 
     this.props.io.on('turn over', (data) => {
       this.setState({
-          yourTurn: false       
-      }) 
-    }) 
+        yourTurn: false
+      })
+    })
 
-    this.props.io.on('whose turn', (data)=>{
+    this.props.io.on('whose turn', (data) => {
       console.log('username of turn', data, "!!!!", "and alias:", this.props.memberMap[data])
       this.setState({
         whoseTurn: this.props.memberMap[data]
@@ -82,8 +82,8 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
   componentDidMount() {
     this.scrollToBottom();
     // if(this.props.timer !== "00:00"){
-      // axios.post('/api/startTimer', {roomID: this.props.roomID}) 
-      // this.props.getTimer()
+    // axios.post('/api/startTimer', {roomID: this.props.roomID})
+    // this.props.getTimer()
     // }
   }
 
@@ -160,12 +160,12 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
           {this.props.messages.map((message, i) => {
             if (this.props.username === message.name) {
               return (<div className="section" key={i}
-                style={{ textAlign: "right", borderTop: "1px solid black", padding: "17px", fontSize: "18px" }}>
+                style={{ textAlign: "right", borderTop: "1px solid black", padding: "15px", fontSize: "18px" }}>
                 <p>{message.message}</p>
               </div>)
             } else {
               return (<div className="section" key={i}
-                style={{ textAlign: "left", borderTop: "1px solid black", padding: "17px", fontSize: "18px" }}>
+                style={{ textAlign: "left", borderTop: "1px solid black", padding: "15px", fontSize: "18px" }}>
                 <p><strong>{this.props.memberMap[message.name]}
                   {(() => this.props.memberMap[message.name] ? ':' : null)()}&nbsp;</strong>{message.message}</p>
               </div>)
@@ -179,7 +179,7 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
           <FormControl style={{ width: '70%' }}>
             <Input
               inputProps={{
-                 maxLength: 75,
+                maxLength: 75,
               }}
               style={{ marginTop: '10px' }}
               fullWidth

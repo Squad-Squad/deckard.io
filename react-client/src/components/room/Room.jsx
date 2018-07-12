@@ -76,14 +76,14 @@ class ConnectedRoom extends React.Component {
 
     // this.props.io.on('startTimer', ()=>{
     //   console.log("this.props.ROOMLENGTH", this.props.roomLength)
-    //  axios.post('/api/startTimer', {roomID: this.roomID, roomLength: this.props.roomLength}) 
+    //  axios.post('/api/startTimer', {roomID: this.roomID, roomLength: this.props.roomLength})
     // })
 
 
     this.props.io.on('roomReady', data => {
       console.log("+++ROOMREADY SOCKET++++", data)
-      if(this.props.io.id === data.firstTurn){
-        axios.post('/api/startTimer', {roomID: this.roomID, roomLength: data.roomLength}) 
+      if (this.props.io.id === data.firstTurn) {
+        axios.post('/api/startTimer', { roomID: this.roomID, roomLength: data.roomLength })
       }
       this.getTimer(data.roomLength)
       this.setState({
@@ -98,7 +98,7 @@ class ConnectedRoom extends React.Component {
   /// Send post request to server to fetch room info when user visits link
   componentDidMount() {
     this.getRoomInfo();
-    if(this.props.roomMode === "free"){
+    if (this.props.roomMode === "free") {
       this.getTimer()
     }
   }
@@ -133,35 +133,35 @@ class ConnectedRoom extends React.Component {
 
   getTimer(timer) {
 
-      let roomLengthInMilis = timer * 60 * 1000
+    let roomLengthInMilis = timer * 60 * 1000
 
-      //CHANGE TO BELOW FOR TESTING VOTING PANEL
-      
-      // let roomLengthInMilis = timer * 60 
-    
-      let tock = new Tock({
-        countdown: true,
-        interval: 100,
-        callback: () => {
-          let time = tock.lap();
-          let seconds = (Math.floor((time / 1000) % 60));
-          let minutes = (Math.floor((time / (60000)) % 60));
-          seconds = (seconds < 10) ? "0" + seconds : seconds;
-          minutes = (minutes < 10) ? "0" + minutes : minutes;
+    //CHANGE TO BELOW FOR TESTING VOTING PANEL
 
-          this.setState({
-            timer: minutes + ':' + seconds
-          });
-        },
-      });
+    // let roomLengthInMilis = timer * 60
 
-      if(this.state.roomMode === 'round'){
-        tock.start(roomLengthInMilis); 
-      }else{
-        $.get(`/api/timer/${this.roomID}`).then(communalTime => {
-          tock.start(communalTime.timeLeft + 1000)
-        })
-      }
+    let tock = new Tock({
+      countdown: true,
+      interval: 100,
+      callback: () => {
+        let time = tock.lap();
+        let seconds = (Math.floor((time / 1000) % 60));
+        let minutes = (Math.floor((time / (60000)) % 60));
+        seconds = (seconds < 10) ? "0" + seconds : seconds;
+        minutes = (minutes < 10) ? "0" + minutes : minutes;
+
+        this.setState({
+          timer: minutes + ':' + seconds
+        });
+      },
+    });
+
+    if (this.state.roomMode === 'round') {
+      tock.start(roomLengthInMilis);
+    } else {
+      $.get(`/api/timer/${this.roomID}`).then(communalTime => {
+        tock.start(communalTime.timeLeft + 1000)
+      })
+    }
   }
 
   sendMessage(msg) {

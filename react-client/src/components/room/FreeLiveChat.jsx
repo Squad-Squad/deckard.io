@@ -111,12 +111,12 @@ class ConnectedFreeLiveChat extends React.Component {
           {this.props.messages.map((message, i) => {
             if (this.props.username === message.name) {
               return (<div className="section" key={i}
-                style={{ textAlign: "right", borderTop: "1px solid black", padding: "17px", fontSize: "18px" }}>
+                style={{ textAlign: "right", borderTop: "1px solid black", padding: "8px 14px", fontSize: "18px" }}>
                 <p>{message.message}</p>
               </div>)
             } else {
               return (<div className="section" key={i}
-                style={{ textAlign: "left", borderTop: "1px solid black", padding: "17px", fontSize: "18px" }}>
+                style={{ textAlign: "left", borderTop: "1px solid black", padding: "8px 14px", fontSize: "18px" }}>
                 <p><strong>{this.props.memberMap[message.name]}
                   {(() => this.props.memberMap[message.name] ? ':' : null)()}&nbsp;</strong>{message.message}</p>
               </div>)
@@ -135,7 +135,7 @@ class ConnectedFreeLiveChat extends React.Component {
               onChange={this.updateMessage.bind(this)}
               onKeyPress={this.handleKeyPress.bind(this)}
               inputProps={{
-                 maxLength: 100,
+                maxLength: 100,
               }}
             />
           </FormControl>

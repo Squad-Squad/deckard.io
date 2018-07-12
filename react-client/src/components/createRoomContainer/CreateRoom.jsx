@@ -237,32 +237,33 @@ class ConnectedCreateRoom extends React.Component {
     const optionsError = this.generateOptionsError();
     if (optionsError) {
       this.setState({ optionsError })
+      setTimeout(() => this.setState({ optionsError: '' }), 5000);
     } else if (this.state.roomName.length === 0) {
       this.setState({
         nameError: true,
       });
     } else {
-         $.post(
-          '/api/save',
-          {
-            roomName: this.state.roomName,
-            members: this.props.usersForNewRoom,
-            roomMode: this.props.roomModeSelection,
-            roomLength: this.props.roomLength
+      $.post(
+        '/api/save',
+        {
+          roomName: this.state.roomName,
+          members: this.props.usersForNewRoom,
+          roomMode: this.props.roomModeSelection,
+          roomLength: this.props.roomLength
 
-          },
-          (response) => {
-            this.sendRoomEmail(response, this.props.usersForNewRoom);
-            this.setState({
-              roomLink: response.uniqueid
-            }, () => {
-              this.props.history.push(`/rooms/${response.roomID}`)
-              this.props.io.emit('invite', { users: this.props.usersForNewRoom, roomHash: response.roomID, roomName: this.state.roomName, roomMode: this.props.roomModeSelection })
-            });
-          }
-        )
-      }
+        },
+        (response) => {
+          this.sendRoomEmail(response, this.props.usersForNewRoom);
+          this.setState({
+            roomLink: response.uniqueid
+          }, () => {
+            this.props.history.push(`/rooms/${response.roomID}`)
+            this.props.io.emit('invite', { users: this.props.usersForNewRoom, roomHash: response.roomID, roomName: this.state.roomName, roomMode: this.props.roomModeSelection })
+          });
+        }
+      )
     }
+  }
   // }
 
   sendRoomEmail(roomInfo, members) {

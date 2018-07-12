@@ -76,6 +76,18 @@ const addCurrRoomUsersFromDB = users => ({
 });
 
 
+//
+// ─── RENDER LOGIC ───────────────────────────────────────────────────────────────
+//
+const openAboutDialog = () => ({
+  type: 'OPEN_ABOUT_DIALOG',
+});
+
+const closeAboutDialog = () => ({
+  type: 'CLOSE_ABOUT_DIALOG',
+});
+
+
 module.exports = {
   login,
   logout,
@@ -88,4 +100,6 @@ module.exports = {
   chooseRoomBot,
   chooseRoomLength,
   addCurrRoomUsersFromDB,
+  openAboutDialog,
+  closeAboutDialog,
 };
