@@ -6,20 +6,23 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import Divider from '@material-ui/core/Divider';
 import Icon from '@material-ui/core/Icon';
+import { withStyles } from '@material-ui/core/styles';
 
+const styles = {};
 class LoginDialog extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       open: false,
-      email: '',
+      usernameOrEmail: '',
       password: '',
     };
     this.handleClickOpen = this.handleClickOpen.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.handleLogin = this.handleLogin.bind(this);
-    this.enterEmail = this.enterEmail.bind(this);
+    this.enterUsernameOrEmail = this.enterUsernameOrEmail.bind(this);
     this.enterPassword = this.enterPassword.bind(this);
     this.handleKeyPress = this.handleKeyPress.bind(this);
   }
@@ -37,14 +40,14 @@ class LoginDialog extends React.Component {
   handleClose() {
     this.setState({
       open: false,
-      email: '',
+      usernameOrEmail: '',
       password: ''
     });
   }
 
-  enterEmail(e) {
+  enterUsernameOrEmail(e) {
     this.setState({
-      email: e.target.value
+      usernameOrEmail: e.target.value
     });
   }
 
@@ -55,7 +58,7 @@ class LoginDialog extends React.Component {
   }
 
   handleLogin() {
-    this.props.login(this.state.email, this.state.password);
+    this.props.login(this.state.usernameOrEmail, this.state.password);
   }
 
   handleKeyPress(event) {
@@ -74,11 +77,15 @@ class LoginDialog extends React.Component {
   // ─── RENDER ─────────────────────────────────────────────────────────────────────
   //
   render() {
+    const { classes } = this.props;
+
     // Login error
     const loginError = this.props.error ? (
-      <DialogContentText id="login-error">
-        That user does not exist.
-      </DialogContentText>
+      <section className="section login-error" style={{ color: 'white' }}>
+        <p>
+          Invalid login credentials.
+          </p>
+      </section>
     ) : null;
 
     return (
@@ -86,30 +93,61 @@ class LoginDialog extends React.Component {
         <Button onClick={this.handleClickOpen} className="auth-buttons">Login</Button>
         <div>
           <Dialog
+            className="auth-dialog"
             open={this.state.open}
             onClose={this.handleClose}
             aria-labelledby="form-dialog-title"
+            maxWidth='xs'
+            overlayStyle={{ backgroundColor: 'red' }}
+            PaperProps={{
+              style: {
+                backgroundColor: 'rgba(0, 0, 0, .9)',
+              },
+            }}
           >
-            <DialogTitle id="form-dialog-title">
+            <DialogTitle>
               Login
-            <Button
-                variant="raised"
-                style={{ float: 'right', backgroundColor: '#4285f4', color: 'white' }}
-                href='/auth/google'>
-                <i class="fab fa-google"></i>
-                <p style={{ paddingLeft: '15px' }}>Login With Google</p>
-              </Button>
             </DialogTitle>
             <DialogContent>
               {loginError}
+              <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                <Button
+                  id="google-login-button"
+                  variant="raised"
+                  style={{
+                    backgroundColor: '#4285f4',
+                    color: 'white',
+                    width: '100%',
+                    marginBottom: '10px',
+                  }}
+                  href='/auth/google'>
+                  <i className="fab fa-google"></i>
+                  <p style={{ paddingLeft: '15px' }}>Login With Google</p>
+                </Button>
+                <Button
+                  id="github-login-button"
+                  variant="raised"
+                  style={{
+                    backgroundColor: '#111111',
+                    color: 'white',
+                    width: '100%',
+                  }}
+                  href=''>
+                  <i className="fab fa-github"></i>
+                  <p style={{ paddingLeft: '15px' }}>Login With Github</p>
+                </Button>
+              </div>
+              <div style={{ textAlign: 'center', margin: '15px 0px' }}>
+                <Divider />
+              </div>
               <TextField
-                label="Email"
+                label="Username / Email"
                 // InputLabelProps={{
                 //   shrink: true,
                 // }}
                 fullWidth
                 autoFocus={true}
-                onChange={this.enterEmail}
+                onChange={this.enterUsernameOrEmail}
               />
               <TextField
                 label="Password"
@@ -125,10 +163,10 @@ class LoginDialog extends React.Component {
             <DialogActions>
               <Button onClick={this.handleClose}>
                 Cancel
-          </Button>
+              </Button>
               <Button onClick={this.handleLogin}>
                 Login
-          </Button>
+              </Button>
             </DialogActions>
           </Dialog>
         </div>
@@ -137,4 +175,4 @@ class LoginDialog extends React.Component {
   }
 }
 
-export default LoginDialog;
+export default withStyles(styles)(LoginDialog);

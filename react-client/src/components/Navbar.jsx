@@ -5,36 +5,43 @@ import Typography from '@material-ui/core/Typography';
 import LoginDialog from './AuthUserMenu/LoginDialog.jsx';
 import SubscribeDialog from './AuthUserMenu/SubscribeDialog.jsx';
 import UserMenu from './AuthUserMenu/UserMenu.jsx';
+import UnicornSVG from '../../dist/assets/unicorn2.svg';
+import logo from '../../dist/assets/unicorn.png';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 
 const mapStateToProps = state => {
   return {
     loggedIn: state.loggedIn,
+    loggedInUsername: state.username,
   };
 };
 
 class ConnectedNavbar extends React.Component {
   constructor(props) {
     super(props);
+
+    this.profileRedirect = this.profileRedirect.bind(this);
+    this.homeRedirect = this.homeRedirect.bind(this);
+  }
+
+  profileRedirect() {
+    this.props.history.push(`/userprofile/${this.props.loggedInUsername}`);
+  }
+
+  homeRedirect() {
+    this.props.history.push(`/`);
   }
 
   render() {
-    let badge = '';
-    if (this.props.wins >= 20) {
-      badge = '/assets/king.png'
-    } else if (this.props.wins >= 15) {
-      badge = '/assets/gold.png'
-    } else if (this.props.wins >= 10) {
-      badge = '/assets/silver.png'
-    } else if (this.props.wins >= 5) {
-      badge = '/assets/bronze.png'
-    }
-
     const authentication = this.props.loggedIn ?
       (
         <UserMenu
           logout={this.props.logout}
-          username={this.props.username} />
+          profileRedirect={this.profileRedirect}
+          homeRedirect={this.homeRedirect} 
+          aboutDialogue={this.props.aboutDialogue}
+          />
       )
       : (
         <Toolbar style={{
@@ -50,19 +57,30 @@ class ConnectedNavbar extends React.Component {
     // <a className="bd-tw-button button" data-social-network="Twitter" data-social-action="tweet" data-social-target="http://localhost:4000" target="_blank" href="https://twitter.com/intent/tweet?text=Let's get ready to Food Fight!">
     return (
       <AppBar position="static" color="default"
-        style={{ backgroundColor: "rgba(33,33,33,.3)" }}>
-        <Toolbar>
-          <div style={{ width: "100%" }}>
+        style={{ backgroundColor: "rgba(0,0,0,.3)" }}>
+        <Toolbar style={{
+          padding: '0px 7px',
+        }}>
+          <div style={{
+            width: "100%",
+          }}>
             <Typography
-              variant="title"
               color="inherit"
               className={'title'}>
-              <div id="logo">
+              <span id="typeface-logo">
                 <a href="/"
                   style={{ color: "white" }}>
                   deckard.io
-              </a>
-              </div>
+                </a>
+              </span>
+              <span id="image-logo"
+                style={{
+                  paddingTop: '8px'
+                }}>
+                <a href="/">
+                  <img src={UnicornSVG} style={{ height: '3em' }} />
+                </a>
+              </span>
             </Typography>
           </div>
 
@@ -74,4 +92,4 @@ class ConnectedNavbar extends React.Component {
 
 const Navbar = connect(mapStateToProps)(ConnectedNavbar);
 
-export default Navbar;
+export default withRouter(Navbar);

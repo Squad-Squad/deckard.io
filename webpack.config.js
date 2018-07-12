@@ -21,7 +21,11 @@ module.exports = {
         include: SRC_DIR,
         loader: 'babel-loader',
         query: {
-          presets: ['react', 'es2015', 'stage-2'],
+          presets: ['react', 'es2015', 'stage-2', 'flow'],
+          plugins: [
+            'transform-runtime',
+            'transform-async-to-generator',
+          ],
         },
       },
       {
@@ -35,8 +39,11 @@ module.exports = {
           {
             loader: 'image-webpack-loader',
             options: {
-              bypassOnDebug: true, // webpack@1.x
               disable: true, // webpack@2.x and newer
+              mozjpeg: {
+                progressive: true,
+                quality: 65,
+              },
             },
           },
         ],

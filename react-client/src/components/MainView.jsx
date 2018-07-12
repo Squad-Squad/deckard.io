@@ -3,7 +3,10 @@ import CreateRoomContainer from './createRoomContainer/CreateRoomContainer.jsx';
 import Room from './room/Room.jsx';
 import InviteDialogueModal from './inviteDialogueModal/InviteDialogueModal.jsx'
 import { Route } from 'react-router-dom';
-import { connect } from 'react-redux'
+import ProfileContainer from './profileAndStats/ProfileContainer.jsx';
+import { connect } from 'react-redux';
+import $ from 'jquery'
+import AboutDialogue from './AboutDialogue.jsx'
 
 
 const mapStateToProps = state => {
@@ -20,23 +23,41 @@ class ConnectedMainView extends React.Component {
       loggedInUser: '',
       invite: false,
       inviteHost: null,
-      roomHash: null
+      roomHash: null,
+      roomMode: "free",
+      messages: [],
+      aboutDialogue: false
+
     };
     this.props.io.on('invitation', (data) => {
-      console.log("INVITATION USERS:", data.host)
       for (var el of data.users) {
-        // console.log("IS THIS A FOR LOOP OR NOT", el)
         if (el === this.props.loggedInUsername) {
-          // console.log('USERNAME HIT:', el)
-          console.log("WORD FROM THE OTHERSIDE:", data)
           this.setState({
             invite: true,
             inviteHost: data.host,
-            roomHash: data.roomHash
-          }, () => console.log("MAINVIEWINVITESTATE:", this.state.invite))
+            roomHash: data.roomHash,
+            roomMode: data.roomMode,
+          });
         }
       }
     })
+
+
+    this.props.io.on('return option', (data) => {
+      console.log("RETURN OPTION", data)
+    })
+
+    this.props.io.on('chat', messages => {
+      this.setState({
+        messages: messages
+      });
+    });
+
+
+    this.freeRoomMode = this.freeRoomMode.bind(this, "free")
+    this.roundRoomMode = this.roundRoomMode.bind(this, "round")
+    this.decline = this.decline.bind(this)
+
   }
 
   componentDidMount() {
@@ -44,6 +65,7 @@ class ConnectedMainView extends React.Component {
       loggedInUser: this.props.loggedInUsername
     });
     this.props.io.emit('username connect', this.props.loggedInUsername)
+    this.props.io.emit('leaveRoom', this.props.loggedInUsername)
   }
 
   handleOpen = () => {
@@ -54,18 +76,48 @@ class ConnectedMainView extends React.Component {
     this.setState({ invite: false });
   };
 
+
+  freeRoomMode() {
+    this.setState({
+      roomMode: arguments[0]
+    })
+  }
+
+
+  roundRoomMode() {
+    console.log("ARGUMETS", arguments[0])
+    this.setState({
+      roomMode: arguments[0]
+    })
+  }
+
+  decline() {
+    $.get(`/api/rooms/${this.state.roomHash}`).then(roomInfo => {
+      console.log("ROOMINFO IN DECLINE MAINVIEW:", roomInfo)
+      this.props.io.emit('decline', { user: this.props.loggedInUsername, roomLength: roomInfo.roomLength, roomID: this.state.roomHash, roomMode: this.state.roomMode })
+      this.setState({ invite: false })
+    })
+
+  }
+
+
   render() {
     return (
       <div>
         <Route exact path="/" render={
           (props) =>
-            [
+            [ <AboutDialogue 
+                openStatus={this.props.aboutDialogue}
+                handleCloseAbout={this.props.handleCloseAbout}
+                />,
               <InviteDialogueModal
                 handleClose={this.handleClose.bind(this)}
                 addOpen={this.state.invite}
                 host={this.state.inviteHost}
                 roomHash={this.state.roomHash}
-                {...props} />,
+                decline={this.decline}
+                {...props}
+                key={1} />,
               <CreateRoomContainer
                 searchUsers={this.props.searchUsers}
                 searchedUsers={this.props.searchedUsers}
@@ -73,24 +125,38 @@ class ConnectedMainView extends React.Component {
                 loggedInUser={this.props.loggedInUser}
                 userRooms={this.props.userRooms}
                 io={this.props.io}
-                {...props} />
+                roundRoomMode={this.roundRoomMode.bind(this, 'round')}
+                freeRoomMode={this.freeRoomMode.bind(this, 'free')}
+                roomModeSelection={this.state.roomMode}
+                {...props}
+                key={2} />
             ]
         } />
+        <Route path="/userprofile/:username" render={
+          () => <ProfileContainer />} />
+
         <Route path="/rooms/:roomID" render={
           (props) =>
             [
-              <Room
+              <AboutDialogue 
+                openStatus={this.props.aboutDialogue}
+                handleCloseAbout={this.props.handleCloseAbout}
+                />,
+              <Room key={1}
+                messages={this.state.messages}
                 searchUsers={this.props.searchUsers}
                 searchedUsers={this.props.searchedUsers}
                 loggedIn={this.props.loggedIn}
                 loggedInUser={this.props.loggedInUser}
                 userRooms={this.props.userRooms}
                 io={this.props.io}
+                roomMode={this.state.roomMode}
                 {...props} />,
-              <InviteDialogueModal
+              <InviteDialogueModal key={2}
                 handleClose={this.handleClose.bind(this)}
                 addOpen={this.state.invite}
                 host={this.state.inviteHost}
+                decline={this.decline}
                 {...props} />,
             ]
         } />

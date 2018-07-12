@@ -4,6 +4,7 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import ScoresItem from './ScoresItem.jsx';
+import Divider from '@material-ui/core/Divider';
 import { connect } from 'react-redux';
 
 function mapStateToProps(state) {
@@ -13,24 +14,83 @@ function mapStateToProps(state) {
 }
 
 class Scores extends Component {
+  state = {
+    winner: '',
+  }
+
+  componentDidMount() {
+    // this.props.scores.map((user)=>{
+    //   user.alias = this.props.memberMap[]
+    // })
+    let winScore = 0, winner = '';
+    for (let user in this.props.scores) {
+      if (this.props.scores[user] > winScore) {
+        winScore = this.props.scores[user];
+        winner = user;
+      }
+    }
+
+    this.setState({
+      winner: this.props.memberMap[winner],
+    })
+  }
+
+
+  // memberMap: {mitsuku@mitsuku.com: "Robocop", adonesky@gmail.com: "Data", dance1@gmail.com: "Dolores"}
+
+  // scores: {adonesky@gmail.com: 10, dance1@gmail.com: 10}
+
   render() {
     return (
-      <Paper style={{
-        backgroundColor: 'rgba(255,255,255,.1)'
-      }}>
+      <Paper>
         {/* TOP BAR */}
         <div style={{ flex: 1 }}>
-          <AppBar position="static" color="default">
+          <AppBar position="static" color="default"
+            style={{ backgroundColor: 'rgba(30, 30, 30, .5)' }}>
             <Toolbar>
-              <Typography variant="title" color="inherit">
-                Scores
+              {/* BOT REVEAL */}
+              <Typography variant="title" style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                paddingLeft: '15px',
+                paddingRight: '15px',
+                paddingTop: '15px',
+                paddingBottom: '10px',
+                fontSize: '20px',
+                width: '100%',
+              }}>
+                <div style={{ fontSize: '20px' }}>
+                  The Bot Is:
+                </div>
+                <div style={{ fontSize: '20px' }}>
+                  <span>Mitsuku</span> &nbsp;
+                  <strong>{this.props.memberMap['mitsuku@mitsuku.com']}</strong>
+                </div>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  width: '100%',
+                  marginTop: '10px'
+                }}>
+                  <span>Users</span>
+                  <span>Scores</span>
+                </div>
               </Typography>
+              <Divider />
             </Toolbar>
           </AppBar>
         </div>
 
+
+        {/* USER RESULTS */}
         {Object.keys(this.props.scores).map((user, i) =>
-          <ScoresItem key={i} user={user} score={this.props.scores[user]} />
+          <ScoresItem
+            key={i}
+            user={user}
+            score={this.props.scores[user]}
+            winner={this.state.winner}
+            alias={this.props.memberMap[user]} />
         )}
       </Paper>
     );

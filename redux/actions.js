@@ -1,13 +1,31 @@
 //
 // ─── AUTHENTICATION ─────────────────────────────────────────────────────────────
 //
-const login = username => ({
+const login = (username, email, isGoogleAccount, avatarURL, description, friends) => ({
   type: 'USER_LOGGED_IN',
-  payload: { username },
+  payload: {
+    username,
+    email,
+    isGoogleAccount,
+    avatarURL,
+    description,
+    friends,
+  },
 });
 
 const logout = () => ({
   type: 'USER_LOGGING_OUT',
+});
+
+
+//
+// ─── FRIENDS ────────────────────────────────────────────────────────────────────
+//
+const addFriend = friend => ({
+  type: 'ADD_FRIEND',
+  payload: {
+    friend,
+  },
 });
 
 
@@ -33,6 +51,21 @@ const removeAllUsersFromNewRoom = () => ({
   type: 'REMOVE_ALL_USERS_FROM_NEW_ROOM',
 });
 
+const chooseRoomMode = roomMode => ({
+  type: 'CHOOSE_ROOM_MODE',
+  payload: { roomMode },
+});
+
+const chooseRoomBot = roomBot => ({
+  type: 'CHOOSE_ROOM_BOT',
+  payload: { roomBot },
+});
+
+const chooseRoomLength = roomLength => ({
+  type: 'CHOOSE_ROOM_LENGTH',
+  payload: { roomLength },
+});
+
 
 //
 // ─── ROOM LOGIC ─────────────────────────────────────────────────────────────────
@@ -46,9 +79,13 @@ const addCurrRoomUsersFromDB = users => ({
 module.exports = {
   login,
   logout,
+  addFriend,
   searchUsers,
   addUserToNewRoom,
   removeUserFromNewRoom,
   removeAllUsersFromNewRoom,
+  chooseRoomMode,
+  chooseRoomBot,
+  chooseRoomLength,
   addCurrRoomUsersFromDB,
 };

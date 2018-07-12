@@ -1,8 +1,8 @@
 import React from 'react';
 import axios from 'axios';
 import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
 import CreateRoom from './CreateRoom.jsx';
+import FriendsList from './FriendsList.jsx';
 import UserRooms from './UserRooms.jsx';
 
 const styles = theme => ({
@@ -15,8 +15,26 @@ class CreateRoomContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      combatants: Array(0)
+      combatants: Array(0),
+      onlineUsers: [],
     };
+  }
+
+  async componentDidMount() {
+    // Get online users
+    const res = await axios.post('/searchUsers');
+    this.setState({
+      onlineUsers: res.data
+        .filter(user => (user !== this.props.loggedInUsername)),
+    });
+
+    axios.post('/searchUsers')
+      .then(res => {
+        this.setState({
+          onlineUsers: res.data
+            .filter(user => (user !== this.props.loggedInUsername)),
+        });
+      });
   }
 
   componentWillReceiveProps(newProps) {
@@ -32,9 +50,9 @@ class CreateRoomContainer extends React.Component {
 
   addCombatant(email) {
     if (!this.state.combatants.includes(email)) {
-      this.setState({
-        combatants: [...this.state.combatants, email]
-      });
+      this.setState(prevState => ({
+        combatants: [...prevState.combatants, email],
+      }));
     }
   }
 
@@ -42,15 +60,26 @@ class CreateRoomContainer extends React.Component {
     const { classes } = this.props;
 
     return (
-      <Grid container className={classes.root} spacing={16}>
-        <Grid container spacing={24}>
-          <Grid item xs={3}>
-          </Grid>
-          <Grid item xs={6}>
-            <CreateRoom io={this.props.io}></CreateRoom>
-          </Grid>
-        </Grid>
-      </Grid>
+      <div>
+        <div className="columns" style={{ display: 'flex', flexWrap: 'wrap-reverse' }}>
+          <div className="column is-1 hide-if-small"></div>
+          <div className="column is-4" style={{ minWidth: '300px' }}>
+            <FriendsList
+              onlineUsers={this.state.onlineUsers} />
+          </div>
+          <div className="column is-6">
+            <CreateRoom
+              io={this.props.io}
+              onlineUsers={this.state.onlineUsers}
+              freeRoomMode={this.props.freeRoomMode}
+              roundRoomMode={this.props.roundRoomMode}
+              roomModeSelection={this.props.roomModeSelection}
+            >
+            </CreateRoom>
+          </div>
+          <div className="column is-1 hide-if-small"></div>
+        </div>
+      </div>
     )
   }
 }

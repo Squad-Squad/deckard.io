@@ -6,6 +6,7 @@ class SignupPage extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      username: null,
       email: null,
       emailValid: false,
       password: null,
@@ -14,6 +15,12 @@ class SignupPage extends React.Component {
     this.enterEmail = this.enterEmail.bind(this);
     this.enterPassword = this.enterPassword.bind(this);
     this.handleKeyPress = this.handleKeyPress.bind(this);
+  }
+
+  enterUsername(e) {
+    this.setState({
+      username: e.target.value
+    });
   }
 
   enterEmail(e) {
@@ -37,7 +44,6 @@ class SignupPage extends React.Component {
   }
 
   handleSubscribe() {
-    console.log(this.props.subscribe);
     this.props.subscribe(
       this.state.email,
       this.state.password);
@@ -50,7 +56,6 @@ class SignupPage extends React.Component {
   }
 
   render() {
-    console.log('L:KSJDF');
     // Validate email field
     let isEmailValid1 = this.state.emailValid ? (
       { className: 'input is-success' }
@@ -93,6 +98,21 @@ class SignupPage extends React.Component {
           <div className="tile is-child notification">
             <p className="title">Sign Up!</p>
             <div className="is-divider" />
+            <div className="field">
+              <label className="label">Password</label>
+              <p className="control has-icons-left">
+                <input
+                  className="input"
+                  type="username"
+                  placeholder="username"
+                  value={this.state.username}
+                  onChange={this.enterUsername}
+                  onKeyPress={this.handleKeyPress} />
+                <span className="icon is-small is-left">
+                  <i className="fas fa-user"></i>
+                </span>
+              </p>
+            </div>
             <div className="field">
               <label className="label">Email</label>
               <div className="control has-icons-left">

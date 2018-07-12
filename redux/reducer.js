@@ -1,8 +1,19 @@
 const initialState = {
   loggedIn: false,
+
   username: '',
+  email: '',
+  isGoogleAccount: false,
+  avatarURL: '',
+  description: '',
+  friends: [],
+
   searchedUsers: [],
   usersForNewRoom: [],
+  roomMode: '',
+  roomBot: '',
+  roomLength: '',
+
   currRoomUsers: [],
 };
 
@@ -20,7 +31,22 @@ function reducer(state = initialState, action) {
       return Object.assign({}, state, {
         loggedIn: false,
         username: '',
+        email: '',
+        isGoogleAccount: '',
+        avatarURL: '',
+        description: '',
       });
+
+
+    //
+    // ─── FRIENDS ─────────────────────────────────────────────────────
+    //
+    case 'ADD_FRIEND':
+      if (!state.friends.includes(action.payload.friend)) {
+        return Object.assign({}, state, {
+          friends: state.friends.concat([action.payload.friend]),
+        });
+      } return state;
 
 
     //
@@ -37,17 +63,25 @@ function reducer(state = initialState, action) {
       } return state;
 
     case 'REMOVE_USER_FROM_NEW_ROOM':
-      // THIS CONSOLE LOG IS NECESSARY, DON'T REMOVE
-      console.log('UPDATED ARRAY', state.usersForNewRoom.splice(state.usersForNewRoom.indexOf(action.payload.username), 1));
+      const copy = state.usersForNewRoom.slice(0);
+      copy.splice(copy.indexOf(action.payload.username), 1);
       return Object.assign({}, state, {
-        usersForNewRoom: state.usersForNewRoom.splice(state.usersForNewRoom.indexOf(action.payload.username), 1),
+        usersForNewRoom: copy,
       });
 
     case 'REMOVE_ALL_USERS_FROM_NEW_ROOM':
-      // THIS CONSOLE LOG IS NECESSARY, DON'T REMOVE
       return Object.assign({}, state, {
         usersForNewRoom: [],
       });
+
+    case 'CHOOSE_ROOM_MODE':
+      return Object.assign({}, state, action.payload);
+
+    case 'CHOOSE_ROOM_BOT':
+      return Object.assign({}, state, action.payload);
+
+    case 'CHOOSE_ROOM_LENGTH':
+      return Object.assign({}, state, action.payload);
 
 
     //

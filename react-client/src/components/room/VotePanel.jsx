@@ -20,7 +20,10 @@ function mapStateToProps(state) {
 
 const styles = theme => ({
   button: {
-    margin: theme.spacing.unit,
+    width: '100%',
+    height: '42px',
+    margin: '0px',
+    borderRadius: '0px',
   },
   input: {
     display: 'none',
@@ -44,12 +47,19 @@ class VotePanel extends Component {
   }
 
   componentDidMount() {
+    console.log("MEMBERS ARRRAY:", this.props.members)
+    let membersVoteMap = {}
+    for(var key in this.props.memberMap){
+      if(key !== "roomLength" || key !== "roomID"){
+        membersVoteMap[this.props.memberMap[key]] = ''  
+      }
+    }
+
+    let membersArr = this.props.members.slice(2, this.props.members.length)
     this.setState({
-      membersVoteMap: Object.keys(this.props.memberMap).reduce((obj, member) => {
-        obj[member] = '';
-        return obj;
-      }, {}),
-    });
+      members: membersArr,
+      membersVoteMap: membersVoteMap
+    }, ()=>{console.log("membersSTATE", this.state.members)});
   }
 
   setVote(alias, humanOrAI) {
@@ -68,10 +78,10 @@ class VotePanel extends Component {
   submitVotes() {
     const submitObj = {
       user: this.props.loggedInUser,
-      votes: this.state.membersVoteMap
+      votes: this.state.membersVoteMap,
+      roomID: this.props.roomID
     };
-    // this.props.history.push(`/rooms/${this.props.roomId}/awaiting-results`);
-    // axios.post('/api/saveVotes', submitObj)
+ 
     this.setState({
       submitted: true,
     });
@@ -88,34 +98,32 @@ class VotePanel extends Component {
         return (<AwaitingResults />);
       } else {
         return (
-          <Paper style={{
-            backgroundColor: 'rgba(255,255,255,.1)'
-          }}>
+          <Paper>
             {/* TOP BAR */}
             <div className={classes.root}>
               <AppBar position="static" color="default">
                 <Toolbar>
-                  <Typography variant="title" color="inherit" className={classes.flex}>
+                  <Typography variant="title" color="inherit" className={classes.flex}
+                    style={{ fontWeight: 600 }}>
                     Voting
                   </Typography>
                 </Toolbar>
               </AppBar>
             </div>
 
-            {this.props.members.map((user, i) =>
-              <VotePanelItem key={i} user={user} setVote={this.setVote.bind(this)} />
+            {this.props.members.slice(2, this.props.members.length).map((user, i) => {
+              if (user !== this.props.memberMap[this.props.loggedInUser]) {
+                return <VotePanelItem thisKey={i} user={user} setVote={this.setVote.bind(this)} />
+              }
+            }
             )}
 
             {/* BOTTOM BAR */}
-            <BottomNavigation style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-            }}>
-              <Button variant="contained" color="secondary" aria-label="add" className={classes.button}
-                onClick={this.submitVotes.bind(this)}>
-                Submit
-              </Button>
-            </BottomNavigation>
+            <Button variant="contained" color="secondary" aria-label="add"
+              className={classes.button}
+              onClick={this.submitVotes.bind(this)}>
+              Submit
+            </Button>
           </Paper>
         )
       }
