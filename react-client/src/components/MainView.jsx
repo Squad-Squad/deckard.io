@@ -21,8 +21,8 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    login: (username, email, isGoogleAccount, avatarURL, description) => {
-      return dispatch(login(username, email, isGoogleAccount, avatarURL, description));
+    login: (username, email, isGoogleAccount, avatarURL, description, friends) => {
+      return dispatch(login(username, email, isGoogleAccount, avatarURL, description, friends));
     },
     closeAboutDialog: () => dispatch(closeAboutDialog()),
   };
