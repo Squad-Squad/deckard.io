@@ -33,6 +33,7 @@ const styles = theme => ({
   },
   chip: {
     margin: theme.spacing.unit,
+    backgroundColor: 'rgba(30, 30, 30, .8)',
   },
   modal: {
     position: 'absolute',
