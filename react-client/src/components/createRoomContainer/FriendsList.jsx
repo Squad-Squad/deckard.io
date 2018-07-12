@@ -130,6 +130,7 @@ class FriendsList extends Component {
   updateQuery(e) {
     this.setState({
       query: e.target.value,
+      addFriendError: '',
     });
   }
 
@@ -256,6 +257,7 @@ class FriendsList extends Component {
         return (
           <FormControl style={{ width: '100%' }} >
             <Input
+              autoFocus={true}
               style={{ fontSize: '16px' }}
               value={this.state.query}
               onChange={this.updateQuery.bind(this)}
