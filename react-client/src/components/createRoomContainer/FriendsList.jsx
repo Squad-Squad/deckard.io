@@ -85,6 +85,10 @@ class FriendsList extends Component {
     this.mapAvatars();
   }
 
+  componentWillReceiveProps() {
+    this.mapAvatars();
+  }
+
   updateWindowDimensions() {
     this.setState({
       width: window.innerWidth,

@@ -120,6 +120,7 @@ class ConnectedApp extends React.Component {
       userRooms: [],
       userWins: ''
     };
+
     this.socket = io();
   }
 
@@ -175,6 +176,7 @@ class ConnectedApp extends React.Component {
             data.friends
           );
         };
+        io.connect();
       })
       .catch(() => {
         this.setState({
@@ -191,7 +193,9 @@ class ConnectedApp extends React.Component {
     })
 
     if (res.config.data) {
+      console.log("THISSSSS", res.config.data)
       this.props.login(JSON.parse(res.config.data).username);
+      io.connect();
     }
   }
 

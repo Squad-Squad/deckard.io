@@ -74,8 +74,8 @@ class ConnectedMainView extends React.Component {
     this.setState({
       loggedInUser: this.props.loggedInUsername
     });
-    this.props.io.emit('username connect', this.props.loggedInUsername)
-    this.props.io.emit('leaveRoom', this.props.loggedInUsername)
+    this.props.io.emit('username connect', this.props.loggedInUsername);
+    this.props.io.emit('leaveRoom', this.props.loggedInUsername);
     console.log("THINGS");
 
     const res = await axios.get('/checklogin');
