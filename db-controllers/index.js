@@ -460,6 +460,95 @@ const removeFromMembersList = (client, socket, rooms) => {
 };
 
 
+
+const turnOverLogic = (io, client, socket, data, gameOrderArr, mitsuku) => {
+  let message;
+  if(!data.message){
+    message = "blank"
+  }
+
+  const gameOrderArrOfKeys = [];
+      let nextTurnUsername;
+      let nextTurnUserSocketId;
+      gameOrderArr.forEach((player) => {
+        const username = Object.keys(player);
+        gameOrderArrOfKeys.push(username[0]);
+      });
+      const lastTurnIndex = gameOrderArrOfKeys.indexOf(data.user);
+
+      if (lastTurnIndex === gameOrderArr.length - 1) {
+        nextTurnUsername = Object.keys(gameOrderArr[0])[0];
+      } else {
+        nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 1])[0];
+      }
+
+
+      if (nextTurnUsername === 'mitsuku') {
+        io.sockets.sockets[socket.id].emit('turnOver', socket.username);
+        io.sockets.emit('whose turn', 'mitsuku@mitsuku.com');
+
+        let extraDelay = 0;
+        let response;
+        mitsuku.send(message).then((reply) => {
+          response = reply
+          if (response === undefined) {
+            mitsuku.send(message).then((reply) => {
+              response = reply
+            });
+          }
+          if (/here\sin\sleeds/g.test(response)) {
+            response = response.slice(0, response.indexOf('here in leeds'));
+          }
+          // Add delay based on response length
+          extraDelay = response.length * 40;
+          console.log('EXTRA DELAY', extraDelay);
+
+          setTimeout(() => {
+            // Save her message to redis
+            client.rpush(
+              `${socket.room}:messages`,
+              JSON.stringify({ 'mitsuku@mitsuku.com': response }),
+            );
+
+            // and retrieve all the messages immediately after
+            fetchRedisMessages(client, socket, (result) => {
+              io.sockets.in(socket.room).emit('chat', result);
+            });
+
+            // after mitsuku's turn onto the next one
+
+            if (lastTurnIndex + 1 === gameOrderArr.length - 1) {
+              nextTurnUsername = Object.keys(gameOrderArr[0])[0];
+              nextTurnUserSocketId = gameOrderArr[0][nextTurnUsername];
+            } else if (nextTurnUsername === Object.keys(gameOrderArr[0])[0]) {
+              nextTurnUsername = Object.keys(gameOrderArr[1])[0];
+              nextTurnUserSocketId = gameOrderArr[1][nextTurnUsername];
+            } else {
+              nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 2])[0];
+              nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 2][nextTurnUsername];
+            }
+            if(nextTurnUserSocketId){
+              io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
+              io.sockets.emit('whose turn', nextTurnUsername);
+            }
+          }, Math.random() * 5000 + 2000 + extraDelay);
+        });
+      } else {
+        if (lastTurnIndex === gameOrderArr.length - 1) {
+          nextTurnUsername = Object.keys(gameOrderArr[0])[0];
+          nextTurnUserSocketId = gameOrderArr[0][nextTurnUsername];
+        } else {
+          nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 1][nextTurnUsername];
+        }
+        console.log('NEXT TURN data.USER SOCEKT ID:', nextTurnUserSocketId);
+        io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
+        console.log('socket.id in next turn', socket.id);
+        io.sockets.sockets[socket.id].emit('turnOver', socket.username);
+        io.sockets.emit('whose turn', nextTurnUsername);
+    }
+}
+
+
 module.exports = {
   saveMember,
   saveRoomAndMembers,
@@ -474,4 +563,5 @@ module.exports = {
   fetchRedisMessages,
   getRoomReady,
   removeFromMembersList,
+  turnOverLogic,
 };
