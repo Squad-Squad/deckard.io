@@ -442,20 +442,26 @@ const getRoomReady = (io, timerObj, client, socket, data, rooms, membersInfo) =>
 
 const removeFromMembersList = (client, socket, rooms) => {
   const user = socket.username;
-  // console.log("WHO I'mTRYING TO REMOVE", JSON.stringify({ [user]: socket.id }));
+          //UPDATE GAME TURN ORDER WHEN SOMEONE LEAVES THE ROOM
+          
+    client.lremAsync(`${socket.room}:gameOrder`, 1, JSON.stringify({ [user]: socket.id }))
+    .then((replies) => {
+      client.lrangeAsync(`${socket.room}:gameOrder`, 0, -1)
+        .then((reply) => {
+          console.log(`GAMEORDER of ${socket.room} CHECK AFTER REM:`, reply);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+
   client.lremAsync(`${socket.room}:membersList`, 1, JSON.stringify({ [user]: socket.id }))
     .then((replies) => {
       client.lrangeAsync(`${socket.room}:membersList`, 0, -1)
         .then((reply) => {
-          // console.log(`ROOM MEMmbers of ${socket.room} CHECK AFTER REM:`, reply);
-
-          //UPDATE GAME TURN ORDER WHEN SOMEONE LEAVES THE ROOM
-          let turnIndexForRemoval = rooms[socket.room].gameOrder.indexOf({[user]:socket.id})
-          console.log("TURN INDEX FOR REMOVAL", turnIndexForRemoval, {[user]:socket.id})
-          console.log("gameOrder BEFORE:", rooms[socket.room].gameOrder)
-          rooms[socket.room].gameOrder.splice(turnIndexForRemoval, 1)
-          console.log("gameOrder AFTER:", rooms[socket.room].gameOrder)
-
           // LEAVE ROOM ASYNCHRONOUSLY HERE
           socket.leave(socket.room);
         })
