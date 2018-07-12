@@ -27,7 +27,7 @@ const email = require('../lib/nodemailerHelpers');
 
 const { Op } = db;
 
-const timerObj = {};
+var timerObj = {};
 
 
 //
@@ -574,7 +574,7 @@ db.models.sequelize.sync().then(() => {
     // ─── ROUND ROBIN LOGIC ───────────────────────────────────────────
     //
     socket.on('turn done', async (data) => {
-      const gameOrderArr = [];
+      let gameOrderArr = [];
       await client.lrangeAsync(`${socket.room}:gameOrder`, 0, -1)
         .then((reply) => {
           reply.forEach((user) => {
