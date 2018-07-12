@@ -78,7 +78,6 @@ const User = sequelize.define('user', {
   description: {
     type: Sequelize.STRING,
     allowNull: true,
-    defaultValue: 'Description...',
   },
   games_played: {
     type: Sequelize.INTEGER(6),
