@@ -26,7 +26,7 @@ const { sequelize } = require('../database-postgresql/models/index');
 
 const { Op } = db;
 
-let timerObj = {};
+const timerObj = {};
 
 
 //
@@ -285,8 +285,8 @@ app.post('/api/save', (req, res) => {
   console.log('NEW ROOM DATA', req.body);
 
   const {
- roomName, roomMode, members, roomLength
-} = req.body;
+    roomName, roomMode, members, roomLength,
+  } = req.body;
   const roomUnique = uniqueString().slice(0, 6);
   if (roomMode === 'free') {
     timerObj[roomUnique] = new Tock({
@@ -300,7 +300,7 @@ app.post('/api/save', (req, res) => {
     client.hmset(`${roomUnique}:members`, results, (err, reply) => {
       if (err) {
         console.error(err);
-      }else {
+      } else {
         res.send(results);
         client.expire(`${roomUnique}:members`, 3600);
       }
@@ -322,7 +322,7 @@ app.post('/api/saveFreeMode', (req, res) => {
     client.hmset(`${roomUnique}:members`, results, (err, reply) => {
       if (err) {
         console.error(err);
-      } else{
+      } else {
         res.send(results);
         client.expire(`${roomUnique}:members`, 3600);
       }
@@ -420,6 +420,9 @@ db.models.sequelize.sync().then(() => {
 
   const io = socket(server);
   io.on('connection', (socket) => {
+    //
+    // ─── LOGIN ───────────────────────────────────────────────────────
+    //
     socket.on('username connect', (data) => {
       socket.username = data;
       console.log('++++++USERNAME CONNECT++++++:', data);
@@ -435,6 +438,9 @@ db.models.sequelize.sync().then(() => {
       client.rpushAsync('onlineUsers', socket.username)
         .then((reply) => {
           console.log('userAdded to onlineUsers', reply);
+          client.lrange('onlineUsers', 0, -1, (err, users) => {
+            io.sockets.emit('new-user-online', users);
+          });
         })
         .catch((err) => {
           console.error(err);
@@ -442,6 +448,10 @@ db.models.sequelize.sync().then(() => {
       userSockets[socket.username] = socket;
     });
 
+
+    //
+    // ─── JOIN ROOM ───────────────────────────────────────────────────
+    //
     socket.on('join', (data) => {
       socket.room = data.roomID;
       socket.alias = data.user;
@@ -505,6 +515,92 @@ db.models.sequelize.sync().then(() => {
     });
 
 
+    //
+    // ─── INVITE USER TO ROOM ─────────────────────────────────────────
+    //
+    socket.on('invite', (data) => {
+      data.users.forEach((user) => {
+        client.rpush(`${data.roomHash}:membersInvited`, user, (err, reply) => {
+        });
+        client.lrange(
+          `${data.roomHash}:membersInvited`,
+          0,
+          -1,
+          (err, reply) => {
+            console.log('updated members in membersInvited', reply);
+          },
+        );
+      });
+
+      // send invitation to all online users (whether they are invited or not is sorted on front end), except inviter
+
+      socket.broadcast.emit('invitation', {
+        users: data.users,
+        roomHash: data.roomHash,
+        roomName: data.roomName,
+        host: socket.username,
+        roomMode: data.roomMode,
+      });
+    });
+
+
+    //
+    // ─── CHAT LOGIC ──────────────────────────────────────────────────
+    //
+    socket.on('chat', (data) => {
+      const user = data.message.name;
+      const message = data.message.message;
+      const roomMode = data.roomMode;
+
+      console.log('ROOMMODE WITH CHAT:', roomMode);
+
+      // push all the messages sent from client to redis room key message list
+      client.rpush(
+        `${socket.room}:messages`,
+        JSON.stringify({ [user]: message }),
+      );
+
+      let extraDelay = 0;
+      if (roomMode === 'free') {
+        // Change Mitsuku's response frequency based on the number of room users
+        if (Math.ceil(Math.random() * (data.numUsers - 1)) === data.numUsers - 1) {
+        // Delay Mitsuku a random number of seconds
+          mitsuku.send(data.message.message).then((response) => {
+            console.log('GETTING MESSAGE BACK', response);
+            if (/here\sin\sleeds/g.test(response)) {
+              response = response.slice(0, response.indexOf('here in leeds'));
+            }
+
+            // Add delay based on response length
+            extraDelay = response.length * 50;
+            console.log('EXTRA DELAY', extraDelay);
+
+            setTimeout(() => {
+            // Save her message to redis
+              client.rpush(
+                `${socket.room}:messages`,
+                JSON.stringify({ 'mitsuku@mitsuku.com': response }),
+              );
+
+              // and retrieve all the messages immediately after
+              dbHelpers.fetchRedisMessages(client, socket, (result) => {
+                io.sockets.in(socket.room).emit('chat', result);
+              });
+            }, Math.random() * 5000 + 2000 + extraDelay);
+          });
+        }
+      }
+
+      // retrieve all the messages from redis everytime a message is received
+      dbHelpers.fetchRedisMessages(client, socket, (result) => {
+        io.sockets.in(socket.room).emit('chat', result);
+      });
+    });
+
+
+    //
+    // ─── ROUND ROBIN LOGIC ───────────────────────────────────────────
+    //
     socket.on('turn done', async (data) => {
       const gameOrderArr = [];
       await client.lrangeAsync(`${socket.room}:gameOrder`, 0, -1)
@@ -597,91 +693,6 @@ db.models.sequelize.sync().then(() => {
         io.sockets.sockets[socket.id].emit('turnOver', socket.username);
         io.sockets.emit('whose turn', nextTurnUsername);
       }
-    });
-
-    // console.log("A DIFFERENT METHOD INDEX", rooms[socket.room]['gameOrder'].indexOf({[data.user]:socket.id}))
-
-
-    socket.on('invite', (data) => {
-      data.users.forEach((user) => {
-        client.rpush(`${data.roomHash}:membersInvited`, user, (err, reply) => {
-        });
-        client.lrange(
-          `${data.roomHash}:membersInvited`,
-          0,
-          -1,
-          (err, reply) => {
-            console.log('updated members in membersInvited', reply);
-          },
-        );
-      });
-
-      // send invitation to all online users (whether they are invited or not is sorted on front end), except inviter
-
-      socket.broadcast.emit('invitation', {
-        users: data.users,
-        roomHash: data.roomHash,
-        roomName: data.roomName,
-        host: socket.username,
-        roomMode: data.roomMode,
-      });
-    });
-
-    socket.on('chat', (data) => {
-      const user = data.message.name;
-      const message = data.message.message;
-      const roomMode = data.roomMode;
-
-      console.log('ROOMMODE WITH CHAT:', roomMode);
-
-      // push all the messages sent from client to redis room key message list
-      client.rpush(
-        `${socket.room}:messages`,
-        JSON.stringify({ [user]: message }),
-      );
-
-      // Change Mitsuku's response frequency based on the number of room users
-
-      if (roomMode === 'round') {
-
-
-      }
-
-
-      let extraDelay = 0;
-      if (roomMode === 'free') {
-        if (Math.ceil(Math.random() * (data.numUsers - 1)) === data.numUsers - 1) {
-        // Delay Mitsuku a random number of seconds
-          mitsuku.send(data.message.message).then((response) => {
-            console.log('GETTING MESSAGE BACK', response);
-            if (/here\sin\sleeds/g.test(response)) {
-              response = response.slice(0, response.indexOf('here in leeds'));
-            }
-
-            // Add delay based on response length
-            extraDelay = response.length * 50;
-            console.log('EXTRA DELAY', extraDelay);
-
-            setTimeout(() => {
-            // Save her message to redis
-              client.rpush(
-                `${socket.room}:messages`,
-                JSON.stringify({ 'mitsuku@mitsuku.com': response }),
-              );
-
-              // and retrieve all the messages immediately after
-              dbHelpers.fetchRedisMessages(client, socket, (result) => {
-                io.sockets.in(socket.room).emit('chat', result);
-              });
-            }, Math.random() * 5000 + 2000 + extraDelay);
-          });
-        }
-      }
-
-      // retrieve all the messages from redis everytime a message is received
-      dbHelpers.fetchRedisMessages(client, socket, (result) => {
-        io.sockets.in(socket.room).emit('chat', result);
-      });
     });
 
 
