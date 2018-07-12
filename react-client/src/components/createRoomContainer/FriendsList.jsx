@@ -4,9 +4,7 @@ import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import LensIcon from '@material-ui/icons/Lens';
 import FormControl from '@material-ui/core/FormControl';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import Input from '@material-ui/core/Input';
@@ -15,6 +13,7 @@ import Modal from '@material-ui/core/Modal';
 import KeyboardArrowDown from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowUp from '@material-ui/icons/KeyboardArrowUp';
 import OtherProfileContainer from '../profileAndStats/OtherProfileContainer.jsx';
+import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import Snackbar from '@material-ui/core/Snackbar';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
@@ -145,6 +144,13 @@ class FriendsList extends Component {
     this.setState({ snackbarOpen: false });
   };
 
+  handleClickAway() {
+    console.log('clicking away');
+    this.setState({
+      addFriend: false,
+    })
+  }
+
   mapAvatars() {
     // Add avatars to users who have set them
     if (this.props.friends) {
@@ -272,29 +278,35 @@ class FriendsList extends Component {
       if (this.state.addFriendError) {
         return (
           <FormControl style={{ width: '100%' }} error>
-            <Input
-              style={{ fontSize: '16px' }}
-              value={this.state.query}
-              onChange={this.updateQuery.bind(this)}
-              placeholder="Add Friend"
-              onKeyUp={this.addUser.bind(this)}
-            />
-            <FormHelperText id="name-error-text">
-              {this.state.addFriendError}
-            </FormHelperText>
+            <ClickAwayListener
+              onClickAway={this.handleClickAway.bind(this)} >
+              <Input
+                style={{ fontSize: '16px' }}
+                value={this.state.query}
+                onChange={this.updateQuery.bind(this)}
+                placeholder="Add Friend"
+                onKeyUp={this.addUser.bind(this)}
+              />
+              <FormHelperText id="name-error-text">
+                {this.state.addFriendError}
+              </FormHelperText>
+            </ClickAwayListener>
           </FormControl>
         )
       } else if (this.state.addFriend) {
         return (
           <FormControl style={{ width: '100%' }} >
-            <Input
-              autoFocus={true}
-              style={{ fontSize: '16px' }}
-              value={this.state.query}
-              onChange={this.updateQuery.bind(this)}
-              placeholder="Add Friend"
-              onKeyUp={this.addUser.bind(this)}
-            />
+            <ClickAwayListener
+              onClickAway={this.handleClickAway.bind(this)} >
+              <Input
+                autoFocus={true}
+                style={{ fontSize: '16px' }}
+                value={this.state.query}
+                onChange={this.updateQuery.bind(this)}
+                placeholder="Add Friend"
+                onKeyUp={this.addUser.bind(this)}
+              />
+            </ClickAwayListener>
           </FormControl>
         )
       } else {
