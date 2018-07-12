@@ -133,8 +133,11 @@ class ConnectedRoom extends React.Component {
 
   getTimer(timer) {
 
-      // let roomLengthInMilis = timer * 60 * 1000
-      let roomLengthInMilis = timer * 60 
+      let roomLengthInMilis = timer * 60 * 1000
+
+      //CHANGE TO BELOW FOR TESTING VOTING PANEL
+      
+      // let roomLengthInMilis = timer * 60 
     
       let tock = new Tock({
         countdown: true,
