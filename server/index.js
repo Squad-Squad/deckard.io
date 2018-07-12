@@ -706,10 +706,9 @@ db.models.sequelize.sync().then(() => {
           JSON.stringify({ matrixOverLords: `${socket.alias} left the room` }),
         );
 
-        console.log('SOCKET ID WHEN LEAVE:', socket.id);
-        io.sockets.sockets[socket.id].emit('return option', socket.room, (err, response) => {
-          console.log('DID I HAPPEN');
-        });
+        // io.sockets.sockets[socket.id].emit('return option', socket.room, (err, response) => {
+        //   console.log('DID I HAPPEN');
+        // });
 
 
         await dbHelpers.removeFromMembersList(client, socket, rooms);
@@ -725,6 +724,12 @@ db.models.sequelize.sync().then(() => {
           console.error(err);
         });
 
+        if(!data.message){
+          data.message = ""
+        }
+
+        console.log("DOES GAME ORDERARR HAPPEN:", gameOrderArr)
+
         dbHelpers.turnOverLogic(io, client, socket, data, gameOrderArr, mitsuku)
 
         dbHelpers.fetchRedisMessages(client, socket, (result) => {
@@ -733,13 +738,13 @@ db.models.sequelize.sync().then(() => {
       }
     });
 
-    socket.on('disconnect', (data) => {
+    socket.on('disconnect', async data => {
       const thisRoom = rooms[socket.room];
 
       if (rooms[socket.room]) {
-        users.splice(users.indexOf(socket.username), 1);
-        rooms[socket.room].splice(thisRoom.indexOf(socket.username), 1);
-        console.log('this users has disconnected:', socket.username, 'AND ROOMS[SOCKET.ROOM] AFTER DISCONNECT:', rooms[socket.room]);
+        // users.splice(users.indexOf(socket.username), 1);
+        // rooms[socket.room].splice(thisRoom.indexOf(socket.username), 1);
+        // console.log('this users has disconnected:', socket.username, 'AND ROOMS[SOCKET.ROOM] AFTER DISCONNECT:', rooms[socket.room]);
         client.rpush(
           `${socket.room}:messages`,
           JSON.stringify({ matrixOverLords: `${socket.alias} left the room` }),
@@ -760,7 +765,26 @@ db.models.sequelize.sync().then(() => {
           console.error(err);
         });
 
-      dbHelpers.removeFromMembersList(client, socket, rooms);
+      await dbHelpers.removeFromMembersList(client, socket, rooms);
+
+        let gameOrderArr = [];
+        await client.lrangeAsync(`${socket.room}:gameOrder`, 0, -1)
+        .then((reply) => {
+          reply.forEach(user=>{
+            gameOrderArr.push(JSON.parse(user))
+          })
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+
+        if(!data.message){
+          data.message = ""
+        }
+
+        // console.log("DOES GAME ORDERARR HAPPEN:", gameOrderArr)
+
+      dbHelpers.turnOverLogic(io, client, socket, data, gameOrderArr, mitsuku)
 
       dbHelpers.fetchRedisMessages(client, socket, (result) => {
         io.sockets.in(socket.room).emit('chat', result);

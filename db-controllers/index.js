@@ -447,6 +447,12 @@ const removeFromMembersList = (client, socket, rooms) => {
     .then((replies) => {
       client.lrangeAsync(`${socket.room}:membersList`, 0, -1)
         .then((reply) => {
+          console.log("MEMBERS LIST AFTER REMOVEFROMMEMBERSLIST:", reply)
+          // client.rpush(
+          //   `${socket.room}:messages`,
+          //   JSON.stringify({ matrixOverLords: `${socket.alias} left the room` }),
+          // );
+
           // LEAVE ROOM ASYNCHRONOUSLY HERE
           socket.leave(socket.room);
         })
@@ -462,9 +468,13 @@ const removeFromMembersList = (client, socket, rooms) => {
 
 
 const turnOverLogic = (io, client, socket, data, gameOrderArr, mitsuku) => {
+
+  console.log("IN TURNOVER LOGIC STATE OF DATA:", data, gameOrderArr)
   let message;
   if(!data.message){
-    message = "blank"
+    message = "blank*"
+  }else{
+    message = data.message
   }
 
   const gameOrderArrOfKeys = [];
@@ -484,7 +494,10 @@ const turnOverLogic = (io, client, socket, data, gameOrderArr, mitsuku) => {
 
 
       if (nextTurnUsername === 'mitsuku') {
-        io.sockets.sockets[socket.id].emit('turnOver', socket.username);
+        if(message !== "blank*"){
+          console.log("_______WHY DO I HIT_______")
+          io.sockets.sockets[socket.id].emit('turnOver', socket.username); 
+        }
         io.sockets.emit('whose turn', 'mitsuku@mitsuku.com');
 
         let extraDelay = 0;
@@ -527,7 +540,7 @@ const turnOverLogic = (io, client, socket, data, gameOrderArr, mitsuku) => {
               nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 2])[0];
               nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 2][nextTurnUsername];
             }
-            if(nextTurnUserSocketId){
+            if(nextTurnUserSocketId && socket.id){
               io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
               io.sockets.emit('whose turn', nextTurnUsername);
             }
@@ -540,10 +553,11 @@ const turnOverLogic = (io, client, socket, data, gameOrderArr, mitsuku) => {
         } else {
           nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 1][nextTurnUsername];
         }
-        console.log('NEXT TURN data.USER SOCEKT ID:', nextTurnUserSocketId);
         io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
-        console.log('socket.id in next turn', socket.id);
-        io.sockets.sockets[socket.id].emit('turnOver', socket.username);
+        console.log()
+        if(message !== "blank*"){
+          io.sockets.sockets[socket.id].emit('turnOver', socket.username); 
+        }
         io.sockets.emit('whose turn', nextTurnUsername);
     }
 }
