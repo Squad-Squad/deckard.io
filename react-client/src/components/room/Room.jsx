@@ -156,7 +156,7 @@ class ConnectedRoom extends React.Component {
     });
 
     if (this.state.roomMode === 'round') {
-      tock.start(roomLengthInMilis);
+      tock.start(20000);
     } else {
       $.get(`/api/timer/${this.roomID}`).then(communalTime => {
         tock.start(communalTime.timeLeft + 1000)
@@ -241,7 +241,7 @@ class ConnectedRoom extends React.Component {
     return (
       <div>
         <div className="columns" style={{ display: 'flex', justifyContent: 'center' }}>
-          <div className="column is-8">
+          <div className="column is-8" style={{ padding: '0px' }}>
             {(() => {
               switch (this.state.roomMode) {
                 case "round":

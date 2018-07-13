@@ -127,11 +127,6 @@ svg[class^="MuiSvgIcon-"] {
   z-index: 0;
 }
 
-div[class^="MuiChip-"] {
-  font-size: 16px;
-  background-color: rgba(30, 30, 30, .8);
-}
-
 div[class^="MuiBackdrop-"] {
   background-color: rgba(0, 0, 0, .2);
 }
@@ -475,6 +470,17 @@ $font-size: 25px;
   transition: width .5s  ease-out;
   width : 0%;
 }
+
 .grow{
+  width:100%;
+}
+
+.trans--grow--score{
+  -webkit-transition: width 1s ease-out; /* For Safari 3.1 to 6.0 */
+  transition: width 1s  ease-out;
+  width : 0%;
+}
+
+.grow--score{
   width:100%;
 }

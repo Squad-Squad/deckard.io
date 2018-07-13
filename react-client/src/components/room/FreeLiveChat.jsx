@@ -9,6 +9,8 @@ import Button from '@material-ui/core/Button';
 import PublishIcon from '@material-ui/icons/Publish';
 import FormControl from '@material-ui/core/FormControl';
 import Input from '@material-ui/core/Input';
+import ChatMessage from './ChatMessage.jsx';
+import Divider from '@material-ui/core/Divider';
 import axios from 'axios'
 import { withStyles } from '@material-ui/core/styles';
 import { connect } from 'react-redux';
@@ -110,16 +112,30 @@ class ConnectedFreeLiveChat extends React.Component {
         <div className="chat-messages" ref={(el) => { this.messageList = el; }}>
           {this.props.messages.map((message, i) => {
             if (this.props.username === message.name) {
-              return (<div className="section" key={i}
-                style={{ textAlign: "right", borderTop: "1px solid black", padding: "8px 14px", fontSize: "18px" }}>
-                <p>{message.message}</p>
-              </div>)
+              return ([
+                <div className="section" key={i}
+                  style={{
+                    textAlign: 'right',
+                    borderTop: '1px solid black',
+                    padding: '10px',
+                    fontSize: '18px',
+                  }}>
+                  <p>{message.message}</p>
+                </div>,
+                <Divider style={{
+                  height: '1px',
+                  backgroundColor: 'rgba(255, 255, 255, .2)',
+                  width: '80%',
+                  margin: 'auto'
+                }} />
+              ])
             } else {
-              return (<div className="section" key={i}
-                style={{ textAlign: "left", borderTop: "1px solid black", padding: "8px 14px", fontSize: "18px" }}>
-                <p><strong>{this.props.memberMap[message.name]}
-                  {(() => this.props.memberMap[message.name] ? ':' : null)()}&nbsp;</strong>{message.message}</p>
-              </div>)
+              return (
+                <ChatMessage
+                  message={message}
+                  memberMap={this.props.memberMap}
+                  i={i} />
+              )
             }
           })}
         </div>
