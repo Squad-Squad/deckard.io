@@ -10,6 +10,8 @@ import Button from '@material-ui/core/Button';
 import PublishIcon from '@material-ui/icons/Publish';
 import FormControl from '@material-ui/core/FormControl';
 import Input from '@material-ui/core/Input';
+import ChatMessage from './ChatMessage.jsx';
+import Divider from '@material-ui/core/Divider';
 import axios from 'axios'
 import { withStyles } from '@material-ui/core/styles';
 import { connect } from 'react-redux';
@@ -36,12 +38,12 @@ const styles = {
   currentTurnBar: {
     height: '40px',
     fontSize: '20px',
-    fontWeight: 600,
+    fontWeight: 400,
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    backgroundColor: '#424242',
+    backgroundColor: '#202020',
     padding: '0px 60px'
   },
   currentTurnText: {
@@ -62,16 +64,15 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
       msg: '',
       yourTurn: this.props.yourTurn,
       whoseTurn: null
-
     };
 
     this.props.io.on('turn over', (data) => {
       this.setState({
-          yourTurn: false       
-      }) 
-    }) 
+        yourTurn: false
+      })
+    })
 
-    this.props.io.on('whose turn', (data)=>{
+    this.props.io.on('whose turn', (data) => {
       console.log('username of turn', data, "!!!!", "and alias:", this.props.memberMap[data])
       this.setState({
         whoseTurn: this.props.memberMap[data]
@@ -82,8 +83,8 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
   componentDidMount() {
     this.scrollToBottom();
     // if(this.props.timer !== "00:00"){
-      // axios.post('/api/startTimer', {roomID: this.props.roomID}) 
-      // this.props.getTimer()
+    // axios.post('/api/startTimer', {roomID: this.props.roomID})
+    // this.props.getTimer()
     // }
   }
 
@@ -159,16 +160,30 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
         <div className="chat-messages" ref={(el) => { this.messageList = el; }}>
           {this.props.messages.map((message, i) => {
             if (this.props.username === message.name) {
-              return (<div className="section" key={i}
-                style={{ textAlign: "right", borderTop: "1px solid black", padding: "17px", fontSize: "18px" }}>
-                <p>{message.message}</p>
-              </div>)
+              return ([
+                <div className="section" key={i}
+                  style={{
+                    textAlign: 'right',
+                    borderTop: '1px solid black',
+                    padding: '10px',
+                    fontSize: '18px',
+                  }}>
+                  <p>{message.message}</p>
+                </div>,
+                <Divider style={{
+                  height: '1px',
+                  backgroundColor: 'rgba(255, 255, 255, .2)',
+                  width: '80%',
+                  margin: 'auto'
+                }} />
+              ])
             } else {
-              return (<div className="section" key={i}
-                style={{ textAlign: "left", borderTop: "1px solid black", padding: "17px", fontSize: "18px" }}>
-                <p><strong>{this.props.memberMap[message.name]}
-                  {(() => this.props.memberMap[message.name] ? ':' : null)()}&nbsp;</strong>{message.message}</p>
-              </div>)
+              return (
+                <ChatMessage
+                  message={message}
+                  memberMap={this.props.memberMap}
+                  i={i} />
+              )
             }
           })}
         </div>
@@ -179,7 +194,7 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
           <FormControl style={{ width: '70%' }}>
             <Input
               inputProps={{
-                 maxLength: 75,
+                maxLength: 75,
               }}
               style={{ marginTop: '10px' }}
               fullWidth

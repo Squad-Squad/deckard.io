@@ -33,6 +33,7 @@ const styles = theme => ({
   },
   chip: {
     margin: theme.spacing.unit,
+    backgroundColor: 'rgba(30, 30, 30, .8)',
   },
   modal: {
     position: 'absolute',
@@ -99,15 +100,17 @@ class ConnectedCombatantsContainer extends React.Component {
           <Chip
             style={{ zIndex: '0' }}
             avatar={
-              <Avatar>
-                <img src={this.props.avatarURL}
-                  style={{
-                    objectFit: 'cover',
-                    borderRadius: '50%',
-                    height: '32px',
-                    width: '32px',
-                  }} />
-              </Avatar>
+              (this.props.avatarURL === './assets/roboheadwhite.png') ?
+                null :
+                < Avatar >
+                  <img src={this.props.avatarURL}
+                    style={{
+                      objectFit: 'cover',
+                      borderRadius: '50%',
+                      height: '32px',
+                      width: '32px',
+                    }} />
+                </Avatar>
             }
             label={this.props.loggedInUser}
             className={classes.chip}

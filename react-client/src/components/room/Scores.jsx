@@ -16,25 +16,26 @@ function mapStateToProps(state) {
 class Scores extends Component {
   state = {
     winner: '',
+    highest: 0,
   }
 
   componentDidMount() {
-    // this.props.scores.map((user)=>{
-    //   user.alias = this.props.memberMap[]
-    // })
-    let winScore = 0, winner = '';
-    for (let user in this.props.scores) {
-      if (this.props.scores[user] > winScore) {
-        winScore = this.props.scores[user];
-        winner = user;
-      }
-    }
-
     this.setState({
-      winner: this.props.memberMap[winner],
+      highest: this.getHighestScore(),
     })
   }
 
+  getHighestScore() {
+    let highest = 0;
+    for (let user in this.props.scores) {
+      (this.props.scores[user] > highest) ?
+        highest = this.props.scores[user] :
+        null;
+    }
+
+    console.log('HIGHEST', highest);
+    return highest;
+  }
 
   // memberMap: {mitsuku@mitsuku.com: "Robocop", adonesky@gmail.com: "Data", dance1@gmail.com: "Dolores"}
 
@@ -48,6 +49,7 @@ class Scores extends Component {
           <AppBar position="static" color="default"
             style={{ backgroundColor: 'rgba(30, 30, 30, .5)' }}>
             <Toolbar>
+
               {/* BOT REVEAL */}
               <Typography variant="title" style={{
                 display: 'flex',
@@ -63,11 +65,25 @@ class Scores extends Component {
                 <div style={{ fontSize: '20px' }}>
                   The Bot Is:
                 </div>
-                <div style={{ fontSize: '20px' }}>
-                  <span>Mitsuku</span> &nbsp;
+                <div
+                  style={{
+                    fontSize: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    margin: '15px 0px 10px 0px'
+                  }}>
+                  <img
+                    src={`../assets/aliasImages/${this.props.memberMap['mitsuku@mitsuku.com']}.jpg`}
+                    style={{
+                      objectFit: 'cover',
+                      borderRadius: '50%',
+                      height: '40px',
+                      width: '40px',
+                      marginRight: '10px',
+                    }} />
                   <strong>{this.props.memberMap['mitsuku@mitsuku.com']}</strong>
                 </div>
-                <div style={{
+                {/* <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',
                   width: '100%',
@@ -75,7 +91,7 @@ class Scores extends Component {
                 }}>
                   <span>Users</span>
                   <span>Scores</span>
-                </div>
+                </div> */}
               </Typography>
               <Divider />
             </Toolbar>
@@ -89,7 +105,9 @@ class Scores extends Component {
             key={i}
             user={user}
             score={this.props.scores[user]}
-            winner={this.state.winner}
+            scoreWidth={(this.props.scores[user]) ?
+              (this.props.scores[user] / this.state.highest) * 100 : 5
+            }
             alias={this.props.memberMap[user]} />
         )}
       </Paper>

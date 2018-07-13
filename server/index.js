@@ -15,6 +15,7 @@ const mitsuku = require('../lib/mitsukuHelper')();
 const gameLogic = require('../lib/gameLogic');
 const _ = require('underscore');
 const bluebird = require('bluebird');
+const Jimp = require('jimp');
 const Mailjet = require('node-mailjet').connect(
   process.env.MAILJET_API_KEY,
   process.env.MAILJET_API_SECRET,
@@ -26,7 +27,7 @@ const email = require('../lib/nodemailerHelpers');
 
 const { Op } = db;
 
-var timerObj = {};
+const timerObj = {};
 
 
 //
@@ -52,18 +53,14 @@ const AWS = require('aws-sdk');
 const multer = require('multer');
 
 AWS.config.update({
-  accessKeyId: 'AKIAILGRIDM2NALR2ELA',
-  secretAccessKey: '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',
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
 });
 
 const upload = multer({
   storage: multer.memoryStorage(),
 });
 const s3 = new AWS.S3();
-const s3Params = {
-  Bucket: 'deckard-io',
-  Key: `userAvatars/${Date.now()}`,
-};
 
 //
 // ─── EXPRESS MIDDLEWARE ─────────────────────────────────────────────────────────
@@ -116,6 +113,23 @@ app.get(
 );
 
 //
+// ─── GITHUB OAUTH ENDPOINTS ─────────────────────────────────────────────────────
+//
+app.get(
+  '/auth/github',
+  passport.authenticate('github'),
+);
+
+app.get(
+  '/auth/github/callback',
+  passport.authenticate('github', { failureRedirect: '/login' }),
+  (req, res) => {
+    res.redirect('/');
+  },
+);
+
+
+//
 // ─── LOCAL AUTH ENDPOINTS ───────────────────────────────────────────────────────
 //
 app.get('/checklogin', (req, res) => {
@@ -139,12 +153,13 @@ app.post(
 );
 
 app.get('/logout', (req, res) => {
-  client.lremAsync('onlineUsers', 0, req.user, (err, reply) => {
-    console.log('removed before adding');
-  });
+  // client.lremAsync('onlineUsers', 0, req.user, (err, reply) => {
+  //   console.log('removed before adding');
+  // });
   req.logout();
   res.redirect('/');
 });
+
 
 //
 // ─── USER PROFILE ENDPOINTS ─────────────────────────────────────────────────────
@@ -155,37 +170,56 @@ app.post('/api/userInfo', (req, res) => {
   });
 });
 
-app.post('/profile/update-profile', upload.single('avatar'), (req, res) => {
+app.post('/profile/update-profile', upload.single('avatar'), async (req, res) => {
+  // If updating profile photo
   if (req.file) {
-    s3Params.Body = req.file.buffer;
-    s3.upload(s3Params, (err, data) => {
-      if (err) console.log('Error uploading image to S3', err);
-      if (data) {
-        console.log('Successfully saved image to S3', data);
+  // Reduce avatar size to 400x400
+    Jimp.read(req.file.buffer, (err, data) => {
+      if (err) throw err;
+      data.resize(Jimp.AUTO, 256)
+        .getBuffer(Jimp.AUTO, (err, data2) => {
+          // Save smaller image to S3
+          const s3Params = {
+            Bucket: 'deckard-io',
+            Key: `userAvatars/${Date.now()}`,
+            Body: data2,
+          };
+          console.log('S3 PARAMS', s3Params);
+          s3.upload(s3Params, (err, data3) => {
+            if (err) console.log('Error uploading image to S3', err);
+            if (data3) {
+              console.log('Successfully saved image to S3', data3);
 
-        db.models.User.findOne({ where: { username: req.body.username } }).then((user) => {
-          user.update({
-            username: req.body.newusername || user.dataValues.username,
-            email: req.body.newemail || user.dataValues.email,
-            description: req.body.newdescription || user.dataValues.description,
-            avatar: data.Location,
+              db.models.User.findOne({ where: { username: req.body.username } })
+                .then((user) => {
+                  user.update({
+                    username: req.body.newusername || user.dataValues.username,
+                    email: req.body.newemail || user.dataValues.email,
+                    description: req.body.newdescription || user.dataValues.description,
+                    avatar: data3.Location,
+                  });
+
+                  res.status(200).send(data3.Location);
+                });
+            }
           });
-
-          res.status(200).send(data.Location);
         });
-      }
     });
   } else {
-    db.models.User.findOne({ where: { username: req.body.username } }).then((user) => {
-      console.log('GETTING USER');
-      user.update({
-        username: req.body.newusername || user.dataValues.username,
-        email: req.body.newemail || user.dataValues.email,
-        description: req.body.newdescription || user.dataValues.description,
+    // If only updating user fields
+    db.models.User.findOne({ where: { username: req.body.username } })
+      .then((user) => {
+        console.log('GETTING USER');
+        user.update({
+          username: req.body.newusername || user.dataValues.username,
+          email: req.body.newemail || user.dataValues.email,
+          description: req.body.newdescription || user.dataValues.description,
+        });
+
+        res.status(200).send();
       });
 
-      res.status(200).send();
-    });
+    res.status(200).send();
   }
 });
 
@@ -269,32 +303,32 @@ app.post('/api/roomEmail', (req, res) => {
 app.post('/api/save', (req, res) => {
   console.log('NEW ROOM DATA', req.body);
 
-  const { roomName, roomMode, members, roomLength } = req.body;
+  const {
+    roomName, roomMode, members, roomLength,
+  } = req.body;
   const roomUnique = uniqueString().slice(0, 6);
-  if(roomMode === "free"){
+  if (roomMode === 'free') {
     timerObj[roomUnique] = new Tock({
       countdown: true,
     });
-    let roomLengthInMilis = roomLength * 60 * 1000
+    const roomLengthInMilis = roomLength * 60 * 1000;
     timerObj[roomUnique].start(roomLengthInMilis);
   }
 
   dbHelpers.aliasMembers(roomName, roomMode, members, roomLength, roomUnique, (results) => {
-    client.hmset(`${roomUnique}:members`, results, (err, reply)=>{
-      if(err){
-        console.error(err)
-      }else{
-        res.send(results)
-        client.expire(`${roomUnique}:members`, 3600)
+    client.hmset(`${roomUnique}:members`, results, (err, reply) => {
+      if (err) {
+        console.error(err);
+      } else {
+        res.send(results);
+        client.expire(`${roomUnique}:members`, 3600);
       }
     });
   });
-
 });
 
 
 app.post('/api/saveFreeMode', (req, res) => {
-
   const {
     roomName, roomMode, members, roomLength,
   } = req.body;
@@ -303,13 +337,13 @@ app.post('/api/saveFreeMode', (req, res) => {
     countdown: true,
   });
 
-  dbHelpers.aliasMembers(roomName, roomMode, members, roomLength, roomUnique, (results) =>{
-    client.hmset(`${roomUnique}:members`, results, (err, reply)=>{
-      if(err){
-        console.error(err)
-      }else{
-        res.send(results)
-        client.expire(`${roomUnique}:members`, 3600)
+  dbHelpers.aliasMembers(roomName, roomMode, members, roomLength, roomUnique, (results) => {
+    client.hmset(`${roomUnique}:members`, results, (err, reply) => {
+      if (err) {
+        console.error(err);
+      } else {
+        res.send(results);
+        client.expire(`${roomUnique}:members`, 3600);
       }
     });
   });
@@ -317,23 +351,9 @@ app.post('/api/saveFreeMode', (req, res) => {
 
   // CHANGE THE ROOM TIMER LENGTH HERE
 
-  let roomLengthInMilis = roomLength * 60 * 1000
+  const roomLengthInMilis = roomLength * 60 * 1000;
 
   timerObj[roomUnique].start(roomLengthInMilis);
-
-
-  // dbHelpers.saveRoomAndMembers(
-  //   roomName,
-  //   members,
-  //   roomUnique,
-  //   (err, room, users) => {
-  //     if (err) {
-  //       console.log('Error saving room and members', err);
-  //     } else {
-  //       res.send(room[0].dataValues);
-  //     }
-  //   },
-  // );
 });
 
 
@@ -344,10 +364,9 @@ app.post('/api/startTimer', (req, res) => {
     countdown: true,
   });
 
-  let roomLengthInMilis = roomLength * 60 * 1000
-  console.log("+++++++ROOMLENGTHIN MILIS++++++", roomLengthInMilis)
+  const roomLengthInMilis = roomLength * 60 * 1000;
+  console.log('+++++++ROOMLENGTHIN MILIS++++++', roomLengthInMilis);
   timerObj[roomID].start(roomLengthInMilis);
-
 });
 
 // Get room members here
@@ -399,7 +418,6 @@ app.get('/verify/:hashID', (req, res) => {
 app.get('/userz/:user', (req, res) => {
   // TODO Testing Function, remove in production
   const { user } = req.params;
-  // const {email} = dbHelpers.getUser(user).dataValues;
 
   dbHelpers
     .getUserEmail(user)
@@ -425,10 +443,11 @@ app.get('/regenerate/:username', (req, res) => {
       console.log('Username :', username);
     })
     .then(() => {
-      dbHelpers.saveVerificationHash(client, hashedUsername, username)
+      dbHelpers.saveVerificationHash(client, hashedUsername, username);
     })
-    .then((() =>{
-      email.sendReverificationEmail(address, hashedUsername, username)}))
+    .then((() => {
+      email.sendReverificationEmail(address, hashedUsername, username);
+    }))
     .then(res.redirect('/'))
     .catch((err) => {
       console.log('ERRROR REGENERATING___ ', err);
@@ -449,17 +468,21 @@ db.models.sequelize.sync().then(() => {
     console.log('listening on port', process.env.PORT || 3000);
   });
 
-  // Server-side socket events
+
+  //
+  // ─── SOCKET LOGIC STARTS HERE ───────────────────────────────────────────────────
+  //
   const users = [];
   const rooms = {};
-  const connections = [];
   const userSockets = {};
 
   const io = socket(server);
   io.on('connection', (socket) => {
+    //
+    // ─── LOGIN ───────────────────────────────────────────────────────
+    //
     socket.on('username connect', (data) => {
       socket.username = data;
-      console.log('++++++USERNAME CONNECT++++++:', data);
 
       client.lremAsync('onlineUsers', 0, socket.username)
         .then((reply) => {
@@ -472,6 +495,9 @@ db.models.sequelize.sync().then(() => {
       client.rpushAsync('onlineUsers', socket.username)
         .then((reply) => {
           console.log('userAdded to onlineUsers', reply);
+          client.lrange('onlineUsers', 0, -1, (err, users) => {
+            io.sockets.emit('new-user-online', users);
+          });
         })
         .catch((err) => {
           console.error(err);
@@ -479,11 +505,15 @@ db.models.sequelize.sync().then(() => {
       userSockets[socket.username] = socket;
     });
 
+
+    //
+    // ─── JOIN ROOM ───────────────────────────────────────────────────
+    //
     socket.on('join', (data) => {
       socket.room = data.roomID;
       socket.alias = data.user;
       socket.roomMode = data.roomMode;
-      socket.roomLength = data.roomLength
+      socket.roomLength = data.roomLength;
       console.log(
         'JOIN ROOM IN SOCKETRS:',
         socket.room,
@@ -522,14 +552,17 @@ db.models.sequelize.sync().then(() => {
       // NOTIFY EVERYONE WHEN SOMEONE HAS JOINED THE ROOM
       const user_id = socket.username;
       const name = socket.username;
-      const message = `${data.user} has joined the room!`;
 
-      client.rpush(`${socket.room}:messages`, JSON.stringify({ matrixOverLords: message }));
+      if (socket.roomMode === 'free') {
+        const message = `${data.user} has joined the room`;
+        client.rpush(`${socket.room}:messages`, JSON.stringify({ matrixOverLords: message }));
+      }
+
 
       // SET 1 HOUR EXPIRATION ON MESSAGE DATA FOR THIS ROOM
       client.expire(`${socket.room}:messages`, 3600);
 
-       console.log("STATE OF DATAAAA HEREEEE:", data)
+      console.log('STATE OF DATAAAA HEREEEE:', data);
 
       dbHelpers.getRoomReady(io, timerObj, client, socket, data, rooms);
 
@@ -537,103 +570,30 @@ db.models.sequelize.sync().then(() => {
         io.sockets.in(socket.room).emit('chat', result);
       });
     });
-    
-    socket.on('turn done', async data => {
-    
-      let gameOrderArr = [];
-       await client.lrangeAsync(`${socket.room}:gameOrder`, 0, -1)
+
+
+    //
+    // ─── ROUND ROBIN LOGIC ───────────────────────────────────────────
+    //
+    socket.on('turn done', async (data) => {
+      const gameOrderArr = [];
+      await client.lrangeAsync(`${socket.room}:gameOrder`, 0, -1)
         .then((reply) => {
-          reply.forEach(user=>{
-            gameOrderArr.push(JSON.parse(user))
-          })
+          reply.forEach((user) => {
+            gameOrderArr.push(JSON.parse(user));
+          });
         })
         .catch((err) => {
           console.error(err);
         });
-      
-      const gameOrderArrOfKeys = [];
-      let nextTurnUsername;
-      let nextTurnUserSocketId;
-      gameOrderArr.forEach((player) => {
-        const username = Object.keys(player);
-        gameOrderArrOfKeys.push(username[0]);
-      });
-      const lastTurnIndex = gameOrderArrOfKeys.indexOf(data.user);
 
-      if (lastTurnIndex === gameOrderArr.length - 1) {
-        nextTurnUsername = Object.keys(gameOrderArr[0])[0];
-      } else {
-        nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 1])[0];
-      }
-
-
-      if (nextTurnUsername === 'mitsuku') {
-        io.sockets.sockets[socket.id].emit('turnOver', socket.username);
-        io.sockets.emit('whose turn', 'mitsuku@mitsuku.com');
-
-        let extraDelay = 0;
-        let response;
-        mitsuku.send(data.message).then((reply) => {
-          response = reply
-          if (response === undefined) {
-            mitsuku.send(data.message).then((reply) => {
-              response = reply
-            });
-          }
-          if (/here\sin\sleeds/g.test(response)) {
-            response = response.slice(0, response.indexOf('here in leeds'));
-          }
-          // Add delay based on response length
-          extraDelay = response.length * 40;
-          console.log('EXTRA DELAY', extraDelay);
-
-          setTimeout(() => {
-            // Save her message to redis
-            client.rpush(
-              `${socket.room}:messages`,
-              JSON.stringify({ 'mitsuku@mitsuku.com': response }),
-            );
-
-            // and retrieve all the messages immediately after
-            dbHelpers.fetchRedisMessages(client, socket, (result) => {
-              io.sockets.in(socket.room).emit('chat', result);
-            });
-
-            // after mitsuku's turn onto the next one
-
-            if (lastTurnIndex + 1 === gameOrderArr.length - 1) {
-              nextTurnUsername = Object.keys(gameOrderArr[0])[0];
-              nextTurnUserSocketId = gameOrderArr[0][nextTurnUsername];
-            } else if (nextTurnUsername === Object.keys(gameOrderArr[0])[0]) {
-              nextTurnUsername = Object.keys(gameOrderArr[1])[0];
-              nextTurnUserSocketId = gameOrderArr[1][nextTurnUsername];
-            } else {
-              nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 2])[0];
-              nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 2][nextTurnUsername];
-            }
-            if(nextTurnUserSocketId){
-              io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
-              io.sockets.emit('whose turn', nextTurnUsername);
-            }
-          }, Math.random() * 5000 + 2000 + extraDelay);
-        });
-      } else {
-        if (lastTurnIndex === gameOrderArr.length - 1) {
-          nextTurnUsername = Object.keys(gameOrderArr[0])[0];
-          nextTurnUserSocketId = gameOrderArr[0][nextTurnUsername];
-        } else {
-          nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 1][nextTurnUsername];
-        }
-        console.log('NEXT TURN data.USER SOCEKT ID:', nextTurnUserSocketId);
-        io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
-        console.log('socket.id in next turn', socket.id);
-        io.sockets.sockets[socket.id].emit('turnOver', socket.username);
-        io.sockets.emit('whose turn', nextTurnUsername);
-      }
+      dbHelpers.turnOverLogic(io, client, socket, data, gameOrderArr, mitsuku);
     });
 
-    // console.log("A DIFFERENT METHOD INDEX", rooms[socket.room]['gameOrder'].indexOf({[data.user]:socket.id}))
 
+    //
+    // ─── INVITE ──────────────────────────────────────────────────────
+    //
     socket.on('invite', (data) => {
       data.users.forEach((user) => {
         client.rpush(`${data.roomHash}:membersInvited`, user, (err, reply) => {
@@ -644,7 +604,6 @@ db.models.sequelize.sync().then(() => {
       });
 
       // send invitation to all online users (whether they are invited or not is sorted on front end), except inviter
-
       socket.broadcast.emit('invitation', {
         users: data.users,
         roomHash: data.roomHash,
@@ -654,21 +613,21 @@ db.models.sequelize.sync().then(() => {
       });
     });
 
+
+    //
+    // ─── CHAT ────────────────────────────────────────────────────────
+    //
     socket.on('chat', (data) => {
       const user = data.message.name;
       const message = data.message.message;
       const roomMode = data.roomMode;
 
-      console.log('ROOMMODE WITH CHAT:', roomMode);
 
       // push all the messages sent from client to redis room key message list
       client.rpush(`${socket.room}:messages`, JSON.stringify({ [user]: message }));
 
+
       // Change Mitsuku's response frequency based on the number of room users
-
-      if (roomMode === 'round') {
-      }
-
       let extraDelay = 0;
       if (roomMode === 'free') {
         if (Math.ceil(Math.random() * (data.numUsers - 1)) === data.numUsers - 1) {
@@ -705,21 +664,25 @@ db.models.sequelize.sync().then(() => {
       });
     });
 
+
+    //
+    // ─── DECLINE INVITATION ──────────────────────────────────────────
+    //
     // handle cases in which an invitation to a room is declined, remove from membersinvited so when compared with who has joined
     // we know when to start the room
     socket.on('decline', (data) => {
       client.lrem(`${data.roomID}:membersInvited`, 0, data.user, (err, reply) => {
         console.log('decline REPLIES', reply);
       });
+
       client.lrange(`${data.roomID}:membersInvited`, 0, -1, (err, reply) => {
         console.log('updatedMembersInvitedList after decline:', reply);
       });
 
       client.hgetallAsync(`${data.roomID}:members`)
-      .then(replies => { 
-        console.log('GET MEMBERS INFO IN DECLINE SOCKET', replies)
-        dbHelpers.getRoomReady(io, timerObj, client, socket, data, rooms, replies);
-
+        .then((replies) => {
+          console.log('GET MEMBERS INFO IN DECLINE SOCKET', replies);
+          dbHelpers.getRoomReady(io, timerObj, client, socket, data, rooms, replies);
         });
 
       dbHelpers.fetchRedisMessages(client, socket, (result) => {
@@ -728,22 +691,37 @@ db.models.sequelize.sync().then(() => {
     });
 
     // handle cases in which player leaves the room without completely disconnecting from the site
-    socket.on('leaveRoom', (data) => {
+    socket.on('leaveRoom', async (data) => {
       if (socket.room) {
         rooms[socket.room].splice(rooms[socket.room].indexOf(socket.username), 1);
+
 
         client.rpush(
           `${socket.room}:messages`,
           JSON.stringify({ matrixOverLords: `${socket.alias} left the room` }),
         );
 
-        console.log('SOCKET ID WHEN LEAVE:', socket.id);
-        io.sockets.sockets[socket.id].emit('return option', socket.room, (err, response) => {
-          console.log('DID I HAPPEN');
-        });
+        await dbHelpers.removeFromMembersList(client, socket, rooms);
 
-        dbHelpers.removeFromMembersList(client, socket, rooms);
+        const gameOrderArr = [];
+        await client.lrangeAsync(`${socket.room}:gameOrder`, 0, -1)
+          .then((reply) => {
+            reply.forEach((user) => {
+              gameOrderArr.push(JSON.parse(user));
+            });
+          })
+          .catch((err) => {
+            console.error(err);
+          });
 
+        if (!data.message) {
+          data.message = '';
+        }
+
+
+        if (gameOrderArr.length > 1) {
+          dbHelpers.turnOverLogic(io, client, socket, data, gameOrderArr, mitsuku);
+        }
 
         dbHelpers.fetchRedisMessages(client, socket, (result) => {
           io.sockets.in(socket.room).emit('chat', result);
@@ -751,13 +729,15 @@ db.models.sequelize.sync().then(() => {
       }
     });
 
-    socket.on('disconnect', (data) => {
+
+    //
+    // ─── DISCONNECT ──────────────────────────────────────────────────
+    //
+    socket.on('disconnect', async (data) => {
+      console.log('DISCONNECT HIT');
       const thisRoom = rooms[socket.room];
 
       if (rooms[socket.room]) {
-        users.splice(users.indexOf(socket.username), 1);
-        rooms[socket.room].splice(thisRoom.indexOf(socket.username), 1);
-        console.log('this users has disconnected:', socket.username, 'AND ROOMS[SOCKET.ROOM] AFTER DISCONNECT:', rooms[socket.room]);
         client.rpush(
           `${socket.room}:messages`,
           JSON.stringify({ matrixOverLords: `${socket.alias} left the room` }),
@@ -767,8 +747,9 @@ db.models.sequelize.sync().then(() => {
       client.lremAsync('onlineUsers', 1, socket.username)
         .then((replies) => {
           client.lrangeAsync('onlineUsers', 0, -1)
-            .then((reply) => {
-              console.log('ONLINE USERS CHECK AFTER REM:', reply);
+            .then((users) => {
+              console.log('ONLINE USERS CHECK AFTER REM:', users);
+              io.sockets.emit('user-disconnected', users);
             })
             .catch((err) => {
               console.error(err);
@@ -778,21 +759,41 @@ db.models.sequelize.sync().then(() => {
           console.error(err);
         });
 
-      dbHelpers.removeFromMembersList(client, socket, rooms);
+      await dbHelpers.removeFromMembersList(client, socket, rooms);
+
+      const gameOrderArr = [];
+      await client.lrangeAsync(`${socket.room}:gameOrder`, 0, -1)
+        .then((reply) => {
+          reply.forEach((user) => {
+            gameOrderArr.push(JSON.parse(user));
+          });
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+
+      if (!data.message) {
+        data.message = '';
+      }
+
+      if (gameOrderArr.length > 1) {
+        dbHelpers.turnOverLogic(io, client, socket, data, gameOrderArr, mitsuku);
+      }
 
       dbHelpers.fetchRedisMessages(client, socket, (result) => {
         io.sockets.in(socket.room).emit('chat', result);
       });
-
-      connections.splice(connections.indexOf(socket), 1);
     });
 
+
+    //
+    // ─── VOTING ──────────────────────────────────────────────────────
+    //
     socket.on('vote', (data) => {
       console.log('SOCKET.ROOM in vote socket:', socket.room, 'and the rooms object:', rooms, 'and data.roomID', data.roomID);
       const userVotes = data.user;
       let roomMembers;
       let roomScores;
-      // rooms[data.roomID][0][userVotes] = data.votes;
 
       client.rpush(`${data.roomID}:votes`, JSON.stringify({ [userVotes]: data.votes }), (err, replies) => {
         console.log('added users votes to redis', replies);
@@ -814,10 +815,9 @@ db.models.sequelize.sync().then(() => {
               if (roomMembers.length - 1 <= roomScores.length) {
                 gameLogic.calcScores(roomScores)
                   .then((scoresArr) => {
-                    console.log('SCOREARR IN SERVER:', scoresArr);
                     const [scores, winners] = scoresArr;
 
-                    console.log('OUR RETURNED GOODSSSS', scores, winners);
+                    console.log('SCORESOBJ AFTER CALCULATION', scores, winners);
 
 
                     if (winners.length > 1) {
@@ -869,4 +869,3 @@ db.models.sequelize.sync().then(() => {
   });
 });
 
-// let timerObj = {};

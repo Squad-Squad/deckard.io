@@ -4,16 +4,20 @@ import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import LensIcon from '@material-ui/icons/Lens';
 import FormControl from '@material-ui/core/FormControl';
+import FormHelperText from '@material-ui/core/FormHelperText';
 import Input from '@material-ui/core/Input';
 import axios from 'axios';
 import Modal from '@material-ui/core/Modal';
 import KeyboardArrowDown from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowUp from '@material-ui/icons/KeyboardArrowUp';
 import OtherProfileContainer from '../profileAndStats/OtherProfileContainer.jsx';
+import ClickAwayListener from '@material-ui/core/ClickAwayListener';
+import Snackbar from '@material-ui/core/Snackbar';
+import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
+import CloseIcon from '@material-ui/icons/Close';
 import { addFriend } from '../../../../redux/actions';
 import { connect } from 'react-redux';
 import { withStyles } from '@material-ui/core/styles';
@@ -55,6 +59,7 @@ class FriendsList extends Component {
     super(props);
     this.state = {
       open: false,
+      snackbarOpen: false,
 
       addFriend: false,
       query: '',
@@ -67,6 +72,8 @@ class FriendsList extends Component {
       height: 0,
 
       expanded: false,
+
+      addFriendError: '',
     };
 
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
@@ -75,20 +82,11 @@ class FriendsList extends Component {
   componentDidMount() {
     this.updateWindowDimensions();
     window.addEventListener('resize', this.updateWindowDimensions);
+    this.mapAvatars();
+  }
 
-    // Add avatars to users who have set them
-    if (this.props.friends) {
-      Promise.all(this.props.friends.map(friend => {
-        return axios.post('/api/userInfo', { user: friend });
-      }))
-        .then(res => {
-          const avatars = res.map(data => data.data.avatar);
-          const map = this.props.friends.map((friend, i) => {
-            return [friend, avatars[i]];
-          });
-          this.setState({ userAvatarMap: map });
-        });
-    }
+  componentWillReceiveProps() {
+    this.mapAvatars();
   }
 
   updateWindowDimensions() {
@@ -102,6 +100,11 @@ class FriendsList extends Component {
         })
       }
     })
+  }
+
+  scrollToBottom() {
+    console.log('SCROLLING');
+    this.messagesEnd.scrollIntoView({ behavior: "smooth" });
   }
 
   handleClick() {
@@ -127,6 +130,7 @@ class FriendsList extends Component {
   updateQuery(e) {
     this.setState({
       query: e.target.value,
+      addFriendError: '',
     });
   }
 
@@ -137,24 +141,70 @@ class FriendsList extends Component {
     }))
   }
 
+  handleSnackbarClose(event, reason) {
+    if (reason === 'clickaway') {
+      return;
+    }
+    this.setState({ snackbarOpen: false });
+  };
+
+  handleClickAway() {
+    console.log('clicking away');
+    this.setState({
+      addFriend: false,
+    })
+  }
+
+  mapAvatars() {
+    // Add avatars to users who have set them
+    if (this.props.friends) {
+      Promise.all(this.props.friends.map(friend => {
+        return axios.post('/api/userInfo', { user: friend });
+      }))
+        .then(res => {
+          const avatars = res.map(data => data.data.avatar);
+          const map = this.props.friends.map((friend, i) => {
+            return [friend, avatars[i]];
+          });
+          this.setState({ userAvatarMap: map });
+        });
+    }
+  }
+
   async addUser(e) {
     if (e.key === 'Enter') {
-      await axios.post('/profile/add-friend',
+      const error = await axios.post('/profile/add-friend',
         {
           username: this.props.username,
           friend: this.state.query,
         }
       );
-      this.props.addFriend(this.state.query);
-      this.setState({
-        addFriend: false,
-        query: '',
-      });
+      console.log("ERROR", error);
+      if (!error.data.length) {
+        this.props.addFriend(this.state.query);
+        this.setState({
+          addFriend: false,
+          query: '',
+          snackbarOpen: true,
+        });
+        this.scrollToBottom();
+      } else {
+        this.setState({
+          addFriendError: error.data,
+        })
+      }
+      this.mapAvatars();
     }
   }
 
+
+  //
+  // ─── RENDER ─────────────────────────────────────────────────────────────────────
+  //
   render() {
     const { classes } = this.props;
+
+    console.log('FRIENDS', this.props.friends);
 
     const expandList = () => {
       if (this.state.expanded) {
@@ -167,6 +217,8 @@ class FriendsList extends Component {
                 overflow: 'auto'
               }}>
               {list()}
+              <div ref={(el) => { this.messagesEnd = el; }}>
+              </div>
             </List>
             {addFriend()}
           </div>
@@ -227,16 +279,38 @@ class FriendsList extends Component {
     };
 
     const addFriend = () => {
-      if (this.state.addFriend) {
+      if (this.state.addFriendError) {
+        return (
+          <FormControl style={{ width: '100%' }} error>
+            <ClickAwayListener
+              onClickAway={this.handleClickAway.bind(this)} >
+              <Input
+                style={{ fontSize: '16px' }}
+                value={this.state.query}
+                onChange={this.updateQuery.bind(this)}
+                placeholder="Add Friend"
+                onKeyUp={this.addUser.bind(this)}
+              />
+              <FormHelperText id="name-error-text">
+                {this.state.addFriendError}
+              </FormHelperText>
+            </ClickAwayListener>
+          </FormControl>
+        )
+      } else if (this.state.addFriend) {
         return (
           <FormControl style={{ width: '100%' }} >
-            <Input
-              style={{ fontSize: '16px' }}
-              value={this.state.query}
-              onChange={this.updateQuery.bind(this)}
-              placeholder="Add Friend"
-              onKeyUp={this.addUser.bind(this)}
-            />
+            <ClickAwayListener
+              onClickAway={this.handleClickAway.bind(this)} >
+              <Input
+                autoFocus={true}
+                style={{ fontSize: '16px' }}
+                value={this.state.query}
+                onChange={this.updateQuery.bind(this)}
+                placeholder="Add Friend"
+                onKeyUp={this.addUser.bind(this)}
+              />
+            </ClickAwayListener>
           </FormControl>
         )
       } else {
@@ -290,6 +364,30 @@ class FriendsList extends Component {
           <OtherProfileContainer friend={this.state.clickedFriend} />
         </div>
       </Modal>
+      // <Snackbar
+      //   anchorOrigin={{
+      //     vertical: 'bottom',
+      //     horizontal: 'left',
+      //   }}
+      //   open={this.state.snackbarOpen}
+      //   autoHideDuration={2000}
+      //   onClose={this.handleSnackbarClose.bind(this)}
+      //   ContentProps={{
+      //     'aria-describedby': 'message-id',
+      //   }}
+      //   message={<span id="message-id">Friend added.</span>}
+      //   action={[
+      //     <IconButton
+      //       key="close"
+      //       aria-label="Close"
+      //       color="inherit"
+      //       className={classes.close}
+      //       onClick={this.handleSnackbarClose.bind(this)}
+      //     >
+      //       <CloseIcon />
+      //     </IconButton>,
+      //   ]}
+      // />
     ]);
   }
 }

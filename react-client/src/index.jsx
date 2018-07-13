@@ -72,6 +72,16 @@ const theme = createMuiTheme({
       root: {
         backgroundColor: 'rgba(0, 0, 0, .5)',
       }
+    },
+    MuiAppBar: {
+      colorDefault: {
+        backgroundColor: 'rgba(20, 20, 20, .7)'
+      }
+    },
+    MuiBottomNavigation: {
+      root: {
+        backgroundColor: 'rgba(30, 30, 30, .7)'
+      }
     }
   },
   typography: {
@@ -110,6 +120,7 @@ class ConnectedApp extends React.Component {
       userRooms: [],
       userWins: ''
     };
+
     this.socket = io();
   }
 
@@ -165,6 +176,7 @@ class ConnectedApp extends React.Component {
             data.friends
           );
         };
+        io.connect();
       })
       .catch(() => {
         this.setState({
@@ -181,7 +193,12 @@ class ConnectedApp extends React.Component {
     })
 
     if (res.config.data) {
-      this.props.login(JSON.parse(res.config.data).username);
+      console.log("THISSSSS", res.config.data)
+      const username = JSON.parse(res.config.data).username
+      this.props.login(username);
+      this.socket.connect();
+      console.log('EMMITTING', this.socket.emit);
+      this.socket.emit('username connect', username);
     }
   }
 
@@ -195,22 +212,12 @@ class ConnectedApp extends React.Component {
     });
 
     this.socket.emit('leaveRoom', this.props.loggedInUsername)
+    this.socket.disconnect();
   }
 
   profileRedirect() {
     this.props.history.push(`/userprofile/${this.props.loggedInUsername}`)
   }
-
-  aboutDialogue() {
-    console.log("ABOUT DIALOGUE HIT!!!")
-    this.setState({
-      aboutDialogue: true
-    })
-  }
-
-  handleCloseAbout() {
-    this.setState({ aboutDialogue: false });
-  };
 
   // ────────────────────────────────────────────────────────────────────────────────
 
@@ -349,7 +356,6 @@ class ConnectedApp extends React.Component {
           {(this.props.loggedInUsername) ?
             <div id="navbar-wrapper">
               <Navbar
-                aboutDialogue={this.aboutDialogue.bind(this)}
                 logout={this.logout.bind(this)}
                 wins={this.state.userWins}
                 profile={this.profileRedirect.bind(this)} />
@@ -360,8 +366,6 @@ class ConnectedApp extends React.Component {
             <Route path="/" render={
               (props) => (loggedIn) ?
                 <MainView
-                  handleCloseAbout={this.handleCloseAbout.bind(this)}
-                  aboutDialogue={this.state.aboutDialogue}
                   searchedUsers={this.props.searchedUsers}
                   loggedIn={this.state.loggedIn}
                   loggedInUser={this.state.loggedInUsername}

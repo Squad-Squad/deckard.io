@@ -4,15 +4,28 @@ import Room from './room/Room.jsx';
 import InviteDialogueModal from './inviteDialogueModal/InviteDialogueModal.jsx'
 import { Route } from 'react-router-dom';
 import ProfileContainer from './profileAndStats/ProfileContainer.jsx';
+import { closeAboutDialog } from '../../../redux/actions';
 import { connect } from 'react-redux';
+import axios from 'axios';
 import $ from 'jquery'
 import AboutDialogue from './AboutDialogue.jsx'
+import { login } from '../../../redux/actions';
 
 
 const mapStateToProps = state => {
   return {
     loggedInUsername: state.username,
     searchedUsers: state.searchedUsers,
+    aboutDialogOpen: state.aboutDialogOpen
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    login: (username, email, isGoogleAccount, avatarURL, description, friends) => {
+      return dispatch(login(username, email, isGoogleAccount, avatarURL, description, friends));
+    },
+    closeAboutDialog: () => dispatch(closeAboutDialog()),
   };
 };
 
@@ -26,8 +39,6 @@ class ConnectedMainView extends React.Component {
       roomHash: null,
       roomMode: "free",
       messages: [],
-      aboutDialogue: false
-
     };
     this.props.io.on('invitation', (data) => {
       for (var el of data.users) {
@@ -41,7 +52,6 @@ class ConnectedMainView extends React.Component {
         }
       }
     })
-
 
     this.props.io.on('return option', (data) => {
       console.log("RETURN OPTION", data)
@@ -60,12 +70,24 @@ class ConnectedMainView extends React.Component {
 
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     this.setState({
       loggedInUser: this.props.loggedInUsername
     });
-    this.props.io.emit('username connect', this.props.loggedInUsername)
-    this.props.io.emit('leaveRoom', this.props.loggedInUsername)
+    this.props.io.emit('username connect', this.props.loggedInUsername);
+    this.props.io.emit('leaveRoom', this.props.loggedInUsername);
+    console.log("THINGS");
+
+    const res = await axios.get('/checklogin');
+    console.log('RES', res);
+    if (res.data.user) {
+      this.props.login(res.data.user.username,
+        res.data.user.email,
+        res.data.user.is_google_account,
+        res.data.user.avatar,
+        res.data.user.description,
+        res.data.user.friends);
+    }
   }
 
   handleOpen = () => {
@@ -104,12 +126,13 @@ class ConnectedMainView extends React.Component {
   render() {
     return (
       <div>
+        <AboutDialogue
+          openStatus={this.props.aboutDialogOpen}
+          handleCloseAbout={this.props.closeAboutDialog}
+        />
         <Route exact path="/" render={
           (props) =>
-            [ <AboutDialogue 
-                openStatus={this.props.aboutDialogue}
-                handleCloseAbout={this.props.handleCloseAbout}
-                />,
+            [
               <InviteDialogueModal
                 handleClose={this.handleClose.bind(this)}
                 addOpen={this.state.invite}
@@ -138,10 +161,6 @@ class ConnectedMainView extends React.Component {
         <Route path="/rooms/:roomID" render={
           (props) =>
             [
-              <AboutDialogue 
-                openStatus={this.props.aboutDialogue}
-                handleCloseAbout={this.props.handleCloseAbout}
-                />,
               <Room key={1}
                 messages={this.state.messages}
                 searchUsers={this.props.searchUsers}
@@ -165,7 +184,7 @@ class ConnectedMainView extends React.Component {
   }
 }
 
-const MainView = connect(mapStateToProps)(ConnectedMainView);
+const MainView = connect(mapStateToProps, mapDispatchToProps)(ConnectedMainView);
 
 
 export default MainView;

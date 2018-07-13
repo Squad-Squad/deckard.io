@@ -10,7 +10,7 @@ import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
 import placeholder from './../../../dist/assets/profile-placeholder.jpg';
 import { connect } from 'react-redux';
-import { login } from '../../../../redux/actions';
+import { login, removeAllUsersFromNewRoom } from '../../../../redux/actions';
 import axios from 'axios';
 
 function mapStateToProps(state) {
@@ -20,14 +20,16 @@ function mapStateToProps(state) {
     isGoogleAccount: state.isGoogleAccount,
     avatarURL: state.avatarURL,
     description: state.description,
+    friends: state.friends,
   };
 }
 
 function mapDispatchToProps(dispatch) {
   return {
-    login: (username, email, isGoogleAccount, avatarURL, description) => {
-      return dispatch(login(username, email, isGoogleAccount, avatarURL, description));
+    login: (username, email, isGoogleAccount, avatarURL, description, friends) => {
+      return dispatch(login(username, email, isGoogleAccount, avatarURL, description, friends));
     },
+    removeAllUsersFromNewRoom: () => dispatch(removeAllUsersFromNewRoom()),
   };
 }
 
@@ -125,8 +127,9 @@ class UserProfile extends Component {
       url: '/profile/update-profile',
       data,
       config: { headers: { 'Content-Type': 'multipart/form-data' } }
-    })
+    });
 
+    console.log("RES", res);
     const updateUsername = this.state.newUsername || this.props.username,
       updateEmail = this.state.newEmail || this.props.email,
       updateAvatarURL = res.data || this.props.avatarURL,
@@ -136,7 +139,9 @@ class UserProfile extends Component {
       updateEmail,
       this.props.isGoogleAccount,
       updateAvatarURL,
-      updateDescription);
+      updateDescription,
+      this.props.friends);
+    this.props.removeAllUsersFromNewRoom();
     this.setState({
       open: true,
 
@@ -222,19 +227,19 @@ class UserProfile extends Component {
             />
           </span>
         )
-      } else if (this.props.isGoogleAccount) {
-        return (
-          <span style={{ display: 'flex', alignContent: 'center' }}>
-            <Email style={{ marginRight: '10px' }} />
-            {this.props.email}
-          </span >
-        )
       } else {
         return (
           <span style={{ display: 'flex', alignContent: 'center' }}>
             <Email style={{ marginRight: '10px' }} />
-            {this.props.email}
-            <Edit style={{ float: 'right', cursor: 'pointer', marginLeft: 'auto' }} onClick={this.editEmail.bind(this)} />
+            {(this.props.email) ?
+              this.props.email :
+              <p style={{ color: 'gray' }}> Add email address... </p>}
+            {(this.props.isGoogleAccount) ?
+              null :
+              <Edit
+                style={{ float: 'right', cursor: 'pointer', marginLeft: 'auto' }}
+                onClick={this.editEmail.bind(this)} />
+            }
           </span >
         )
       }
@@ -248,7 +253,9 @@ class UserProfile extends Component {
       } else {
         return (
           <div style={{ display: 'flex', alignContent: 'center', marginBottom: '10px' }}>
-            {this.props.description}
+            {(this.props.description) ?
+              this.props.description :
+              <p style={{ color: 'gray' }}>Add bio...</p>}
             <Edit style={{ float: 'right', cursor: 'pointer', marginLeft: 'auto' }} onClick={this.editDescription.bind(this)} />
           </div>
         )

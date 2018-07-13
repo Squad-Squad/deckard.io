@@ -5,7 +5,6 @@ const _ = require('underscore');
 const Tock = require('tocktimer');
 
 
-
 // db.sequelize.query('SELECT * FROM users').spread((results) => {
 //   console.log('AAAAAAAAAAAAAAA', results[0]);
 // })
@@ -13,7 +12,15 @@ const Tock = require('tocktimer');
 //
 // ─── USER TABLE HELPERS ─────────────────────────────────────────────────────────
 //
-const saveMember = (username, email, password, isGoogle, callback) => {
+const saveMember = (
+  username,
+  email,
+  password,
+  isGoogle,
+  isGithub,
+  githubID,
+  callback,
+) => {
   let hashedPW;
   if (password) {
     const salt = bcrypt.genSaltSync(3);
@@ -24,6 +31,8 @@ const saveMember = (username, email, password, isGoogle, callback) => {
     email,
     password: hashedPW,
     is_google_account: isGoogle,
+    is_github_account: isGithub,
+    github_id: githubID,
   })
     .then((result) => {
       callback(result);
@@ -127,7 +136,9 @@ const aliasMembers = (roomName, roomMode, members, roomLength, roomUnique, callb
 
   // const randomAlias = Math.floor(Math.random() * aliases.length);
   const randomForAI = Math.floor(Math.random() * aliases.length);
-  const membersObj = { room: roomName, roomMode: roomMode, roomLength: roomLength, roomID: roomUnique, 'mitsuku@mitsuku.com': aliases[randomForAI] };
+  const membersObj = {
+    room: roomName, roomMode, roomLength, roomID: roomUnique, 'mitsuku@mitsuku.com': aliases[randomForAI],
+  };
   aliases.splice(randomForAI, 1);
   members.forEach((member) => {
     const randomAlias = Math.floor(Math.random() * aliases.length);
@@ -291,7 +302,6 @@ const fetchRedisMessages = (client, socket, callback) => {
 
 
 const getRoomReady = (io, timerObj, client, socket, data, rooms, membersInfo) => {
-
   // notify everyone when mitsuku's joined the room (but only with her alias)
   if (socket.roomMode === 'free') {
     if (rooms[socket.room].length === 2) {
@@ -324,7 +334,6 @@ const getRoomReady = (io, timerObj, client, socket, data, rooms, membersInfo) =>
         });
       }, Math.random() * 5000);
     }
-
   }
 
 
@@ -334,107 +343,104 @@ const getRoomReady = (io, timerObj, client, socket, data, rooms, membersInfo) =>
     .then((replies) => {
       membersInRoom = replies.map(reply => JSON.parse(reply));
 
-  client.lrangeAsync(`${data.roomID}:membersInvited`, 0, -1)
-  .then((replies) => {
-      membersInvitedtoRoom = replies;
+      client.lrangeAsync(`${data.roomID}:membersInvited`, 0, -1)
+        .then((replies) => {
+          membersInvitedtoRoom = replies;
 
-      if (data.roomMode === 'round') {
-        if (membersInRoom.length === membersInvitedtoRoom.length) {
-          // PUSH MITSUKU TO ROOM'S MEMBERLIST IN REDIS
+          if (data.roomMode === 'round') {
+            if (membersInRoom.length === membersInvitedtoRoom.length) {
+              // PUSH MITSUKU TO ROOM'S MEMBERLIST IN REDIS
 
-          client.rpush(
-            `${data.roomID}:membersList`,
-            JSON.stringify({ mitsuku: 'mitsuku@mitsuku.com' }),
-            (err, replies) => {
-              console.log('mitsuku added to redis db', replies);
-            },
-          );
-
-
-          // ADD A MESSAGE TO ROOM MESSAGES IN REDIS NOTIFYING THAT MITSUKU HAS JOINED
-
-          let mitMessage;
-          if(membersInfo){
-            mitMessage = `${membersInfo['mitsuku@mitsuku.com']} has joined the room` 
-          }else{
-            mitMessage = `${data.mitsuku} has joined the room` 
-          } 
+              client.rpush(
+                `${data.roomID}:membersList`,
+                JSON.stringify({ mitsuku: 'mitsuku@mitsuku.com' }),
+                (err, replies) => {
+                  console.log('mitsuku added to redis db', replies);
+                },
+              );
 
 
-          client.rpush(
-            `${data.roomID}:messages`,
-            JSON.stringify({ matrixOverLords: mitMessage }),
-            (err, reply) => {
-              console.log("I've pushed to redis:", reply);
-            },
-          );
+              // ADD A MESSAGE TO ROOM MESSAGES IN REDIS NOTIFYING THAT MITSUKU HAS JOINED
+              // REMOVED FOR NOW BECAUSE MITSUKU IS ALWAYS ADDED LAST AND RANDOMIZING THIS MAY NOT BE WORTH IT
+              // DON'T DELETE IN CASE WE WANT TO ADD IT BACK THOUGH
 
 
-          // FETCH AND EMIT ALL MESSAGES AFTER MITSUKU'S JOIN MESSAGE HAS PUSHED TO REDIS
-
-          fetchRedisMessages(client, socket, (result) => {
-            io.sockets.in(data.roomID).emit('chat', result);
-          });
-          membersInRoom.push({ mitsuku: 'mitsuku@mitsuku.com' });
-
-
-          // RANDOMIZE THE ORDER OF TURNS FOR ROUNDROBIN MODE AND PUSH RESULTS TO REDIS
-
-          const shuffledOrder = _.shuffle(membersInRoom);
-
-          shuffledOrder.forEach(player=>{
-            client.rpushAsync(`${data.roomID}:gameOrder`, JSON.stringify(player))
-            .then(()=>{
-                client.lrangeAsync(`${data.roomID}:gameOrder`, 0, -1)
-                .then(replies=>{
-                  console.log("GAMEORDER LIST IN REDIS", replies)
-                  client.expire(`${data.roomID}:gameOrder`, 3600)
-                }) 
-            })
-          })
+              // let mitMessage;
+              // if(membersInfo){
+              //   mitMessage = `${membersInfo['mitsuku@mitsuku.com']} has joined the room`
+              // }else{
+              //   mitMessage = `${data.mitsuku} has joined the room`
+              // }
 
 
+              // client.rpush(
+              //   `${data.roomID}:messages`,
+              //   JSON.stringify({ matrixOverLords: mitMessage }),
+              //   (err, reply) => {
+              //     console.log("I've pushed to redis:", reply);
+              //   },
+              // );
 
-          // WHEN ITS MITSUKU'S TURN
 
-          if (Object.keys(shuffledOrder[0])[0] === 'mitsuku') {
-            const key = Object.keys(shuffledOrder[1]);
-            const fixKey = key[0];
-            const firstTurnSocketId = shuffledOrder[1][fixKey];
-            io.sockets.in(data.room).emit('whose turn', fixKey)
-            io.sockets.sockets[firstTurnSocketId].emit('yourTurn', key[0]);
-            io.sockets.in(data.roomID).emit('roomReady', {roomLength:data.roomLength, firstTurn: firstTurnSocketId})
-          } else {
-            const key = Object.keys(shuffledOrder[0]);
-            const fixKey = key[0];
-            const firstTurnSocketId = shuffledOrder[0][fixKey];
-            io.sockets.in(data.room).emit('whose turn', fixKey)
-            io.sockets.sockets[firstTurnSocketId].emit('yourTurn', key[0]);
-            io.sockets.in(data.roomID).emit('roomReady', {roomLength:data.roomLength, firstTurn: firstTurnSocketId})
+              // FETCH AND EMIT ALL MESSAGES AFTER MITSUKU'S JOIN MESSAGE HAS PUSHED TO REDIS
 
+              // fetchRedisMessages(client, socket, (result) => {
+              //   io.sockets.in(data.roomID).emit('chat', result);
+              // });
+
+
+              // RANDOMIZE THE ORDER OF TURNS FOR ROUNDROBIN MODE AND PUSH RESULTS TO REDIS
+
+              membersInRoom.push({ mitsuku: 'mitsuku@mitsuku.com' });
+              const shuffledOrder = _.shuffle(membersInRoom);
+
+              shuffledOrder.forEach((player) => {
+                client.rpushAsync(`${data.roomID}:gameOrder`, JSON.stringify(player))
+                  .then(() => {
+                    client.lrangeAsync(`${data.roomID}:gameOrder`, 0, -1)
+                      .then((replies) => {
+                        console.log('GAMEORDER LIST IN REDIS', replies);
+                        client.expire(`${data.roomID}:gameOrder`, 3600);
+                      });
+                  });
+              });
+
+
+              // WHEN ITS MITSUKU'S TURN
+
+              if (Object.keys(shuffledOrder[0])[0] === 'mitsuku') {
+                const key = Object.keys(shuffledOrder[1]);
+                const fixKey = key[0];
+                const firstTurnSocketId = shuffledOrder[1][fixKey];
+                io.sockets.in(data.room).emit('whose turn', fixKey);
+                io.sockets.sockets[firstTurnSocketId].emit('yourTurn', key[0]);
+                io.sockets.in(data.roomID).emit('roomReady', { roomLength: data.roomLength, firstTurn: firstTurnSocketId });
+              } else {
+                const key = Object.keys(shuffledOrder[0]);
+                const fixKey = key[0];
+                const firstTurnSocketId = shuffledOrder[0][fixKey];
+                io.sockets.in(data.room).emit('whose turn', fixKey);
+                io.sockets.sockets[firstTurnSocketId].emit('yourTurn', key[0]);
+                io.sockets.in(data.roomID).emit('roomReady', { roomLength: data.roomLength, firstTurn: firstTurnSocketId });
+              }
+            }
           }
-        }
-      }
-      
-  })
-  .catch(err=>{
-    console.error(err)
-  })
-
-  })
-  .catch(err=>{
-    console.error(err)
-  })
-
-}
-
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+};
 
 
 const removeFromMembersList = (client, socket, rooms) => {
   const user = socket.username;
-          //UPDATE GAME TURN ORDER WHEN SOMEONE LEAVES THE ROOM
-          
-    client.lremAsync(`${socket.room}:gameOrder`, 1, JSON.stringify({ [user]: socket.id }))
+  // UPDATE GAME TURN ORDER WHEN SOMEONE LEAVES THE ROOM
+
+  client.lremAsync(`${socket.room}:gameOrder`, 1, JSON.stringify({ [user]: socket.id }))
     .then((replies) => {
       client.lrangeAsync(`${socket.room}:gameOrder`, 0, -1)
         .then((reply) => {
@@ -452,6 +458,12 @@ const removeFromMembersList = (client, socket, rooms) => {
     .then((replies) => {
       client.lrangeAsync(`${socket.room}:membersList`, 0, -1)
         .then((reply) => {
+          console.log('MEMBERS LIST AFTER REMOVEFROMMEMBERSLIST:', reply);
+          // client.rpush(
+          //   `${socket.room}:messages`,
+          //   JSON.stringify({ matrixOverLords: `${socket.alias} left the room` }),
+          // );
+
           // LEAVE ROOM ASYNCHRONOUSLY HERE
           socket.leave(socket.room);
         })
@@ -511,6 +523,115 @@ const getUserEmail = username =>
     })
     .catch(err => console.log('error', err));
 
+
+const turnOverLogic = (io, client, socket, data, gameOrderArr, mitsuku) => {
+  console.log('IN TURNOVER LOGIC STATE OF DATA:', data, gameOrderArr);
+  let message;
+  if (!data.message) {
+    message = 'goodbye***';
+  } else {
+    message = data.message;
+  }
+
+  const gameOrderArrOfKeys = [];
+  let nextTurnUsername;
+  let nextTurnUserSocketId;
+  gameOrderArr.forEach((player) => {
+    const username = Object.keys(player);
+    gameOrderArrOfKeys.push(username[0]);
+  });
+  const lastTurnIndex = gameOrderArrOfKeys.indexOf(data.user);
+
+  if (lastTurnIndex === gameOrderArr.length - 1) {
+    nextTurnUsername = Object.keys(gameOrderArr[0])[0];
+  } else {
+    nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 1])[0];
+  }
+
+
+  if (nextTurnUsername === 'mitsuku') {
+    // IF THIS ISN'T THE MESSAGE SENT WHEN SOMEONE LEAVES THE ROOM
+    if (message !== 'goodbye***') {
+      io.sockets.sockets[socket.id].emit('turnOver', socket.username);
+    }
+
+    io.sockets.emit('whose turn', 'mitsuku@mitsuku.com');
+
+    let extraDelay = 0;
+    let response;
+    mitsuku.send(message).then((reply) => {
+      response = reply;
+      if (response === undefined) {
+        mitsuku.send(message).then((reply) => {
+          response = reply;
+        });
+      }
+      if (/here\sin\sleeds/g.test(response)) {
+        response = response.slice(0, response.indexOf('here in leeds'));
+      }
+      // Add delay based on response length
+      extraDelay = response.length * 40;
+      console.log('EXTRA DELAY', extraDelay);
+
+      setTimeout(async () => {
+        // SAVE HER MESSAGE TO REDIS
+        client.rpush(
+          `${socket.room}:messages`,
+          JSON.stringify({ 'mitsuku@mitsuku.com': response }),
+        );
+
+        // AND RETRIEVE ALL MESSAGES IMMEDIATELY AFTER
+        fetchRedisMessages(client, socket, (result) => {
+          io.sockets.in(socket.room).emit('chat', result);
+        });
+
+        // FETCH GAMEORDERARR AGAIN IN CASE SOMEONE LEAVES ROOM IN MIDDLE OF MITSUKU RESPONSE
+        const gameOrderArr = [];
+        await client.lrangeAsync(`${socket.room}:gameOrder`, 0, -1)
+          .then((reply) => {
+            reply.forEach((user) => {
+              gameOrderArr.push(JSON.parse(user));
+            });
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+
+        // AFTER MITSUKU'S TURN ONTO THE NEXT ONE
+
+        if (lastTurnIndex + 1 === gameOrderArr.length - 1) {
+          nextTurnUsername = Object.keys(gameOrderArr[0])[0];
+          nextTurnUserSocketId = gameOrderArr[0][nextTurnUsername];
+        } else if (nextTurnUsername === Object.keys(gameOrderArr[0])[0]) {
+          nextTurnUsername = Object.keys(gameOrderArr[1])[0];
+          nextTurnUserSocketId = gameOrderArr[1][nextTurnUsername];
+        } else {
+          nextTurnUsername = Object.keys(gameOrderArr[lastTurnIndex + 2])[0];
+          nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 2][nextTurnUsername];
+        }
+        if (nextTurnUserSocketId) {
+          io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
+          io.sockets.emit('whose turn', nextTurnUsername);
+        }
+      }, Math.random() * 5000 + 2000 + extraDelay);
+    });
+  } else {
+    if (lastTurnIndex === gameOrderArr.length - 1) {
+      nextTurnUsername = Object.keys(gameOrderArr[0])[0];
+      nextTurnUserSocketId = gameOrderArr[0][nextTurnUsername];
+    } else {
+      nextTurnUserSocketId = gameOrderArr[lastTurnIndex + 1][nextTurnUsername];
+    }
+    io.sockets.sockets[nextTurnUserSocketId].emit('yourTurn', true);
+    console.log();
+    if (message !== 'goodbye***') {
+      io.sockets.sockets[socket.id].emit('turnOver', socket.username);
+    }
+    io.sockets.emit('whose turn', nextTurnUsername);
+  }
+};
+
+
 module.exports = {
   saveMember,
   saveRoomAndMembers,
@@ -531,4 +652,5 @@ module.exports = {
   getUserEmail,
   getRoomReady,
   removeFromMembersList,
+  turnOverLogic,
 };

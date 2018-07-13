@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Divider from '@material-ui/core/Divider';
+import { withStyles } from '@material-ui/core/styles';
 import { connect } from 'react-redux';
 
 function mapStateToProps(state) {
@@ -8,56 +9,65 @@ function mapStateToProps(state) {
   };
 }
 
+const styles = theme => ({
+
+});
+
 class ScoresItem extends Component {
-  render() {
-    const scoreCard = () => {
-      if (this.props.winner === this.props.alias) {
-        return (
-          <div key={this.props.key} style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            paddingLeft: '15px',
-            paddingRight: '15px',
-            paddingTop: '15px',
-            paddingBottom: '10px',
-            fontSize: '20px',
-            boxShadow: '0 0 5px #fff, 0 0 10px #fff, 0 0 20px #f2f2f2',
-            borderRadius: '5px',
-            border: '1px solid white',
-          }}>
-            <div>
-              {this.props.user}{' '}(<strong>{this.props.alias}</strong>)
-            </div>
-            <div>
-              {this.props.score}
-            </div>
-          </div>
-        )
-      } else {
-        return (
-          <div key={this.props.key} style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            paddingLeft: '15px',
-            paddingRight: '15px',
-            paddingTop: '15px',
-            paddingBottom: '10px',
-            fontSize: '20px',
-          }}>
-            <div>
-              {this.props.user}{' '}(<strong>{this.props.alias}</strong>)
-            </div>
-            <div>
-              {this.props.score}
-            </div>
-          </div>
-        )
-      }
+  constructor(props) {
+    super(props);
+    this.state = {
+      lineWait: true,
     }
+  }
+
+  componentDidMount() {
+    setTimeout(() => this.setState({
+      waiting: false,
+    }), 1000);
+    setTimeout(() => this.setState({
+      lineWait: false,
+    }), 500);
+  }
+
+  render() {
+    const { classes } = this.props;
+
+    console.log('WIDTH', this.props.scoreWidth)
 
     return ([
       <div>
-        {scoreCard()}
+        <div key={this.props.key} style={{
+          display: 'flex',
+          justifyContent: 'space-around',
+          flexDirection: 'column',
+          paddingLeft: '15px',
+          paddingRight: '15px',
+          paddingTop: '15px',
+          paddingBottom: '10px',
+          fontSize: '18px',
+        }}>
+          <div>
+            {this.props.user}{' '}(<strong>{this.props.alias}</strong>)
+          </div>
+          <div style={{
+            width: String(this.props.scoreWidth) + '%',
+          }}>
+            <hr
+              className={'trans--grow--score ' + (this.state.lineWait ? null : 'grow--score')}
+              style={{
+                backgroundColor: 'white',
+                opacity: 1,
+                marginTop: '10px',
+                marginBottom: '10px',
+                height: '14px',
+              }} />
+          </div>
+          <div className="animated fadeIn"
+            style={{ marginLeft: 'auto' }}>
+            {this.props.score}
+          </div>
+        </div>
       </div>,
       <Divider />
     ]);
@@ -66,4 +76,4 @@ class ScoresItem extends Component {
 
 export default connect(
   mapStateToProps,
-)(ScoresItem);
+)(withStyles(styles)(ScoresItem));

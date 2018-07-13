@@ -132,7 +132,7 @@ class LoginDialog extends React.Component {
                     color: 'white',
                     width: '100%',
                   }}
-                  href=''>
+                  href='/auth/github'>
                   <i className="fab fa-github"></i>
                   <p style={{ paddingLeft: '15px' }}>Login With Github</p>
                 </Button>
