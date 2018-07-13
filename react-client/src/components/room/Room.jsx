@@ -156,7 +156,7 @@ class ConnectedRoom extends React.Component {
     });
 
     if (this.state.roomMode === 'round') {
-      tock.start(20000);
+      tock.start(roomLengthInMilis);
     } else {
       $.get(`/api/timer/${this.roomID}`).then(communalTime => {
         tock.start(communalTime.timeLeft + 1000)
