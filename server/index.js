@@ -27,7 +27,7 @@ const email = require('../lib/nodemailerHelpers');
 
 const { Op } = db;
 
-var timerObj = {};
+const timerObj = {};
 
 
 //
@@ -354,7 +354,6 @@ app.post('/api/saveFreeMode', (req, res) => {
   const roomLengthInMilis = roomLength * 60 * 1000;
 
   timerObj[roomUnique].start(roomLengthInMilis);
-
 });
 
 
@@ -554,9 +553,9 @@ db.models.sequelize.sync().then(() => {
       const user_id = socket.username;
       const name = socket.username;
 
-      if(socket.roomMode === "free"){
-        const message = `${data.user} has joined the room!`;
-        client.rpush(`${socket.room}:messages`, JSON.stringify({ matrixOverLords: message })); 
+      if (socket.roomMode === 'free') {
+        const message = `${data.user} has joined the room`;
+        client.rpush(`${socket.room}:messages`, JSON.stringify({ matrixOverLords: message }));
       }
 
 
@@ -577,7 +576,7 @@ db.models.sequelize.sync().then(() => {
     // ─── ROUND ROBIN LOGIC ───────────────────────────────────────────
     //
     socket.on('turn done', async (data) => {
-      let gameOrderArr = [];
+      const gameOrderArr = [];
       await client.lrangeAsync(`${socket.room}:gameOrder`, 0, -1)
         .then((reply) => {
           reply.forEach((user) => {
@@ -739,7 +738,6 @@ db.models.sequelize.sync().then(() => {
       const thisRoom = rooms[socket.room];
 
       if (rooms[socket.room]) {
-
         client.rpush(
           `${socket.room}:messages`,
           JSON.stringify({ matrixOverLords: `${socket.alias} left the room` }),
@@ -785,7 +783,6 @@ db.models.sequelize.sync().then(() => {
       dbHelpers.fetchRedisMessages(client, socket, (result) => {
         io.sockets.in(socket.room).emit('chat', result);
       });
-
     });
 
 

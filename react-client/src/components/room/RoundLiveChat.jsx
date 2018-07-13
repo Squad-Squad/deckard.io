@@ -10,6 +10,8 @@ import Button from '@material-ui/core/Button';
 import PublishIcon from '@material-ui/icons/Publish';
 import FormControl from '@material-ui/core/FormControl';
 import Input from '@material-ui/core/Input';
+import ChatMessage from './ChatMessage.jsx';
+import Divider from '@material-ui/core/Divider';
 import axios from 'axios'
 import { withStyles } from '@material-ui/core/styles';
 import { connect } from 'react-redux';
@@ -158,39 +160,29 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
         <div className="chat-messages" ref={(el) => { this.messageList = el; }}>
           {this.props.messages.map((message, i) => {
             if (this.props.username === message.name) {
-              return (
+              return ([
                 <div className="section" key={i}
                   style={{
                     textAlign: 'right',
                     borderTop: '1px solid black',
-                    padding: '15px',
+                    padding: '10px',
                     fontSize: '18px',
                   }}>
                   <p>{message.message}</p>
-                </div>
-              )
+                </div>,
+                <Divider style={{
+                  height: '1px',
+                  backgroundColor: 'rgba(255, 255, 255, .2)',
+                  width: '80%',
+                  margin: 'auto'
+                }} />
+              ])
             } else {
               return (
-                <div className="section" key={i}
-                  style={{
-                    display: 'flex',
-                    textAlign: "left",
-                    borderTop: "1px solid black",
-                    padding: "15px",
-                    fontSize: "18px"
-                  }}>
-                  <img
-                    src={`../assets/aliasImages/${this.props.memberMap[message.name]}.jpg`}
-                    style={{
-                      objectFit: 'cover',
-                      borderRadius: '50%',
-                      height: '40px',
-                      width: '40px',
-                      marginRight: '10px',
-                    }} />
-                  <strong>{this.props.memberMap[message.name]}:&nbsp;</strong>
-                  <p>{message.message}</p>
-                </div>
+                <ChatMessage
+                  message={message}
+                  memberMap={this.props.memberMap}
+                  i={i} />
               )
             }
           })}

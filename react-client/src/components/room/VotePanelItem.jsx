@@ -45,40 +45,40 @@ class VotePanelItem extends Component {
 
     const buttons = () => {
       if (this.state.humanOrAI === '') {
-        return (<div>
+        return ([
           <Button variant="contained" color="primary" className={classes.button}
             onClick={this.aiClick.bind(this)}>
             A.I.
-              </Button>
+              </Button>,
           <Button variant="contained" color="secondary" className={classes.button}
             onClick={this.humanClick.bind(this)}>
             Human
-              </Button>
-        </div>)
+          </Button>
+        ])
       } else if (this.state.humanOrAI === 'ai') {
-        return (<div>
+        return ([
           <Button variant="contained" color="primary" className={classes.button}
             onClick={this.aiClick.bind(this)}>
             A.I.
-          </Button>
+          </Button>,
           <span onClick={this.humanClick.bind(this)}>
             <Button variant="contained" color="secondary" disabled className={classes.button}>
               Human
             </Button>
           </span>
-        </div>)
+        ])
       } else {
-        return (<div>
+        return ([
           <span onClick={this.aiClick.bind(this)}>
             <Button variant="contained" color="primary" disabled className={classes.button}>
               A.I.
             </Button>
-          </span>
+          </span>,
           <Button variant="contained" color="secondary" className={classes.button}
             onClick={this.humanClick.bind(this)}>
             Human
           </Button>
-        </div>)
+        ])
       }
     }
 
@@ -87,15 +87,26 @@ class VotePanelItem extends Component {
         key={this.props.thisKey}>
         <div>
           <p style={{
-            paddingLeft: '15px',
-            paddingTop: '15px',
-            paddingBottom: '10px',
+            padding: '15px',
             fontSize: '20px',
+            display: 'flex',
+            alignItems: 'center',
           }}>
+            <img
+              src={`../assets/aliasImages/${this.props.user}.jpg`}
+              style={{
+                objectFit: 'cover',
+                borderRadius: '50%',
+                height: '40px',
+                width: '40px',
+                marginRight: '10px',
+              }} />
             {this.props.user}
           </p>
         </div>
-        {buttons()}
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          {buttons()}
+        </div>
       </div>,
       <Divider key={1000} />]
     );
