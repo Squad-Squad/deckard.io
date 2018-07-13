@@ -64,10 +64,18 @@ class Scores extends Component {
                   The Bot Is:
                 </div>
                 <div style={{ fontSize: '20px' }}>
-                  <span>Mitsuku</span> &nbsp;
+                  <img
+                    src={`../assets/aliasImages/${this.props.memberMap['mitsuku@mitsuku.com']}.jpg`}
+                    style={{
+                      objectFit: 'cover',
+                      borderRadius: '50%',
+                      height: '40px',
+                      width: '40px',
+                      marginRight: '10px',
+                    }} />
                   <strong>{this.props.memberMap['mitsuku@mitsuku.com']}</strong>
                 </div>
-                <div style={{
+                {/* <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',
                   width: '100%',
@@ -75,7 +83,7 @@ class Scores extends Component {
                 }}>
                   <span>Users</span>
                   <span>Scores</span>
-                </div>
+                </div> */}
               </Typography>
               <Divider />
             </Toolbar>

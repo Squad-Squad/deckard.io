@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Button from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
+import VoteToggleButton from './VoteToggleButton.jsx';
 import { withStyles } from '@material-ui/core/styles';
 import { connect } from 'react-redux';
 
@@ -21,7 +22,21 @@ class VotePanelItem extends Component {
     super(props);
     this.state = {
       humanOrAI: '',
+
+      height: null,
+      width: null,
     };
+  }
+
+  componentDidMount() {
+    this.updateWindowDimensions();
+  }
+
+  updateWindowDimensions() {
+    this.setState({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    });
   }
 
   humanClick() {
@@ -104,9 +119,16 @@ class VotePanelItem extends Component {
             {this.props.user}
           </p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          {buttons()}
-        </div>
+        {(this.state.width < 500) ?
+          <VoteToggleButton
+            aiClick={this.aiClick.bind(this)}
+            humanClick={this.humanClick.bind(this)}
+            humanOrAI={this.state.humanOrAI} /> :
+          <div
+            style={{ display: 'flex', alignItems: 'center' }}>
+            {buttons()}
+          </div>
+        }
       </div>,
       <Divider key={1000} />]
     );
