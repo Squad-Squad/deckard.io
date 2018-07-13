@@ -62,7 +62,6 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
       msg: '',
       yourTurn: this.props.yourTurn,
       whoseTurn: null
-
     };
 
     this.props.io.on('turn over', (data) => {
@@ -159,16 +158,40 @@ class ConnectedRoundLiveChat extends React.Component<Props> {
         <div className="chat-messages" ref={(el) => { this.messageList = el; }}>
           {this.props.messages.map((message, i) => {
             if (this.props.username === message.name) {
-              return (<div className="section" key={i}
-                style={{ textAlign: "right", borderTop: "1px solid black", padding: "15px", fontSize: "18px" }}>
-                <p>{message.message}</p>
-              </div>)
+              return (
+                <div className="section" key={i}
+                  style={{
+                    textAlign: 'right',
+                    borderTop: '1px solid black',
+                    padding: '15px',
+                    fontSize: '18px',
+                  }}>
+                  <p>{message.message}</p>
+                </div>
+              )
             } else {
-              return (<div className="section" key={i}
-                style={{ textAlign: "left", borderTop: "1px solid black", padding: "15px", fontSize: "18px" }}>
-                <p><strong>{this.props.memberMap[message.name]}
-                  {(() => this.props.memberMap[message.name] ? ':' : null)()}&nbsp;</strong>{message.message}</p>
-              </div>)
+              return (
+                <div className="section" key={i}
+                  style={{
+                    display: 'flex',
+                    textAlign: "left",
+                    borderTop: "1px solid black",
+                    padding: "15px",
+                    fontSize: "18px"
+                  }}>
+                  <img
+                    src={`../assets/aliasImages/${this.props.memberMap[message.name]}.jpg`}
+                    style={{
+                      objectFit: 'cover',
+                      borderRadius: '50%',
+                      height: '40px',
+                      width: '40px',
+                      marginRight: '10px',
+                    }} />
+                  <strong>{this.props.memberMap[message.name]}:&nbsp;</strong>
+                  <p>{message.message}</p>
+                </div>
+              )
             }
           })}
         </div>
